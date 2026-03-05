@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Order History and Tracking - Nordic POS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#e9642b",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211611",
+                        "surface-light": "#FAFAF8",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "DM Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav {
+            background-color: rgba(233, 100, 43, 0.1);
+            color: #e9642b;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
+<div class="p-6">
+<div class="flex items-center gap-3 mb-8">
+<div class="size-10 bg-primary rounded-xl flex items-center justify-center text-white">
+<span class="material-symbols-outlined">restaurant_menu</span>
+</div>
+<div>
+<h1 class="text-slate-900 dark:text-white font-bold text-lg leading-none">Nordic POS</h1>
+<p class="text-slate-500 text-xs mt-1">Premium Kitchen</p>
+</div>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg active-nav transition-colors" href="#">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1">receipt_long</span>
+<span class="font-medium text-sm">Orders</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">menu_book</span>
+<span class="font-medium text-sm">Menu</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">table_restaurant</span>
+<span class="font-medium text-sm">Tables</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">analytics</span>
+<span class="font-medium text-sm">Reports</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6 border-t border-slate-100 dark:border-slate-800">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span class="font-medium text-sm">Settings</span>
+</a>
+<div class="mt-4 flex items-center gap-3 px-2">
+<div class="size-8 rounded-full bg-slate-200" data-alt="User profile avatar of a male staff member" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD-JVNE-FxhKm_z1r_VKEnEja8_Gf0bZe5JEbdijnF5ukuaVGxv34kxh41nd9aHMvHIXTWarnouvK1Ped3m8vpm0TMBQmHhJnJvq41bGMnj4Bqew7pqKzbJSocQxQzmIIxwEPrELjJOgNYScJhxya50YfN6t59zpj0p5g4hMNoMLn2SrFjKMGoGtEjYHLCoBNfKSMHTCUqn9FyDCcyyvYdCs4RtfcPMlTenvyR736WKD_2ihzqQve0352pF9xDPqXzX5zcHXwEjXN6O'); background-size: cover;"></div>
+<div class="overflow-hidden">
+<p class="text-xs font-bold truncate">Erik Sorensen</p>
+<p class="text-[10px] text-slate-500 uppercase tracking-wider">Manager</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-8">
+<div class="max-w-7xl mx-auto">
+<!-- Header Section -->
+<header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Order History</h2>
+<p class="text-slate-500 dark:text-slate-400 mt-1">Manage and track all restaurant orders in real-time</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold shadow-sm hover:bg-slate-50 transition-all">
+<span class="material-symbols-outlined text-lg">calendar_today</span>
+<span>October 24, 2023</span>
+<span class="material-symbols-outlined text-lg">expand_more</span>
+</button>
+<button class="bg-primary text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">add</span>
+<span>New Order</span>
+</button>
+</div>
+</header>
+<!-- Filters & Search -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mb-6 p-4">
+<div class="flex flex-col lg:flex-row gap-6 items-center">
+<!-- Tab Filters -->
+<div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl shrink-0">
+<button class="px-5 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 shadow-sm text-primary">All Orders</button>
+<button class="px-5 py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Pending</button>
+<button class="px-5 py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Active</button>
+<button class="px-5 py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Completed</button>
+<button class="px-5 py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-200">Cancelled</button>
+</div>
+<!-- Search Bar -->
+<div class="relative flex-1 w-full">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 text-slate-900 dark:text-slate-100 placeholder:text-slate-400" placeholder="Search by order #, table, or customer..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Orders Table -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[11px] uppercase tracking-widest font-bold">
+<th class="px-6 py-4">Order #</th>
+<th class="px-6 py-4">Table</th>
+<th class="px-6 py-4">Type</th>
+<th class="px-6 py-4">Items</th>
+<th class="px-6 py-4">Total</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4">Time</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="text-sm">
+<!-- Row 1 -->
+<tr class="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+<td class="px-6 py-4 font-bold text-slate-900 dark:text-white">#8902</td>
+<td class="px-6 py-4">
+<span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs font-semibold">T-12</span>
+</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-400">Dine-in</td>
+<td class="px-6 py-4">
+<div class="flex -space-x-2">
+<div class="size-6 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 overflow-hidden" data-alt="Salad dish image thumbnail" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBdMoKTiO8ATqHFuMOakg34iSPZlFbviBQbltt9JEQqL4vL8lzPC0bfT_Cv5l9fp5Xl_aX5K6gEAYHigns4Xr6ZxLDLMuqavMe8KaYGWeS1LwgBIXDIEWev46xYGff0gF_qSnLmk5pDyTwSqdugBh_9_Hj5BdSA7Mzix6npFMlkMm_t47fAqaMctzrMBTWALqbxPJVGfhsH_EXeOdY3Ra1UgasWSqT1BG8_Zxg5mmjGxrvHe8yc2JsPd5S_meD7SKs1tOVJwJcOPOQ7'); background-size: cover;"></div>
+<div class="size-6 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 overflow-hidden" data-alt="Pancakes dish image thumbnail" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAO1892nevRoDX_uBKfZ20pVJUfa9S6zttubCkF_MnWOaluiKUBgRhgtL91pgtZ-wwJa-_nMterWCed6p9PbTCDKZfPJysE7T9VDwZ2rgHpuBH2rEG7F9qzuXicfijuoxuIyJ08u0ogZXq8jAYcVZmk_Kl7XoUfKUxz0qaOxrMDkB4DdKUj3PJA4nEcwJQ2TlSoJdp7iMxF_snbk66P0GS6TxHwrDA8wTvW1L9FkrBBoYRcoOcbWDNaHv1g56fgq2mnmyu6JT3iJJJR'); background-size: cover;"></div>
+<div class="size-6 rounded-full border-2 border-white dark:border-slate-900 bg-slate-800 flex items-center justify-center text-[10px] text-white font-bold">+2</div>
+</div>
+</td>
+<td class="px-6 py-4 font-bold text-slate-900 dark:text-white">$42.50</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold">
+<span class="size-1.5 rounded-full bg-amber-500"></span>
+                                        Pending
+                                    </span>
+</td>
+<td class="px-6 py-4 text-slate-500">12:45 PM</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-surface-light dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+<td class="px-6 py-4 font-bold text-slate-900 dark:text-white">#8901</td>
+<td class="px-6 py-4">
+<span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs font-semibold">T-04</span>
+</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-400">Dine-in</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-400">Salmon Bowl, Iced Tea</td>
+<td class="px-6 py-4 font-bold text-slate-900 dark:text-white">$31.00</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
+<span class="size-1.5 rounded-full bg-emerald-500"></span>
+                                        Active
+                                    </span>
+</td>
+<td class="px-6 py-4 text-slate-500">12:30 PM</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+<td class="px-6 py-4 font-bold text-slate-900 dark:text-white">#8899</td>
+<td class="px-6 py-4">
+<span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs font-semibold">Takeaway</span>
+</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-400">Pickup</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-400">Veggie Burger (2x)</td>
+<td class="px-6 py-4 font-bold text-slate-900 dark:text-white">$28.40</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold">
+<span class="size-1.5 rounded-full bg-blue-500"></span>
+                                        Completed
+                                    </span>
+</td>
+<td class="px-6 py-4 text-slate-500">12:15 PM</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="bg-surface-light dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+<td class="px-6 py-4 font-bold text-slate-900 dark:text-white">#8898</td>
+<td class="px-6 py-4">
+<span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs font-semibold">T-08</span>
+</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-400">Dine-in</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-400">Steak Frites</td>
+<td class="px-6 py-4 font-bold text-slate-900 dark:text-white">$55.00</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold">
+<span class="size-1.5 rounded-full bg-slate-400"></span>
+                                        Cancelled
+                                    </span>
+</td>
+<td class="px-6 py-4 text-slate-500">11:50 AM</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+<td class="px-6 py-4 font-bold text-slate-900 dark:text-white">#8897</td>
+<td class="px-6 py-4">
+<span class="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs font-semibold">T-15</span>
+</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-400">Dine-in</td>
+<td class="px-6 py-4 text-slate-600 dark:text-slate-400">Brunch Special</td>
+<td class="px-6 py-4 font-bold text-slate-900 dark:text-white">$19.50</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold">
+<span class="size-1.5 rounded-full bg-blue-500"></span>
+                                        Completed
+                                    </span>
+</td>
+<td class="px-6 py-4 text-slate-500">11:30 AM</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<p class="text-xs text-slate-500">Showing <span class="font-bold text-slate-900 dark:text-white">1-5</span> of <span class="font-bold text-slate-900 dark:text-white">124</span> orders</p>
+<div class="flex items-center gap-2">
+<button class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="size-8 flex items-center justify-center rounded-lg bg-primary text-white text-xs font-bold">1</button>
+<button class="size-8 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-50 text-xs font-bold">2</button>
+<button class="size-8 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-50 text-xs font-bold">3</button>
+<button class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer Summary (Optional Extra) -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-primary/5 dark:bg-primary/10 border border-primary/20 p-5 rounded-xl">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-primary/70">Today's Revenue</span>
+<span class="material-symbols-outlined text-primary">payments</span>
+</div>
+<p class="text-2xl font-extrabold text-slate-900 dark:text-white">$1,248.00</p>
+<p class="text-xs text-emerald-600 font-bold mt-1">+12% from yesterday</p>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Active Orders</span>
+<span class="material-symbols-outlined text-slate-400">moped</span>
+</div>
+<p class="text-2xl font-extrabold text-slate-900 dark:text-white">14</p>
+<p class="text-xs text-slate-500 mt-1">Average prep time: 18m</p>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Table Occupancy</span>
+<span class="material-symbols-outlined text-slate-400">group</span>
+</div>
+<div class="flex items-end gap-2">
+<p class="text-2xl font-extrabold text-slate-900 dark:text-white">72%</p>
+<div class="flex-1 h-2 bg-slate-100 dark:bg-slate-800 rounded-full mb-2 overflow-hidden">
+<div class="bg-primary h-full w-[72%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

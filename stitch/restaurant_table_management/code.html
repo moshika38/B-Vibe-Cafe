@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Restaurant Table Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#e9642b",
+                        "background-light": "#FAFAF8",
+                        "background-dark": "#211611",
+                        "status-available": "#10b981",
+                        "status-occupied": "#e9642b",
+                        "status-reserved": "#f59e0b",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light font-display text-slate-900 overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Sidebar Navigation -->
+<aside class="w-64 border-r border-slate-200 bg-white flex flex-col h-full shrink-0">
+<div class="p-6 flex flex-col h-full justify-between">
+<div class="flex flex-col gap-8">
+<!-- Brand Section -->
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 text-sm font-bold leading-none">Premium Bistro</h1>
+<p class="text-slate-500 text-xs mt-1">POS Management</p>
+</div>
+</div>
+<!-- Nav Items -->
+<nav class="flex flex-col gap-1">
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary cursor-pointer">
+<span class="material-symbols-outlined text-[22px] fill-current">grid_view</span>
+<span class="text-sm font-semibold">Table Map</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[22px]">receipt_long</span>
+<span class="text-sm font-medium">Orders</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[22px]">menu_book</span>
+<span class="text-sm font-medium">Menu</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[22px]">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</div>
+</nav>
+</div>
+<div class="flex flex-col gap-4">
+<button class="w-full bg-primary text-white rounded-lg py-3 px-4 font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+                        New Order
+                    </button>
+<div class="flex items-center gap-3 p-2 border-t border-slate-100 pt-4">
+<div class="size-8 rounded-full bg-slate-200 bg-center bg-cover" data-alt="Profile picture of restaurant manager" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBKCGi6LPB8GxbDWqbpgSgoFXUkLQD8-mdXBsvum68vkMKL0yLcxaQvbeFeHyb1Dnrz5VzGX-e7mFi0US0M92o3CZ-UgrqXMil6VyMg9w6nKa117qXYoISUMR-ubtCxXcmaLdLarbJyjVdYmZtJa3MwshTsktrcRvhfQvV5BqYJvTbQ2Gyqejaj_FQ81AT1qtMBz5DpAumVZg7WR3mvgujrRS-QZKER9qIYDNEBCXkMRbds1yjItv4P2X_WQDiKinHa5VvrjjCR_D2H')"></div>
+<div class="flex flex-col overflow-hidden">
+<p class="text-xs font-bold truncate">Erik Larsson</p>
+<p class="text-[10px] text-slate-500">Admin</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- Header -->
+<header class="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0">
+<div>
+<h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Restaurant Tables</h2>
+<p class="text-slate-500 text-sm">Real-time floor management</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+<input class="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 w-64" placeholder="Search tables..." type="text"/>
+</div>
+<button class="h-10 px-4 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Add Table
+                    </button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-8 bg-background-light">
+<!-- Filters -->
+<div class="flex items-center gap-2 mb-8">
+<button class="px-5 py-2 bg-slate-900 text-white rounded-full text-xs font-bold">All Tables</button>
+<button class="px-5 py-2 bg-white border border-slate-200 text-slate-600 rounded-full text-xs font-bold hover:border-primary transition-colors">Available (12)</button>
+<button class="px-5 py-2 bg-white border border-slate-200 text-slate-600 rounded-full text-xs font-bold hover:border-primary transition-colors">Occupied (8)</button>
+<button class="px-5 py-2 bg-white border border-slate-200 text-slate-600 rounded-full text-xs font-bold hover:border-primary transition-colors">Reserved (3)</button>
+</div>
+<!-- Table Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
+<!-- Table 01 - Available -->
+<div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow">
+<div class="aspect-square w-full rounded-lg bg-slate-50 flex items-center justify-center relative border border-slate-100">
+<div class="absolute inset-0 bg-center bg-contain bg-no-repeat opacity-20 m-6" data-alt="Scandinavian circular dining table top view" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCMUeRDwocFrtblye689rZVcYAC9KZfr4IJHoDtYEsgjnBr-NhgcSVCM5cvScT40PAu2-ZrK1POXmX0iGawuhsvBc3P2OBO1WcsRjTlcXHmf2SnGkhXyq_qLzGi4xnEnOY7LaAQj7mKoigDpqUYdEihNWy66x67fbs7r4620xj3PpRiLuU30Id2h-a94A5lnRpNKvwUzli1nNtgSm5ex4IedGQbTC_96CJC5dccXoDqNlEHzJo40_XrJmFSa5iV72uUySrJgOy-EKi9')"></div>
+<span class="text-3xl font-black text-slate-300">01</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900">Table 01</h3>
+<div class="px-2 py-1 bg-status-available/10 text-status-available text-[10px] font-bold rounded uppercase tracking-wider">Available</div>
+</div>
+<div class="flex items-center gap-1.5 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+<span class="text-xs font-medium">4 Seats</span>
+</div>
+</div>
+</div>
+<!-- Table 02 - Occupied -->
+<div class="bg-primary/[0.03] p-5 rounded-xl border border-primary/20 flex flex-col gap-4 shadow-sm">
+<div class="aspect-square w-full rounded-lg bg-primary/10 flex items-center justify-center relative border border-primary/10">
+<div class="absolute inset-0 bg-center bg-contain bg-no-repeat opacity-40 m-6" data-alt="Square wooden table top view with chairs" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAyKY6RsBcz4LGM3M8d6FaFhlFpyD56THITTMfCJ_Ud8rzfDZG5rLjSJaTgJBnYuEr_iguUZnki69Xx8ioNCgYTYmQE-Z59m2I9FWN-7OJweQHL9jv4jBdAHN9_vEpRm9POQ89PXLZD-kUqpvPfyuEC2hkJ4rCBAj0iZBHa-Jx7rKbcHVWYUODVv9jQmMidWNKNmTlAKPMlBggg5TZefQV164qfwI4mzDrnTUHshjJ8vuBxm5n-4SGfPk1-mu__HwMi4oD-0reDDRwd')"></div>
+<span class="text-3xl font-black text-primary/30">02</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900">Table 02</h3>
+<div class="px-2 py-1 bg-status-occupied/10 text-status-occupied text-[10px] font-bold rounded uppercase tracking-wider">Occupied</div>
+</div>
+<div class="flex flex-col gap-1 mt-1">
+<div class="flex items-center gap-1.5 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+<span class="text-xs font-medium">4 Seats</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-700">
+<span class="material-symbols-outlined text-[16px] text-primary">receipt</span>
+<span class="text-xs font-bold">ORD-0023 · 28 min</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Table 03 - Reserved -->
+<div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col gap-4 shadow-sm">
+<div class="aspect-square w-full rounded-lg bg-slate-50 flex items-center justify-center relative border border-slate-100">
+<div class="absolute inset-0 bg-center bg-contain bg-no-repeat opacity-20 m-6" data-alt="Round marble table with single chair" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDc9gLAAk8p4dLgluudO-0Prsoh3bZeqCo5-v-JGFIZu9pdMwuhHLcPQCZ11R9KUMhkRdUjkClLOewv0GB_zsNad0oo83n2MWd8hf76cub1dnLw0l0lMRYTgkhSJ-79g7gchXNKZ0ypXB84q3IppxIKSH1GW6OFsxcRodmdqJZr7x7Kxll-Gnbp6IkT_XxQgkRTnZoDHsS8hs4yjVFWujbg5E_Ooib6hXKWiM0FUb6EIo9NSRdKy8zSVN5bG7PPF6Bs4fHZfuzbKemH')"></div>
+<span class="text-3xl font-black text-slate-300">03</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900">Table 03</h3>
+<div class="px-2 py-1 bg-status-reserved/10 text-status-reserved text-[10px] font-bold rounded uppercase tracking-wider">Reserved</div>
+</div>
+<div class="flex items-center gap-1.5 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+<span class="text-xs font-medium">2 Seats</span>
+</div>
+<p class="text-[10px] text-slate-400 font-medium">Reserved for 19:30</p>
+</div>
+</div>
+<!-- Table 04 - Available -->
+<div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col gap-4 shadow-sm">
+<div class="aspect-square w-full rounded-lg bg-slate-50 flex items-center justify-center relative border border-slate-100">
+<div class="absolute inset-0 bg-center bg-contain bg-no-repeat opacity-20 m-6" data-alt="Rectangular long table for larger group" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCdX0XcJAb-Z5XEhFeh391EG5lutTH0ZKD-zSgoxdLJ_lVtoCpQUlJ5AIbZmcqBU9NbWul1T7JAB1dGamr25Z5rs_-CRf1Qazm_hfIIY2fRbhTLtzfjgreRwJmrT-wNYl8gtPgqoTalTJlFwzZ0P4pbNd3l2IGGcM4A30Wt7223rT8duNXcnqw0xqY56qsQQu1Ri7sVGSBoAyoz_L1vsuiO4wlMBkPEBtb8tCWunDsp0T3hSr8sJZaFFbbANezBsAK-6eGaw2X3Ucnx')"></div>
+<span class="text-3xl font-black text-slate-300">04</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900">Table 04</h3>
+<div class="px-2 py-1 bg-status-available/10 text-status-available text-[10px] font-bold rounded uppercase tracking-wider">Available</div>
+</div>
+<div class="flex items-center gap-1.5 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+<span class="text-xs font-medium">6 Seats</span>
+</div>
+</div>
+</div>
+<!-- Table 05 - Occupied -->
+<div class="bg-primary/[0.03] p-5 rounded-xl border border-primary/20 flex flex-col gap-4 shadow-sm">
+<div class="aspect-square w-full rounded-lg bg-primary/10 flex items-center justify-center relative border border-primary/10">
+<div class="absolute inset-0 bg-center bg-contain bg-no-repeat opacity-40 m-6" data-alt="Square dining table for four" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBE4YekvK5kTRFfhqMj2yBswNXgEiu-ZrbAHeHvyybw9pu51D2esYz4bgBv9EhD5Bpq8OIiCWdSoIZGmKcpb5POE7kLkIKPVer8sqdGEDtZbZGXAlnp3jlGTC2q0cNiVtc1o8OTb7Qy7ukChfWnUiPUIzR7tJDhaP5B515xw0Ag72V7SOWzXnUsiLaX01iI-SGsWiSqoPu4-fQ36qDHQ_JJXepZ_qpGDQW6JES-VbpnDhgpcH7QHGx-_oP-sF225NvZIHawhBp6NMFJ')"></div>
+<span class="text-3xl font-black text-primary/30">05</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900">Table 05</h3>
+<div class="px-2 py-1 bg-status-occupied/10 text-status-occupied text-[10px] font-bold rounded uppercase tracking-wider">Occupied</div>
+</div>
+<div class="flex flex-col gap-1 mt-1">
+<div class="flex items-center gap-1.5 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+<span class="text-xs font-medium">4 Seats</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-700">
+<span class="material-symbols-outlined text-[16px] text-primary">receipt</span>
+<span class="text-xs font-bold">ORD-0025 · 12 min</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Table 06 - Available -->
+<div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col gap-4 shadow-sm">
+<div class="aspect-square w-full rounded-lg bg-slate-50 flex items-center justify-center relative border border-slate-100">
+<div class="absolute inset-0 bg-center bg-contain bg-no-repeat opacity-20 m-6" data-alt="Circular cafe style table top view" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBN137DKHk8bhrgom_PhZthQstawDf7w4YeZm4dT3mU9kch0FMxml3RWUotNNt0wBIK1QF5ttkYKtu20oJEHVg3Akerb-Kp_tK9JGPcFEC834yvHasehJpjF3VRf0YUDNa3sc4lEJoCQvdwXoBx_ovs_1KvUjZ1La1J56t1PVFlePoFEYQmH6FHZyU2jncpA82AC_-m-oO4YKPTwfsu5gDwvonN_0hBLEqCBsvO5NZH94nCxUZ2LGOvBxk1vHMHqAbdvN5nT9rMDEY1')"></div>
+<span class="text-3xl font-black text-slate-300">06</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900">Table 06</h3>
+<div class="px-2 py-1 bg-status-available/10 text-status-available text-[10px] font-bold rounded uppercase tracking-wider">Available</div>
+</div>
+<div class="flex items-center gap-1.5 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+<span class="text-xs font-medium">4 Seats</span>
+</div>
+</div>
+</div>
+<!-- Table 07 - Reserved -->
+<div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col gap-4 shadow-sm">
+<div class="aspect-square w-full rounded-lg bg-slate-50 flex items-center justify-center relative border border-slate-100">
+<div class="absolute inset-0 bg-center bg-contain bg-no-repeat opacity-20 m-6" data-alt="Corner booth dining table top view" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB6yehfi6qR5hVyrrUtI6oVJmIA6DH51U5Xp_4kBOQSQzLymSfWrZJhA6N-YUR3SSmM5STq_27eHFzVzauahztIsFzTNbZzY0vqbNZA59KIUThC5A77mvMcalJ4yw-G2S88dIKkDcQM_UNfxMNYOxTo9vKX-dYK5IUlhLvX8CnWFnxQSpdK6uCPrHnQJGHhOK2x1HSAP6xAHhIh-GTh4lT4Y4QsV2ItiO3uKwzZ8ISEkXVhdQY4zOni9lRP-rhKnCRpC0tYbSmmbqtA')"></div>
+<span class="text-3xl font-black text-slate-300">07</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900">Table 07</h3>
+<div class="px-2 py-1 bg-status-reserved/10 text-status-reserved text-[10px] font-bold rounded uppercase tracking-wider">Reserved</div>
+</div>
+<div class="flex items-center gap-1.5 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+<span class="text-xs font-medium">4 Seats</span>
+</div>
+<p class="text-[10px] text-slate-400 font-medium">Reserved for 20:00</p>
+</div>
+</div>
+<!-- Table 08 - Available -->
+<div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col gap-4 shadow-sm">
+<div class="aspect-square w-full rounded-lg bg-slate-50 flex items-center justify-center relative border border-slate-100">
+<div class="absolute inset-0 bg-center bg-contain bg-no-repeat opacity-20 m-6" data-alt="Outdoor patio table top view" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDCJZ6gEBh4XF1j6n80kaDqVJD--mkvWGo-48qr1BascGoK7QlakLRSgIOtasmWumPd1AhNcMu7qlcMCvvrWte6TGz484SzYxy4wTXzpZDSaf_3vJ5NfutQmkbC_ur6dqsg1j19B4DbVrdo-OsNWu6HrNf-8A1sEbYCzM38xsUEz3gvUqivkTo4JFgvqmtWsnOCEosaDMs5S4-b2JMB-dJikb_aIEw5Ua0L_jx-qLhJPysQTbRDFibEKnOHRh-c9rjdZ7x1PWroEb0A')"></div>
+<span class="text-3xl font-black text-slate-300">08</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900">Table 08</h3>
+<div class="px-2 py-1 bg-status-available/10 text-status-available text-[10px] font-bold rounded uppercase tracking-wider">Available</div>
+</div>
+<div class="flex items-center gap-1.5 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+<span class="text-xs font-medium">4 Seats</span>
+</div>
+</div>
+</div>
+<!-- Table 09 - Occupied -->
+<div class="bg-primary/[0.03] p-5 rounded-xl border border-primary/20 flex flex-col gap-4 shadow-sm">
+<div class="aspect-square w-full rounded-lg bg-primary/10 flex items-center justify-center relative border border-primary/10">
+<div class="absolute inset-0 bg-center bg-contain bg-no-repeat opacity-40 m-6" data-alt="Bar height communal table" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAdmLatkbbckE6n7DPLrVgW3LQx4xddWG15CHsf_VFLnBIeLqHJ2G3LtBdiz7XSLtiHqb0-ttWc2IfDIc9bLQxJZJPS6zM-1xNug98kDUqJkK5HaWdrbpH_y0dO993Sl9PwQxN1raj3oWjnKLA5FFWiRVxacoWx4_ZSNPRYry-qrgAopPUC_bBMZg51t4aomuoEbgiE92_1GNEl5fF9GvIoPHhQAOUV4HjupN4eP_B-yNbRmJPUeRrKB2ZiTQqteA7FwuTP7OqIXPHY')"></div>
+<span class="text-3xl font-black text-primary/30">09</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900">Table 09</h3>
+<div class="px-2 py-1 bg-status-occupied/10 text-status-occupied text-[10px] font-bold rounded uppercase tracking-wider">Occupied</div>
+</div>
+<div class="flex flex-col gap-1 mt-1">
+<div class="flex items-center gap-1.5 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+<span class="text-xs font-medium">8 Seats</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-700">
+<span class="material-symbols-outlined text-[16px] text-primary">receipt</span>
+<span class="text-xs font-bold">ORD-0031 · 45 min</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Table 10 - Available -->
+<div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col gap-4 shadow-sm">
+<div class="aspect-square w-full rounded-lg bg-slate-50 flex items-center justify-center relative border border-slate-100">
+<div class="absolute inset-0 bg-center bg-contain bg-no-repeat opacity-20 m-6" data-alt="Small window side table for two" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCkw5x_XC_Kv8WldzfD0LKodSvqfUt5I1Xgnt4PS9fUFpDB0_0yjNQJZOFtWXDh5NxhH6TK2rpqnKAEU6ysHQseOkUn23QctQuUd51AqzXS4RdHSG_GxoSfqSjGngbvYSrnMUkW5Ma9tAwKJDbSVHNONJhYoUZwbbDtZqS8ieqruV9JDM2JVyT2L9ugAeOomRUlXYWpRIyfz6Vlh599fWrbzaOi7jbQuFDB-MWrB8NOTpq6oze7mvb2x5XBqI1jcHd3vfEVNfXoEUA5')"></div>
+<span class="text-3xl font-black text-slate-300">10</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900">Table 10</h3>
+<div class="px-2 py-1 bg-status-available/10 text-status-available text-[10px] font-bold rounded uppercase tracking-wider">Available</div>
+</div>
+<div class="flex items-center gap-1.5 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+<span class="text-xs font-medium">2 Seats</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action Button for Desktop POS context -->
+<div class="absolute bottom-8 right-8 flex flex-col items-end gap-3">
+<button class="flex items-center gap-4 bg-primary text-white py-4 px-6 rounded-xl shadow-xl hover:shadow-primary/20 transition-all font-bold group">
+<span class="material-symbols-outlined text-[24px]">electric_bolt</span>
+<span>Quick Action</span>
+</button>
+</div>
+</main>
+</div>
+</body></html>

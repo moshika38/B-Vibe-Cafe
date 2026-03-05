@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sales Reports and Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#e9642b",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211611",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar Component -->
+<aside class="w-72 bg-white dark:bg-stone-900 border-r border-slate-200 dark:border-stone-800 flex flex-col h-full shrink-0">
+<div class="p-6 flex flex-col gap-8 h-full">
+<!-- Brand -->
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">restaurant</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-white text-base font-bold leading-none">Nordic POS</h1>
+<p class="text-slate-500 dark:text-stone-400 text-xs mt-1">Premium Management</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-1 flex-grow">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-stone-400 hover:bg-slate-50 dark:hover:bg-stone-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-stone-400 hover:bg-slate-50 dark:hover:bg-stone-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">restaurant_menu</span>
+<span class="text-sm font-medium">Menu</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-stone-400 hover:bg-slate-50 dark:hover:bg-stone-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-sm font-medium">Orders</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-lg" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-sm font-semibold">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-stone-400 hover:bg-slate-50 dark:hover:bg-stone-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-sm font-medium">Inventory</span>
+</a>
+</nav>
+<!-- Bottom Actions -->
+<div class="mt-auto flex flex-col gap-1 border-t border-slate-100 dark:border-stone-800 pt-6">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-stone-400 hover:bg-slate-50 dark:hover:bg-stone-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+<div class="px-4 py-3 flex items-center gap-3 mt-2">
+<div class="w-8 h-8 rounded-full bg-slate-200" data-alt="User profile avatar placeholder"></div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-slate-900 dark:text-white leading-none">Erik Jensen</span>
+<span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mt-1">Manager</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto no-scrollbar">
+<!-- Header Section -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-stone-800 px-8 py-6">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">Sales Reports &amp; Analytics</h2>
+<p class="text-slate-500 dark:text-stone-400 text-sm font-medium mt-1">Analyze your restaurant performance metrics</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 bg-white dark:bg-stone-800 text-slate-700 dark:text-white px-4 py-2 rounded-lg border border-slate-200 dark:border-stone-700 text-sm font-semibold shadow-sm hover:bg-slate-50 dark:hover:bg-stone-750 transition-all">
+<span class="material-symbols-outlined text-[20px]">file_download</span>
+<span>Export Data</span>
+</button>
+<button class="flex items-center gap-2 bg-primary text-white px-5 py-2 rounded-lg text-sm font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-[20px]">ios_share</span>
+<span>Share Report</span>
+</button>
+</div>
+</div>
+<!-- Filters -->
+<div class="flex gap-2 mt-8">
+<button class="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-full">Today</button>
+<button class="px-4 py-1.5 bg-white dark:bg-stone-800 text-slate-600 dark:text-stone-300 border border-slate-200 dark:border-stone-700 text-xs font-bold rounded-full hover:bg-slate-50">This Week</button>
+<button class="px-4 py-1.5 bg-white dark:bg-stone-800 text-slate-600 dark:text-stone-300 border border-slate-200 dark:border-stone-700 text-xs font-bold rounded-full hover:bg-slate-50">This Month</button>
+<div class="h-6 w-px bg-slate-200 dark:bg-stone-700 mx-2"></div>
+<button class="flex items-center gap-2 px-4 py-1.5 bg-white dark:bg-stone-800 text-slate-600 dark:text-stone-300 border border-slate-200 dark:border-stone-700 text-xs font-bold rounded-full hover:bg-slate-50">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<span>Custom Range</span>
+</button>
+</div>
+</header>
+<div class="p-8 space-y-8">
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-stone-900 p-6 rounded-xl border border-slate-100 dark:border-stone-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<span class="text-green-600 text-xs font-bold bg-green-50 px-2 py-0.5 rounded">+12.4%</span>
+</div>
+<p class="text-slate-500 dark:text-stone-400 text-sm font-medium">Total Revenue</p>
+<p class="text-2xl font-black text-slate-900 dark:text-white mt-1">$14,230.50</p>
+</div>
+<div class="bg-white dark:bg-stone-900 p-6 rounded-xl border border-slate-100 dark:border-stone-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
+<span class="material-symbols-outlined">shopping_bag</span>
+</div>
+<span class="text-green-600 text-xs font-bold bg-green-50 px-2 py-0.5 rounded">+5.1%</span>
+</div>
+<p class="text-slate-500 dark:text-stone-400 text-sm font-medium">Total Orders</p>
+<p class="text-2xl font-black text-slate-900 dark:text-white mt-1">384</p>
+</div>
+<div class="bg-white dark:bg-stone-900 p-6 rounded-xl border border-slate-100 dark:border-stone-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
+<span class="material-symbols-outlined">stars</span>
+</div>
+<span class="text-amber-600 text-xs font-bold bg-amber-50 px-2 py-0.5 rounded">Steady</span>
+</div>
+<p class="text-slate-500 dark:text-stone-400 text-sm font-medium">Best Category</p>
+<p class="text-2xl font-black text-slate-900 dark:text-white mt-1">Nordic Seafood</p>
+</div>
+</div>
+<!-- Sales Chart Section -->
+<div class="bg-white dark:bg-stone-900 p-8 rounded-xl border border-slate-100 dark:border-stone-800 shadow-sm">
+<div class="flex items-center justify-between mb-10">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Revenue Overview</h3>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span class="text-xs font-medium text-slate-500">Current Period</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-slate-200 dark:bg-stone-700"></div>
+<span class="text-xs font-medium text-slate-500">Previous Period</span>
+</div>
+</div>
+</div>
+<!-- Simplified Bar Chart Representation -->
+<div class="flex items-end justify-between h-64 gap-3 relative px-4">
+<div class="absolute inset-x-0 top-0 h-px bg-slate-100 dark:bg-stone-800"></div>
+<div class="absolute inset-x-0 top-1/4 h-px bg-slate-100 dark:bg-stone-800"></div>
+<div class="absolute inset-x-0 top-2/4 h-px bg-slate-100 dark:bg-stone-800"></div>
+<div class="absolute inset-x-0 top-3/4 h-px bg-slate-100 dark:bg-stone-800"></div>
+<!-- Mon - Sun Bars -->
+<div class="flex-1 flex flex-col items-center gap-3 group relative z-0">
+<div class="w-full bg-primary rounded-t-lg transition-all duration-300" style="height: 45%;"></div>
+<span class="text-xs font-bold text-slate-400">MON</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-3 group relative z-0">
+<div class="w-full bg-primary rounded-t-lg transition-all duration-300" style="height: 60%;"></div>
+<span class="text-xs font-bold text-slate-400">TUE</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-3 group relative z-0">
+<div class="w-full bg-primary rounded-t-lg transition-all duration-300" style="height: 55%;"></div>
+<span class="text-xs font-bold text-slate-400">WED</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-3 group relative z-0">
+<div class="w-full bg-primary rounded-t-lg transition-all duration-300" style="height: 85%;"></div>
+<span class="text-xs font-bold text-slate-400">THU</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-3 group relative z-0">
+<div class="w-full bg-primary rounded-t-lg transition-all duration-300 shadow-lg shadow-primary/20" style="height: 95%;"></div>
+<span class="text-xs font-bold text-slate-900 dark:text-white">FRI</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-3 group relative z-0">
+<div class="w-full bg-primary rounded-t-lg transition-all duration-300" style="height: 75%;"></div>
+<span class="text-xs font-bold text-slate-400">SAT</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-3 group relative z-0">
+<div class="w-full bg-primary rounded-t-lg transition-all duration-300" style="height: 40%;"></div>
+<span class="text-xs font-bold text-slate-400">SUN</span>
+</div>
+</div>
+</div>
+<!-- Top Items Table -->
+<div class="bg-white dark:bg-stone-900 rounded-xl border border-slate-100 dark:border-stone-800 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-slate-100 dark:border-stone-800 flex items-center justify-between">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Top Performing Items</h3>
+<button class="text-primary text-sm font-bold hover:underline">View All Menu Items</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-stone-800/50">
+<tr>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-16 text-center">Rank</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Item Name</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Category</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Orders</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Revenue</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Trend</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-stone-800">
+<tr class="hover:bg-slate-50 dark:hover:bg-stone-800/30 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-400 text-center">01</td>
+<td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">Smoked Salmon Smørrebrød</td>
+<td class="px-6 py-4 text-sm text-slate-500">Scandinavian Seafood</td>
+<td class="px-6 py-4 text-sm text-slate-900 dark:text-white text-right font-medium">142</td>
+<td class="px-6 py-4 text-sm text-slate-900 dark:text-white text-right font-bold">$3,124.00</td>
+<td class="px-6 py-4 text-right">
+<span class="text-green-600 material-symbols-outlined text-[18px]">trending_up</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-stone-800/30 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-400 text-center">02</td>
+<td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">Swedish Meatballs classic</td>
+<td class="px-6 py-4 text-sm text-slate-500">Main Courses</td>
+<td class="px-6 py-4 text-sm text-slate-900 dark:text-white text-right font-medium">118</td>
+<td class="px-6 py-4 text-sm text-slate-900 dark:text-white text-right font-bold">$2,124.00</td>
+<td class="px-6 py-4 text-right">
+<span class="text-green-600 material-symbols-outlined text-[18px]">trending_up</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-stone-800/30 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-400 text-center">03</td>
+<td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">Lingonberry Cheesecake</td>
+<td class="px-6 py-4 text-sm text-slate-500">Desserts</td>
+<td class="px-6 py-4 text-sm text-slate-900 dark:text-white text-right font-medium">95</td>
+<td class="px-6 py-4 text-sm text-slate-900 dark:text-white text-right font-bold">$1,425.00</td>
+<td class="px-6 py-4 text-right">
+<span class="text-slate-400 material-symbols-outlined text-[18px]">trending_flat</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-stone-800/30 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-400 text-center">04</td>
+<td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">Beetroot Carpaccio</td>
+<td class="px-6 py-4 text-sm text-slate-500">Starters</td>
+<td class="px-6 py-4 text-sm text-slate-900 dark:text-white text-right font-medium">84</td>
+<td class="px-6 py-4 text-sm text-slate-900 dark:text-white text-right font-bold">$1,008.00</td>
+<td class="px-6 py-4 text-right">
+<span class="text-red-500 material-symbols-outlined text-[18px]">trending_down</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-stone-800/30 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-400 text-center">05</td>
+<td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">Craft Arctic Ale</td>
+<td class="px-6 py-4 text-sm text-slate-500">Beverages</td>
+<td class="px-6 py-4 text-sm text-slate-900 dark:text-white text-right font-medium">76</td>
+<td class="px-6 py-4 text-sm text-slate-900 dark:text-white text-right font-bold">$684.00</td>
+<td class="px-6 py-4 text-right">
+<span class="text-green-600 material-symbols-outlined text-[18px]">trending_up</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Menu and Inventory Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#e9642b",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211611",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e5dedc;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased overflow-hidden h-screen font-display">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">restaurant_menu</span>
+</div>
+<div>
+<h1 class="text-lg font-bold leading-tight">Nordic POS</h1>
+<p class="text-xs text-slate-500">Premium Dining</p>
+</div>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto custom-scrollbar">
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-xl">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-xl">restaurant</span>
+<span class="text-sm font-medium">Menu Management</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-xl">receipt_long</span>
+<span class="text-sm font-medium">Orders</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-xl">inventory_2</span>
+<span class="text-sm font-medium">Inventory</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-xl">analytics</span>
+<span class="text-sm font-medium">Reports</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</div>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+<img alt="Admin" class="w-full h-full object-cover" data-alt="User avatar placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN1Xf6qLZ1yNqOP9zD6zTuWnk5zIWeh_ytzdfJyWrsGNuEr2v50QHfuSQnJ59BVrvZUBP_Um-RLcycjouDH9zaOlrXn6obRQGD2qq31DSjAmDUF2_D-ETWOJTLfjVBVJiS1cBEC_SqaVK4igsdMgVTdUxK4i8T_t82gtfNEtOAiIWxb4G_YvJeg-5klmCS-3EtNmBXLx8gKYs8VoCE0duiZifgwlXxnAqW_M82cbexT5UpFk08vbbn7peVZeeZwOTEydzGAgvJOTSN"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold truncate">Erik Sorensen</p>
+<p class="text-[10px] text-slate-500 truncate">Manager</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-sm">more_vert</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 relative">
+<!-- Header -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-10">
+<div class="flex items-center gap-6">
+<h2 class="text-xl font-bold tracking-tight">Menu &amp; Inventory</h2>
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-slate-500" placeholder="Search menu items..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-sm">
+<span class="material-symbols-outlined text-base">add</span>
+                        Add New Item
+                    </button>
+<button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined text-xl">notifications</span>
+</button>
+<button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined text-xl">help_outline</span>
+</button>
+</div>
+</header>
+<!-- Split Layout -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Left Sidebar: Categories (25%) -->
+<div class="w-1/4 border-r border-slate-200 dark:border-slate-800 overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-900/20 p-6 space-y-4">
+<div class="flex items-center justify-between mb-2">
+<h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Categories</h3>
+<button class="text-primary text-xs font-bold hover:underline">+ New</button>
+</div>
+<div class="space-y-1">
+<button class="w-full flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-left transition-all">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">lunch_dining</span>
+<span class="text-sm font-semibold">Main Courses</span>
+</div>
+<span class="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full text-slate-500">24</span>
+</button>
+<button class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-left transition-all text-slate-600 dark:text-slate-400">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">soup_kitchen</span>
+<span class="text-sm font-medium">Starters</span>
+</div>
+<span class="text-xs text-slate-400 px-2 py-1 rounded-full">12</span>
+</button>
+<button class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-left transition-all text-slate-600 dark:text-slate-400">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">icecream</span>
+<span class="text-sm font-medium">Desserts</span>
+</div>
+<span class="text-xs text-slate-400 px-2 py-1 rounded-full">8</span>
+</button>
+<button class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-left transition-all text-slate-600 dark:text-slate-400">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">local_bar</span>
+<span class="text-sm font-medium">Beverages</span>
+</div>
+<span class="text-xs text-slate-400 px-2 py-1 rounded-full">18</span>
+</button>
+<button class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-left transition-all text-slate-600 dark:text-slate-400">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">bakery_dining</span>
+<span class="text-sm font-medium">Bakery</span>
+</div>
+<span class="text-xs text-slate-400 px-2 py-1 rounded-full">15</span>
+</button>
+</div>
+<div class="pt-6">
+<div class="p-4 rounded-xl bg-primary/5 border border-primary/10">
+<h4 class="text-sm font-bold text-primary mb-1">Inventory Alert</h4>
+<p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">3 items in Main Courses are running low on stock.</p>
+<button class="mt-3 text-xs font-bold text-primary flex items-center gap-1">
+                                View Details <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Side: Items Table (75%) -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-8">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h3 class="text-lg font-bold">Main Courses</h3>
+<p class="text-sm text-slate-500">Manage items and pricing for this category</p>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center gap-2 hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined text-lg">filter_list</span>
+                                Filter
+                            </button>
+<button class="px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center gap-2 hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined text-lg">sort</span>
+                                Sort
+                            </button>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50/50 dark:bg-slate-900/50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+<th class="px-6 py-4 w-16">Image</th>
+<th class="px-6 py-4">Item Name</th>
+<th class="px-6 py-4">Price</th>
+<th class="px-6 py-4">Cost</th>
+<th class="px-6 py-4">Margin</th>
+<th class="px-6 py-4 text-center">Available</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="size-10 rounded-lg overflow-hidden bg-slate-100">
+<img alt="Burger" class="w-full h-full object-cover" data-alt="Grilled beef burger on plate" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDb3NTntsOX3SNk_bEKgFQqKc5RghLWS54k2lD0POEGZLhFodu1vEVL-NouaeOWvmfs6Sc7fB5VVlMWxxWGCn6XvrktVeLFxSMubLeFtcrXCEJ1sNmRjBuzcgMNi3QdErg8kNlf8jTMl9nh16nKjsDD-ijNi1jdwH1lqJcmgBbBI0ixLjkML_zSb_ybOGLS2Temke5KP5AjKtR4PGp1ZUROPabsGuk2japJfvvJ3h6HUIvj8G9zrZWSqGF9x_GschVzUyToStu20ySm"/>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-semibold">Nordic Beef Burger</p>
+<p class="text-[10px] text-slate-400">SKU: MC-001</p>
+</td>
+<td class="px-6 py-4 text-sm">$18.00</td>
+<td class="px-6 py-4 text-sm text-slate-500">$5.50</td>
+<td class="px-6 py-4">
+<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">69%</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="size-10 rounded-lg overflow-hidden bg-slate-100">
+<img alt="Salmon" class="w-full h-full object-cover" data-alt="Pan seared atlantic salmon with vegetables" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4QClIANcNnhN9GwwqZTaQUwQqUo6me-t5-9qfMbbcutTRY2l4W-3DNkJWsgEXxnp2UgXN03HMON2lUCc0CHgVm4qnCkAagp3bmqTKh8bDdTG0FypUd_YmmJdPEf_AXCm16HNxPzUmfzWp4cJo_Y7oYiK8TE3esUovgCFGk12AEOkaWBgVFnsvagkpie2K7W4DxZ2k8UuR38_dwYj01LxAGrjxcV5OhRs6_sysaw4nVZ3aQlwV2i0ZV7AWf1d7ZTV83NrNVVjXnNCa"/>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-semibold">Atlantic Salmon</p>
+<p class="text-[10px] text-slate-400">SKU: MC-002</p>
+</td>
+<td class="px-6 py-4 text-sm">$24.00</td>
+<td class="px-6 py-4 text-sm text-slate-500">$9.00</td>
+<td class="px-6 py-4">
+<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">62%</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="size-10 rounded-lg overflow-hidden bg-slate-100">
+<img alt="Pasta" class="w-full h-full object-cover" data-alt="Bowl of creamy mushroom pasta" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBql89JalEhvsZavVN7SB4fwcDLaiDSmarIAAPWNsRhQr6qVhxDEvznIu83OPBr8WgJTXpKf0ypQkf0tUbY5maXqgcHejjjIN0s6ozCTwKVedunxNxoSebrjfdV4G2QeValne37ufVlTlIsF6UuF5vti7MPF10I3u_rzPoFaxJsvEwInf1KtsfRzuTA0Oqjtw9QgDTX26Lbh0MuOt90sXhlxpnEKmSaFecYWKqh63Nv6qFGwvg9Wlr5NIxXH2BzsBP9FYDp0fFIL7xK"/>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-semibold">Wild Mushroom Linguine</p>
+<p class="text-[10px] text-slate-400">SKU: MC-003</p>
+</td>
+<td class="px-6 py-4 text-sm">$21.00</td>
+<td class="px-6 py-4 text-sm text-slate-500">$7.50</td>
+<td class="px-6 py-4">
+<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">64%</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors group opacity-70">
+<td class="px-6 py-4">
+<div class="size-10 rounded-lg overflow-hidden bg-slate-100">
+<img alt="Venison" class="w-full h-full object-cover grayscale" data-alt="Venison steak with berry reduction" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAebJw5B3idvgFoNxg2x3gonxzprpyHO8Ckq-ZXTbZmwgt29DWcx_Y1BHvA7OrkVVJCZ4NqplxQS4DCIP7oqVl3kzE5b9qBz0IlEaJNgAxKrHPzmYs_ACfEBHUsVvJOjduEk9PpzIO_KbKAhKnGrCIDa6ymiLjxIEx7LBCU7dhBBFBl30PCWw0l6IKVD-HhQgX-2TL749PsuYyb_LZXijpY9orvJftsnBqKNHdGmtfBxjfRQ6-TAgRMnVGYlePuzMOIiHCudgFCqdVH"/>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-semibold">Roasted Venison Steak</p>
+<p class="text-[10px] text-slate-400">SKU: MC-004</p>
+</td>
+<td class="px-6 py-4 text-sm">$32.00</td>
+<td class="px-6 py-4 text-sm text-slate-500">$14.00</td>
+<td class="px-6 py-4">
+<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400">56%</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="px-6 py-4 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+<p class="text-xs text-slate-500">Showing 1-4 of 24 items</p>
+<div class="flex gap-1">
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-white">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="size-8 flex items-center justify-center rounded border border-primary bg-primary text-white text-xs font-bold">1</button>
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-white text-xs">2</button>
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-white text-xs">3</button>
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-white">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Add/Edit Item Slide-in Drawer -->
+<div class="w-[400px] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shadow-2xl relative z-20">
+<div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<h3 class="text-lg font-bold">Edit Item</h3>
+<button class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-400">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+<!-- Image Upload Area -->
+<div class="space-y-2">
+<label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Item Image</label>
+<div class="relative group cursor-pointer">
+<div class="aspect-video w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-2">
+<img alt="Item Preview" class="w-full h-full object-cover" data-alt="Placeholder for menu item image upload" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlRBzuki2lZFvUztxJO3QocQB3z-pPz3QsMSCGsELc0X5VGf1BQA4J5wCaIZfcVXsHT0jsYJMJOA7itqFlBFMfdlnD_PLdqzM9UDVMpz9pNhLmapSR_2YUF-M2YK9XEHaxYJ2ClW8ScAc7GD7djU6DUW45WKvj_FE95PD13Y86jcVofpBPcWuZe7QGg7v6gCz12Oy5Dnxr1tDilMJ2t9LXMkhByqHZFUlr53-WHKG4ZhynWpiVWB5FSIodv8NT0Q_6yPzc4kpm3Ti_"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-xl">
+<button class="bg-white text-slate-900 px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-base">upload</span>
+                                            Change Image
+                                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Form Fields -->
+<div class="space-y-4">
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Item Name</label>
+<input class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" type="text" value="Nordic Beef Burger"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Price ($)</label>
+<input class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" type="text" value="18.00"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Cost ($)</label>
+<input class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" type="text" value="5.50"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Category</label>
+<select class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none">
+<option selected="">Main Courses</option>
+<option>Starters</option>
+<option>Desserts</option>
+<option>Beverages</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Description</label>
+<textarea class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none" rows="3">Premium organic grass-fed beef patty, aged cheddar, lingonberry aioli, and brioche bun.</textarea>
+</div>
+<div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+<div>
+<p class="text-sm font-bold">Featured Item</p>
+<p class="text-[10px] text-slate-500">Show on the homepage specials</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<div class="p-6 border-t border-slate-200 dark:border-slate-800 grid grid-cols-2 gap-3">
+<button class="px-4 py-2.5 rounded-lg text-sm font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+<button class="px-4 py-2.5 rounded-lg text-sm font-bold bg-primary text-white hover:bg-primary/90 transition-all shadow-md">Save Changes</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
