@@ -4,6 +4,7 @@ import 'package:bvibe/features/shell/widgets/user.role.card.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+
 class MainShell extends StatelessWidget {
   final Widget child;
 
@@ -20,8 +21,13 @@ class MainShell extends StatelessWidget {
       body: Row(
         children: [
           Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              border: Border(
+                right: BorderSide(color: Colors.grey.shade300, width: 1),
+              ),
+            ),
             width: 250,
-            color: theme.colorScheme.surface,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               child: Column(
@@ -75,10 +81,7 @@ class MainShell extends StatelessWidget {
 
           // 🔥 This is important
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: child,
-            ),
+            child: Padding(padding: const EdgeInsets.all(0), child: child),
           ),
         ],
       ),

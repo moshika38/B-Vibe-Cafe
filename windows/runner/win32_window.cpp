@@ -135,7 +135,7 @@ bool Win32Window::Create(const std::wstring& title,
   double scale_factor = dpi / 96.0;
 
   HWND window = CreateWindow(
-      window_class, title.c_str(), WS_OVERLAPPEDWINDOW,
+    window_class, title.c_str(), WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX,
       Scale(origin.x, scale_factor), Scale(origin.y, scale_factor),
       Scale(size.width, scale_factor), Scale(size.height, scale_factor),
       nullptr, nullptr, GetModuleHandle(nullptr), this);
@@ -150,7 +150,7 @@ bool Win32Window::Create(const std::wstring& title,
 }
 
 bool Win32Window::Show() {
-  return ShowWindow(window_handle_, SW_SHOWNORMAL);
+  return ShowWindow(window_handle_, SW_SHOWMAXIMIZED);
 }
 
 // static
@@ -265,6 +265,12 @@ void Win32Window::SetQuitOnClose(bool quit_on_close) {
 
 bool Win32Window::OnCreate() {
   // No-op; provided for subclasses.
+  // Maximize button disable
+  LONG style = GetWindowLong(window_handle_, GWL_STYLE);
+  style &= ~WS_MAXIMIZEBOX;
+  SetWindowLong(window_handle_, GWL_STYLE, style);
+  SetWindowPos(window_handle_, nullptr, 0, 0, 0, 0,
+      SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
   return true;
 }
 
