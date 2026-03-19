@@ -57,10 +57,10 @@ class MainShell extends StatelessWidget {
                   ),
 
                   MenuItem(
-                    isActive: isActive('/reports'),
+                    isActive: isActive('/history'),
                     icon: Symbols.analytics,
-                    label: "Reports",
-                    onTap: () => context.go('/reports'),
+                    label: "Bill History",
+                    onTap: () => context.go('/history'),
                   ),
 
                   MenuItem(
@@ -79,7 +79,7 @@ class MainShell extends StatelessWidget {
             ),
           ),
 
-          // 🔥 This is important
+         
           Expanded(
             child: Padding(padding: const EdgeInsets.all(0), child: child),
           ),

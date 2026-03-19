@@ -1,4 +1,5 @@
 import 'package:bvibe/routes/app.routes.dart';
+import 'package:bvibe/test/printer.test.dart';
 import 'package:flutter/material.dart';
 import 'package:bvibe/const/theme.dart';
 import 'package:window_manager/window_manager.dart';
@@ -24,11 +25,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerConfig: AppRoutes.router,
+    // return MaterialApp.router(
+    //   routerConfig: AppRoutes.router,
+    //   title: 'B-VIBE CAFE',
+    //   debugShowCheckedModeBanner: false,
+    //   theme: AppTheme.lightTheme,
+    // );
+    return MaterialApp(
+       
       title: 'B-VIBE CAFE',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      home: PrinterTest(),
     );
   }
 }

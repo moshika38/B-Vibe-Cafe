@@ -94,6 +94,8 @@ class CurrentOrder extends StatelessWidget {
             ),
             Text(
               "1000 LKR",
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
               style: Theme.of(context).textTheme.titleSmall!.copyWith(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.bold,
@@ -114,12 +116,18 @@ class CurrentOrder extends StatelessWidget {
                 fontSize: 15,
               ),
             ),
-            Text(
-              "1,004,488 LKR",
-              style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
+            SizedBox(
+              width: 220,
+              child: Text(
+                "1,004 LKR",
+                textAlign: TextAlign.end,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
               ),
             ),
           ],
