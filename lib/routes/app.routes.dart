@@ -1,3 +1,4 @@
+import 'package:bvibe/features/auth/presentation/create.screen.dart';
 import 'package:bvibe/features/auth/presentation/login_screen.dart';
 import 'package:bvibe/features/dashboard/presentation/dashboard.dart';
 import 'package:bvibe/features/menu/presentation/menu.dart';
@@ -8,10 +9,12 @@ import 'package:bvibe/features/shell/presentation/main.shell.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRoutes {
+
   static final GoRouter router = GoRouter(
     initialLocation: "/",
     routes: [
       GoRoute(path: '/', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/create', builder: (context, state) => const CreateScreen()),
       ShellRoute(
         builder: (context, state, child) {
           return MainShell(child: child);

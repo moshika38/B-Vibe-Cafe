@@ -1,3 +1,6 @@
+import 'package:bvibe/components/popup.window.dart';
+import 'package:bvibe/const/snack/app.snack.dart';
+import 'package:bvibe/data/helper/auth.helper.dart';
 import 'package:bvibe/features/auth/widgets/form.panel.dart';
 import 'package:bvibe/features/auth/widgets/img.panel.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +24,34 @@ class _LoginScreenState extends State<LoginScreen> {
     _staffIdController.dispose();
     _pinController.dispose();
     super.dispose();
+  }
+
+  void checkAuth() async {
+    if (_staffIdController.text.isEmpty || _pinController.text.isEmpty) {
+      AppSnack.errorSnack(context, "Please enter staff ID and PIN");
+    } else {
+      final userMap = await AuthHelper.instance.getUser(_staffIdController.text);
+      
+      if (userMap != null && userMap['password'] == _pinController.text) {
+        if (userMap['username'] == "user" && userMap['password'] == "1234") {
+          PopupWindow.show(
+            context: context,
+            type: PopupType.warning,
+            title: "Warning",
+            message: "You have using dummy account. Please Create account",
+            primaryButtonText: "Create Now",
+            onPrimaryPressed: () {
+              Navigator.pop(context);
+              context.go('/create');
+            },
+          );
+        } else {
+          context.go('/dashboard');
+        }
+      } else {
+        AppSnack.errorSnack(context, "Invalid staff ID or PIN");
+      }
+    }
   }
 
   @override
@@ -49,22 +80,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 // ── Left: Image Panel ──
                 Expanded(child: ImgPanel()),
                 // ── Right: Form Panel ──
-                Expanded(child: FormPanel(
-                  staffIdController: _staffIdController,
-                  pinController: _pinController,
-                  obscurePin: _obscurePin,
-                  onLogin: () {
-                    // TODO: Login logic
-                   
-                      context.go('/dashboard');
-                  },
-                  onForgotPassword: () {
-                    // TODO: Forgot PIN flow
-                  },
-                  onChangeStation: () {
-                    // TODO: Change station flow
-                  },
-                )),
+                Expanded(
+                  child: FormPanel(
+                    staffIdController: _staffIdController,
+                    pinController: _pinController,
+                    obscurePin: _obscurePin,
+                    onLogin: () {
+                      checkAuth();
+
+                      // context.go('/dashboard');
+                    },
+                    onForgotPassword: () {},
+                    onChangeStation: () {},
+                  ),
+                ),
               ],
             ),
           ),
@@ -72,6 +101,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
-   
 }

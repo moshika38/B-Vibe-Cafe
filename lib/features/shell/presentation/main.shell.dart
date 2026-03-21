@@ -79,7 +79,6 @@ class MainShell extends StatelessWidget {
             ),
           ),
 
-         
           Expanded(
             child: Padding(padding: const EdgeInsets.all(0), child: child),
           ),
