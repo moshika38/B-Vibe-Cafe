@@ -2,7 +2,8 @@ import 'package:bvibe/const/theme.dart';
 import 'package:flutter/material.dart';
 
 class HeadLine extends StatelessWidget {
-  const HeadLine({super.key});
+  final VoidCallback onTap;
+  const HeadLine({super.key, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -13,10 +14,13 @@ class HeadLine extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text("Categories".toUpperCase(), style: theme.textTheme.labelSmall),
-          Text(
-            "+ New",
-            style: theme.textTheme.labelSmall!.copyWith(
-              color: AppColors.primary,
+          GestureDetector(
+            onTap: onTap,
+            child: Text(
+              "+ New",
+              style: theme.textTheme.labelSmall!.copyWith(
+                color: AppColors.primary,
+              ),
             ),
           ),
         ],

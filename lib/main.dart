@@ -1,11 +1,12 @@
-import 'package:bvibe/data/helper/auth.helper.dart';
-import 'package:bvibe/data/model/auth.model.dart';
 import 'package:bvibe/routes/app.routes.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:bvibe/provider/categories.helper.dart';
 import 'package:bvibe/const/theme.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'dart:io';
+import 'package:bvibe/data/helper/database.helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,8 +16,7 @@ void main() async {
     databaseFactory = databaseFactoryFfi;
   }
 
-  AuthHelper.instance.database;
-  AuthHelper.instance.insertUser(AuthModel(userName: "user", passCode: "1234"));
+  await DatabaseHelper.instance.initializeAppDatabase();
 
   await windowManager.ensureInitialized();
 
@@ -28,7 +28,14 @@ void main() async {
     await windowManager.focus();
   });
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: CategoriesProvider.instance),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

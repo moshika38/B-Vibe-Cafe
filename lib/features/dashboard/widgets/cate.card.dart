@@ -1,10 +1,10 @@
 import 'package:bvibe/const/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/symbols.dart';
-
+ 
 class CateCard extends StatelessWidget {
   final bool isActive;
   final String title;
+  final int imageNumber;
   final String count;
   final VoidCallback onTap;
   const CateCard({
@@ -13,6 +13,7 @@ class CateCard extends StatelessWidget {
     required this.title,
     required this.count,
     required this.onTap,
+    required this.imageNumber,
   });
 
   @override
@@ -38,13 +39,12 @@ class CateCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Symbols.rice_bowl,
-                      fill: 1,
-                      color: isActive
-                          ? AppColors.primary
-                          : AppColors.textSecondary,
+                    SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: Image.asset("assets/cate/$imageNumber.png", fit: BoxFit.cover, gaplessPlayback: true),
                     ),
+
                     const SizedBox(width: 10),
                     Text(
                       title,
