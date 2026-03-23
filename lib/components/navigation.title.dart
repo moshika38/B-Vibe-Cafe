@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 class NavigationTitle extends StatelessWidget {
   final String title;
   final String subtitle;
+  final bool? isBackIcon;
   const NavigationTitle({
     super.key,
     required this.title,
     required this.subtitle,
+    this.isBackIcon,
   });
 
   @override
@@ -18,6 +20,14 @@ class NavigationTitle extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          isBackIcon == true? IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: Icon(
+              Icons.arrow_back,
+              size: 20,
+              color: AppColors.textPrimary,
+            ),
+          ):SizedBox.shrink() ,
           Text(
             title,
             maxLines: 1,

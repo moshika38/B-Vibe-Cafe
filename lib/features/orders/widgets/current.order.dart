@@ -1,5 +1,6 @@
 import 'package:bvibe/const/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CurrentOrder extends StatelessWidget {
   const CurrentOrder({super.key});
@@ -139,7 +140,8 @@ class CurrentOrder extends StatelessWidget {
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              // place order
+              // go to checkout page
+              context.push('/orders/checkout');
             },
             child: Text(
               "Place Order",
