@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path, 
-      version: 2, 
+      version: 5, 
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -34,6 +34,22 @@ CREATE TABLE IF NOT EXISTS categories (
   iconNumber INTEGER NOT NULL
 )
 ''');
+        }
+        if (oldVersion < 4) {
+          await db.execute('''
+CREATE TABLE IF NOT EXISTS items (
+  id TEXT PRIMARY KEY,
+  categoryId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  price TEXT NOT NULL,
+  cost TEXT NOT NULL,
+  imagePath TEXT NOT NULL
+)
+''');
+        }
+        if (oldVersion < 5) {
+          await db.execute('ALTER TABLE items ADD COLUMN categoryId TEXT NOT NULL DEFAULT ""');
         }
       },
     );
@@ -61,6 +77,19 @@ CREATE TABLE IF NOT EXISTS categories (
   id $idTypeText,
   itemName $textType,
   iconNumber $intType
+)
+''');
+
+    // ── Table: Items ──
+    await db.execute('''
+CREATE TABLE IF NOT EXISTS items (
+  id $idTypeText,
+  categoryId $textType,
+  name $textType,
+  description $textType,
+  price $textType,
+  cost $textType,
+  imagePath $textType
 )
 ''');
   }

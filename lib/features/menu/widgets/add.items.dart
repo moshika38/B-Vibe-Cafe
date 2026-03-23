@@ -1,4 +1,10 @@
- import 'package:flutter/material.dart';
+ import 'dart:io';
+import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/const/snack/app.snack.dart';
+import 'package:bvibe/data/model/item.model.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
 
 class AddItems extends StatefulWidget {
   final dynamic currentCategory;
@@ -10,17 +16,35 @@ class AddItems extends StatefulWidget {
     required this.categoryIndex,
   });
 
-  static Future<void> show(
+  static Future<ItemModel?> show(
     BuildContext context,
     dynamic currentCategory,
     int categoryIndex,
   ) async {
-    await showDialog(
+    return await showGeneralDialog<ItemModel>(
       context: context,
-      builder: (context) => AddItems(
-        currentCategory: currentCategory,
-        categoryIndex: categoryIndex,
-      ),
+      barrierDismissible: true,
+      barrierLabel: "Add Item",
+      barrierColor: Colors.black.withValues(alpha: 0.5),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) => const SizedBox(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return ScaleTransition(
+          scale: curvedAnimation,
+          child: FadeTransition(
+            opacity: animation,
+            child: AddItems(
+              currentCategory: currentCategory,
+              categoryIndex: categoryIndex,
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -29,14 +53,318 @@ class AddItems extends StatefulWidget {
 }
 
 class _AddItemsState extends State<AddItems> {
+  final _nameController = TextEditingController();
+  final _descController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _costController = TextEditingController();
+  File? _selectedImage;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descController.dispose();
+    _priceController.dispose();
+    _costController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: SizedBox( 
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 700),
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 40,
+              offset: const Offset(0, 16),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Add New Item',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+
+            Expanded(
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // Image Placeholder
+                      GestureDetector(
+                        onTap: _pickImage,
+                        child: Container(
+                          height: 150,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppColors.inputFill,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppColors.inputBorder,
+                              width: 1,
+                            ),
+                            image: _selectedImage != null
+                                ? DecorationImage(
+                                    image: FileImage(_selectedImage!),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: _selectedImage == null
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(
+                                      Icons.add_photo_alternate_outlined,
+                                      size: 40,
+                                      color: AppColors.textHint,
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      "Add Item Image",
+                                      style: TextStyle(
+                                        color: AppColors.textHint,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      _buildTextField(
+                        context,
+                        label: 'Item Name',
+                        controller: _nameController,
+                        hint: 'e.g. Thai Fried Rice',
+                        icon: Icons.fastfood_outlined,
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      _buildTextField(
+                        context,
+                        label: 'Description',
+                        controller: _descController,
+                        hint: 'Description about the item...',
+                        icon: Icons.description_outlined,
+                        maxLines: 2,
+                      ),
+                      const SizedBox(height: 16),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildTextField(
+                              context,
+                              label: 'Price (LKR)',
+                              controller: _priceController,
+                              hint: '1000',
+                              icon: Icons.attach_money,
+                              keyboardType: TextInputType.number,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildTextField(
+                              context,
+                              label: 'Cost (LKR)',
+                              controller: _costController,
+                              hint: '800',
+                              icon: Icons.money_off,
+                              keyboardType: TextInputType.number,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 24),
+            // Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 56,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: const BorderSide(
+                          color: AppColors.inputBorder,
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: SizedBox(
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final name = _nameController.text.trim();
+                        final desc = _descController.text.trim();
+                        final price = _priceController.text.trim();
+                        final cost = _costController.text.trim();
+
+                        if (name.isEmpty || price.isEmpty || _selectedImage == null) {
+                          AppSnack.errorSnack(
+                            context,
+                            "Please fill all required fields and select an image",
+                          );
+                          return;
+                        }
+
+                        final priceVal = double.tryParse(price) ?? 0;
+                        final costVal = double.tryParse(cost) ?? 0;
+                        if (costVal >= priceVal && priceVal > 0) {
+                          AppSnack.errorSnack(context, "Price must be greater than Cost");
+                          return;
+                        }
+
+                        // Copy image to the project folder
+                        final currentPath = Directory.current.path;
+                        final imagesDir = Directory('$currentPath/assets/items');
+                        if (!await imagesDir.exists()) {
+                          await imagesDir.create(recursive: true);
+                        }
+
+                        final ext = p.extension(_selectedImage!.path);
+                        final newImagePath = '${imagesDir.path}/${DateTime.now().millisecondsSinceEpoch}$ext';
+                        final savedImage = await _selectedImage!.copy(newImagePath);
+
+                        // Prepare ItemModel
+                        final itemModel = ItemModel(
+                          categoryId: widget.currentCategory.id ?? "",
+                          name: name,
+                          description: desc,
+                          price: price,
+                          cost: cost,
+                          imagePath: savedImage.path,
+                        );
+
+                        // Return the values
+                        // ignore: use_build_context_synchronously
+                        Navigator.of(context).pop(itemModel);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'Save Item',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildTextField(
+    BuildContext context, {
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context)
+              .textTheme
+              .labelMedium
+              ?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          style: Theme.of(context).textTheme.labelMedium,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: AppColors.textHint,
+                ),
+            prefixIcon: maxLines == 1
+                ? Icon(icon, color: AppColors.textHint)
+                : Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: Icon(icon, color: AppColors.textHint),
+                  ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            filled: true,
+            fillColor: AppColors.inputFill,
+          ),
+        ),
+      ],
     );
   }
 }

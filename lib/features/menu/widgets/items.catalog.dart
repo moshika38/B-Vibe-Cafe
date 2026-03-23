@@ -1,8 +1,20 @@
+import 'dart:io';
 import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/data/model/item.model.dart';
+import 'package:bvibe/provider/item.provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ItemCatalog extends StatelessWidget {
-  const ItemCatalog({super.key});
+  final String category;
+  final Function(ItemModel)? onItemSelected;
+  
+  const ItemCatalog({
+    super.key, 
+    required this.category,
+    this.onItemSelected,
+  });
+
 
   @override
   Widget build(BuildContext context) {
@@ -21,32 +33,67 @@ class ItemCatalog extends StatelessWidget {
           // Table Title
           _buildTableTitle(theme),
 
-          Expanded(
-            child: ScrollConfiguration(
-              behavior: ScrollConfiguration.of(
-                context,
-              ).copyWith(scrollbars: false),
-              child: ListView.builder(
-                itemCount: 7,
-                itemBuilder: (context, index) {
-                  return _buildItemCard(
-                    theme,
-                    "assets/img/login_page.jpg",
-                    "Thai Rice ",
-                    "Basmathi rice with frsh chiken, with coca cola 1l bottle",
-                    "1500 LKR",
+          Consumer<ItemProvider>(
+            builder: (context, itemProvider, child) => Expanded(
+              child: FutureBuilder(
+                future: itemProvider.readAllItems(category),
+                builder: (context, asyncSnapshot) {
+                  if (asyncSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (asyncSnapshot.hasError) {
+                    return Center(child: Text("Error: ${asyncSnapshot.error}"));
+                  }
+
+                  if (!asyncSnapshot.hasData || asyncSnapshot.data!.isEmpty) {
+                    return const Center(child: Text("No items found"));
+                  }
+
+                  final items = asyncSnapshot.data!;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(
+                            context,
+                          ).copyWith(scrollbars: false),
+                          child: ListView.builder(
+                            itemCount: items.length,
+                            itemBuilder: (context, index) {
+                              final item = items[index];
+                              return InkWell(
+                                onTap: () {
+                                  if (onItemSelected != null) {
+                                    onItemSelected!(item);
+                                  }
+                                },
+                                child: _buildItemCard(
+                                  theme,
+                                  item.imagePath,
+                                  item.name,
+                                  item.description,
+                                  item.price,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+                        child: Text(
+                          "Showing ${items.length} of results",
+                          style: theme.textTheme.labelSmall!.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 },
-              ),
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
-            child: Text(
-              "Showing 230 of results",
-              style: theme.textTheme.labelSmall!.copyWith(
-                color: AppColors.primary,
               ),
             ),
           ),
@@ -80,12 +127,21 @@ class ItemCatalog extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.all(Radius.circular(20)),
-                    child: Image.asset(
-                      image,
-                      fit: BoxFit.cover,
-                      width: 60,
-                      height: 60,
-                    ),
+                    child: image.contains('assets/img/')
+                        ? Image.asset(
+                            image,
+                            fit: BoxFit.cover,
+                            width: 60,
+                            height: 60,
+                          )
+                        : Image.file(
+                            File(image),
+                            fit: BoxFit.cover,
+                            width: 60,
+                            height: 60,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.fastfood, size: 40),
+                          ),
                   ),
                   SizedBox(width: 20),
                   Column(
@@ -119,10 +175,15 @@ class ItemCatalog extends StatelessWidget {
                   ),
                 ],
               ),
-              Text(
-                price,
-                style: theme.textTheme.labelMedium!.copyWith(
-                  fontWeight: FontWeight.w600,
+              SizedBox(
+                width: 90,
+                child: Text(
+                  "Rs $price",
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: theme.textTheme.labelMedium!.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],

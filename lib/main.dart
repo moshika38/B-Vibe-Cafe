@@ -2,6 +2,7 @@ import 'package:bvibe/routes/app.routes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:bvibe/provider/categories.helper.dart';
+import 'package:bvibe/provider/item.provider.dart';
 import 'package:bvibe/const/theme.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -32,6 +33,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: CategoriesProvider.instance),
+        ChangeNotifierProvider.value(value: ItemProvider.instance),
       ],
       child: const MyApp(),
     ),

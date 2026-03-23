@@ -7,7 +7,10 @@ import 'package:bvibe/features/menu/widgets/edit.item.cart.dart';
 import 'package:bvibe/features/menu/widgets/headline.dart';
 import 'package:bvibe/features/menu/widgets/items.catalog.dart';
 import 'package:bvibe/features/menu/widgets/add.cate.dart';
- import 'package:flutter/material.dart';
+import 'package:bvibe/features/menu/widgets/add.items.dart';
+import 'package:bvibe/provider/item.provider.dart';
+import 'package:bvibe/data/model/item.model.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class AppMenu extends StatefulWidget {
@@ -37,8 +40,34 @@ class _AppMenuState extends State<AppMenu> {
           title: "Menu & Inventory",
           isAddBtn: true,
           addButtonText: "Add New Item",
-          addBtnTap: () {
-            // add new items
+          addBtnTap: () async {
+            final cateProvider = context.read<CategoriesProvider>();
+            if (cateProvider.categories.isNotEmpty &&
+                activeIndex < cateProvider.categories.length) {
+              final currentCategory = cateProvider.categories[activeIndex];
+
+              final itemModel = await AddItems.show(
+                context,
+                currentCategory,
+                activeIndex,
+              );
+              if (itemModel != null) {
+                final itemProvider = context.read<ItemProvider>();
+
+                print("Item returned! Data: ${itemModel.toMap()}");
+                final res = await itemProvider.insertItem(itemModel);
+                if (res > 0) {
+                  AppSnack.successSnack(context, "Item added successfully");
+                } else {
+                  AppSnack.errorSnack(context, "Failed to add item");
+                }
+              }
+            } else {
+              AppSnack.errorSnack(
+                context,
+                "Please create and select a category first",
+              );
+            }
           },
         ),
 
@@ -111,9 +140,14 @@ class _AppMenuState extends State<AppMenu> {
                                     imageNumber: listOfCate[index].iconNumber,
                                     count: "25",
                                     title: listOfCate[index].itemName,
-                                    onTap: () => setState(() {
-                                      activeIndex = index;
-                                    }),
+                                    onTap: () {
+                                      setState(() {
+                                        activeIndex = index;
+                                      });
+                                      context.read<ItemProvider>().selectItem(
+                                        null,
+                                      );
+                                    },
                                   );
                                 },
                               );
@@ -138,9 +172,12 @@ class _AppMenuState extends State<AppMenu> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 25),
+                          const SizedBox(height: 25),
                           Text(
-                            "Rice and curry",
+                            cate.categories.isNotEmpty &&
+                                    activeIndex < cate.categories.length
+                                ? cate.categories[activeIndex].itemName
+                                : "Select a category",
                             style: Theme.of(context).textTheme.labelMedium!
                                 .copyWith(
                                   fontSize: 18,
@@ -153,9 +190,18 @@ class _AppMenuState extends State<AppMenu> {
                                 .copyWith(fontWeight: FontWeight.w600),
                           ),
 
-                          SizedBox(height: 30),
+                          const SizedBox(height: 30),
                           // ItemCatalog,
-                          ItemCatalog(),
+                          ItemCatalog(
+                            category:
+                                cate.categories.isNotEmpty &&
+                                    activeIndex < cate.categories.length
+                                ? cate.categories[activeIndex].id ?? ""
+                                : "",
+                            onItemSelected: (ItemModel item) {
+                              context.read<ItemProvider>().selectItem(item);
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -176,7 +222,29 @@ class _AppMenuState extends State<AppMenu> {
                       ],
                     ),
 
-                    child: EditItemCart(),
+                    child: Consumer<ItemProvider>(
+                      builder: (context, itemProv, child) {
+                        final selectedItem = itemProv.selectedItem;
+                        return selectedItem == null
+                            ? Center(
+                                child: Text(
+                                  "Select an item to view or edit",
+                                  style: Theme.of(context).textTheme.labelMedium
+                                      ?.copyWith(color: AppColors.textHint),
+                                ),
+                              )
+                            : EditItemCart(
+                                id: selectedItem.id ?? '',
+                                categoryId: cate.categories[activeIndex].id ?? '',
+                                categoryName: cate.categories[activeIndex].itemName,
+                                cost: selectedItem.cost,
+                                image: selectedItem.imagePath,
+                                name: selectedItem.name,
+                                price: selectedItem.price,
+                                des: selectedItem.description,
+                              );
+                      },
+                    ),
                   ),
                 ),
               ],
