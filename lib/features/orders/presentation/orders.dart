@@ -1,7 +1,7 @@
 import 'package:bvibe/components/navigation.title.dart';
 import 'package:bvibe/const/theme.dart';
 import 'package:bvibe/data/model/receipt.model.dart';
- import 'package:bvibe/features/orders/widgets/empty.item.dart';
+import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/features/orders/widgets/item.preview.dart';
 import 'package:bvibe/features/orders/widgets/order.row.item.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
@@ -28,8 +28,7 @@ class _OrdersState extends State<Orders> {
   static const double _rowHeight = 58.0;
 
   void _createNewReceipt() {
-     
-    context.go("/orders/newOrder");
+    context.go("/orders/newOrder/");
   }
 
   void _updateSelection(int newIndex) {
@@ -254,23 +253,38 @@ class _OrdersState extends State<Orders> {
                                         ),
                                         itemCount: receipt.length,
                                         itemBuilder: (context, index) {
-                                          return OrderRowItem(
-                                            index: index,
-                                            isSelect: selectIndex == index,
-                                            onTap: () => setState(() {
-                                              _updateSelection(index);
-                                              _focusNode.requestFocus();
-                                            }),
-                                            navigateTap: () {},
-                                            invoiceNumber:
-                                                receipt[index].receiptId,
-                                            items: receipt[index].items.length
-                                                .toString(),
-                                            time:
-                                                receipt[index].receiptDateTime,
-                                            amount: receipt[index].totalAmount,
-                                            status:
-                                                receipt[index].paymentStatus,
+                                          return GestureDetector(
+                                            onTap: () {
+                                              context.push(
+                                                '/orders/newOrder',
+                                                extra: receipt[index].receiptId,
+                                              );
+                                            },
+                                            child: OrderRowItem(
+                                              index: index,
+                                              isSelect: selectIndex == index,
+                                              onTap: () => setState(() {
+                                                _updateSelection(index);
+                                                _focusNode.requestFocus();
+                                              }),
+                                              navigateTap: () {
+                                                context.push(
+                                                  '/orders/newOrder',
+                                                  extra:
+                                                      receipt[index].receiptId,
+                                                );
+                                              },
+                                              invoiceNumber:
+                                                  receipt[index].receiptId,
+                                              items: receipt[index].items.length
+                                                  .toString(),
+                                              time: receipt[index]
+                                                  .receiptDateTime,
+                                              amount:
+                                                  receipt[index].totalAmount,
+                                              status:
+                                                  receipt[index].paymentStatus,
+                                            ),
                                           );
                                         },
                                       );

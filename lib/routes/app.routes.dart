@@ -36,7 +36,9 @@ class AppRoutes {
               ),
               GoRoute(
                 path: '/newOrder',
-                builder: (context, state) => NewOrders(),
+                builder: (context, state) => NewOrders(
+                    invoiceId: state.extra as String,
+                ),
               ),
             ],
           ),

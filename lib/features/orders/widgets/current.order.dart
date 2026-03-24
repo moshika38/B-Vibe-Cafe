@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bvibe/components/conform.window.dart';
 import 'package:bvibe/const/theme.dart';
 import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:bvibe/data/workspace/number.format.dart';
@@ -36,7 +37,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
               if (asyncSnapshot.hasData) {
                 final data = asyncSnapshot.data;
                 if (data!.items.isEmpty) {
-                  return EmptyCard();
+                  return EmptyCard(receiptId: widget.receiptId);
                 }
 
                 tot = double.parse(data.totalAmount);
@@ -172,11 +173,19 @@ class _CurrentOrderState extends State<CurrentOrder> {
 
         Row(
           children: [
-            Card(
-              color: AppColors.background,
-              child: IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.delete, size: 25),
+            Consumer<ReceiptProvider>(
+              builder: (context, value, child) => Card(
+                color: AppColors.background,
+                child: IconButton(
+                  onPressed: () async {
+                    final isValid = await showPinDialog(context);
+                    if (isValid) {
+                      context.go('/orders');
+                      value.deleteReceipt(widget.receiptId);
+                    }
+                  },
+                  icon: Icon(Icons.delete, size: 25),
+                ),
               ),
             ),
             SizedBox(width: 10),
@@ -187,10 +196,11 @@ class _CurrentOrderState extends State<CurrentOrder> {
                   context.push('/orders/checkout');
                 },
                 child: Text(
-                  "Place Order",
+                  "Place Order ( Num+Enter )",
                   style: Theme.of(context).textTheme.titleMedium!.copyWith(
                     color: AppColors.surface,
                     fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
               ),

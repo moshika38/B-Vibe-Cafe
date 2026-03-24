@@ -12,7 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class NewOrders extends StatefulWidget {
-  const NewOrders({super.key});
+  final String invoiceId;
+  const NewOrders({super.key, required this.invoiceId});
 
   @override
   State<NewOrders> createState() => _NewOrdersState();
@@ -26,7 +27,6 @@ class _NewOrdersState extends State<NewOrders> {
     final id = DummyData.dummyReceipt;
     setState(() {
       receiptId = id.receiptId;
-      print(receiptId);
     });
     Provider.of<ReceiptProvider>(context, listen: false).saveReceipt(id);
   }
@@ -34,7 +34,7 @@ class _NewOrdersState extends State<NewOrders> {
   @override
   void initState() {
     super.initState();
-    _create();
+    widget.invoiceId.isEmpty ? _create() : receiptId = widget.invoiceId;
   }
 
   @override

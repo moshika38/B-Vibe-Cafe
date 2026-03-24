@@ -1,10 +1,15 @@
+import 'package:bvibe/components/conform.window.dart';
 import 'package:bvibe/const/theme.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/data/workspace/number.format.dart';
+import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class EmptyCard extends StatelessWidget {
-  const EmptyCard({super.key});
+  final String receiptId;
+  const EmptyCard({super.key, required this.receiptId});
 
   @override
   Widget build(BuildContext context) {
@@ -109,11 +114,19 @@ class EmptyCard extends StatelessWidget {
 
         Row(
           children: [
-            Card(
-              color: AppColors.background,
-              child: IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.delete, size: 25),
+            Consumer<ReceiptProvider>(
+              builder: (context, value, child) => Card(
+                color: AppColors.background,
+                child: IconButton(
+                  onPressed: () async {
+                    final isValid = await showPinDialog(context);
+                    if (isValid) {
+                      context.go('/orders');
+                      value.deleteReceipt(receiptId);
+                    }
+                  },
+                  icon: Icon(Icons.delete, size: 25),
+                ),
               ),
             ),
             SizedBox(width: 10),
@@ -122,9 +135,11 @@ class EmptyCard extends StatelessWidget {
                 onPressed: () {},
                 child: Text(
                   "Place Order",
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium!.copyWith(color: AppColors.surface),
+                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                    color: AppColors.surface,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
