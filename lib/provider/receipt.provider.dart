@@ -114,7 +114,7 @@ class ReceiptProvider extends ChangeNotifier {
     final db = await DatabaseHelper.instance.database;
     await db.update(
       'receipts',
-      {'total_amount': total.toString()},
+      {'total_amount': total.toStringAsFixed(3)},
       where: 'receipt_id = ?',
       whereArgs: [receiptId],
     );

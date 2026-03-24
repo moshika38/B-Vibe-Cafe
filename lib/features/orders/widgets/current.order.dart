@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:bvibe/const/theme.dart';
 import 'package:bvibe/data/model/receipt.model.dart';
+import 'package:bvibe/data/workspace/number.format.dart';
 import 'package:bvibe/features/orders/widgets/empty.card.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
@@ -143,31 +144,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "Discount",
-              style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-            Text(
-              "1000 LKR",
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Net Amount",
+              "Amount".toUpperCase(),
               style: Theme.of(context).textTheme.titleSmall!.copyWith(
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.bold,
@@ -177,7 +154,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
             SizedBox(
               width: 220,
               child: Text(
-                total,
+                "${NumberFormat.formatNumber(double.parse(total))} LKR",
                 textAlign: TextAlign.end,
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,

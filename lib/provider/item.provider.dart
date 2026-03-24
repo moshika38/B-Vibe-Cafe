@@ -37,8 +37,8 @@ class ItemProvider extends ChangeNotifier {
       categoryId: item.categoryId,
       itemName: item.itemName,
       description: item.description,
-      price: item.price,
-      cost: item.cost,
+      price: double.parse(item.price).toStringAsFixed(2),
+cost: double.parse(item.cost).toStringAsFixed(2),
       imagePath: item.imagePath,
     );
 
