@@ -1,7 +1,9 @@
 import 'package:bvibe/components/navigation.title.dart';
 import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:bvibe/data/workspace/dummy.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
+import 'package:bvibe/features/orders/widgets/item.preview.dart';
 import 'package:bvibe/features/orders/widgets/order.row.item.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
@@ -19,17 +21,26 @@ class Orders extends StatefulWidget {
 class _OrdersState extends State<Orders> {
   int selectIndex = 0;
   int _totalItems = 0;
+  String selectInvoiceId = "";
+  List<ReceiptModel> _currentReceipts = [];
 
   final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   static const double _rowHeight = 58.0;
 
-  void _cerateNewReceipt() {
+  void _createNewReceipt() {
     Provider.of<ReceiptProvider>(
       context,
       listen: false,
     ).saveReceipt(DummyData.dummyReceipt);
     context.go("/orders/newOrder");
+  }
+
+  void _updateSelection(int newIndex) {
+    selectIndex = newIndex.clamp(0, (_totalItems - 1).clamp(0, _totalItems));
+    if (_currentReceipts.isNotEmpty) {
+      selectInvoiceId = _currentReceipts[selectIndex].receiptId;
+    }
   }
 
   @override
@@ -82,21 +93,11 @@ class _OrdersState extends State<Orders> {
       onKeyEvent: (node, event) {
         if (event is KeyDownEvent || event is KeyRepeatEvent) {
           if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-            setState(() {
-              selectIndex = (selectIndex + 1).clamp(
-                0,
-                (_totalItems - 1).clamp(0, _totalItems),
-              );
-            });
+            setState(() => _updateSelection(selectIndex + 1));
             _scrollToSelected(selectIndex);
             return KeyEventResult.handled;
           } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-            setState(() {
-              selectIndex = (selectIndex - 1).clamp(
-                0,
-                (_totalItems - 1).clamp(0, _totalItems),
-              );
-            });
+            setState(() => _updateSelection(selectIndex - 1));
             _scrollToSelected(selectIndex);
             return KeyEventResult.handled;
           }
@@ -114,156 +115,180 @@ class _OrdersState extends State<Orders> {
                 title: "Orders",
                 subtitle: "Recent orders",
                 isBtn: true,
-                onTap: () => _cerateNewReceipt(),
+                onTap: () => _createNewReceipt(),
               ),
               const SizedBox(height: 20),
 
-              // Table card
               Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.divider),
-                  ),
-                  child: Column(
-                    children: [
-                      // Table header
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 16,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Left sidebar
+                    Container(
+                      width: 200,
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.divider),
+                      ),
+                      margin: const EdgeInsets.only(right: 20),
+                      child: ItemPreview(invoiceId: selectInvoiceId),
+                    ),
+
+                    // Main table
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.divider),
                         ),
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(color: AppColors.divider),
-                          ),
-                        ),
-                        child: Row(
+                        child: Column(
                           children: [
-                            SizedBox(
-                              width: 250,
-                              child: Text(
-                                'Invoice Number',
-                                style: theme.labelSmall?.copyWith(
-                                  color: AppColors.textHint,
-                                  letterSpacing: 0.8,
+                            // Table header
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 16,
+                              ),
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(color: AppColors.divider),
                                 ),
                               ),
-                            ),
-                            SizedBox(
-                              width: 150,
-                              child: Text(
-                                'Items',
-                                style: theme.labelSmall?.copyWith(
-                                  color: AppColors.textHint,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 150,
-                              child: Text(
-                                'Date',
-                                style: theme.labelSmall?.copyWith(
-                                  color: AppColors.textHint,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 100,
-                              child: Text(
-                                'Time',
-                                style: theme.labelSmall?.copyWith(
-                                  color: AppColors.textHint,
-                                  letterSpacing: 0.8,
-                                ),
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 250,
+                                    child: Text(
+                                      'Invoice Number',
+                                      style: theme.labelSmall?.copyWith(
+                                        color: AppColors.textHint,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 150,
+                                    child: Text(
+                                      'Items',
+                                      style: theme.labelSmall?.copyWith(
+                                        color: AppColors.textHint,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 150,
+                                    child: Text(
+                                      'Date',
+                                      style: theme.labelSmall?.copyWith(
+                                        color: AppColors.textHint,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text(
+                                      'Time',
+                                      style: theme.labelSmall?.copyWith(
+                                        color: AppColors.textHint,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text(
+                                      'Status',
+                                      textAlign: TextAlign.center,
+                                      style: theme.labelSmall?.copyWith(
+                                        color: AppColors.textHint,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      'Amount',
+                                      textAlign: TextAlign.end,
+                                      style: theme.labelSmall?.copyWith(
+                                        color: AppColors.textHint,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
 
-                            SizedBox(
-                              width: 100,
-                              child: Text(
-                                'Status',
-                                textAlign: TextAlign.center,
-                                style: theme.labelSmall?.copyWith(
-                                  color: AppColors.textHint,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Text(
-                                'Amount',
+                            // Table rows
+                            Consumer<ReceiptProvider>(
+                              builder: (context, value, child) => Expanded(
+                                child: FutureBuilder(
+                                  future: value.getAllReceipts(),
+                                  builder: (context, asyncSnapshot) {
+                                    if (asyncSnapshot.hasData) {
+                                      final receipt = asyncSnapshot.data!;
 
-                                textAlign: TextAlign.end,
-                                style: theme.labelSmall?.copyWith(
-                                  color: AppColors.textHint,
-                                  letterSpacing: 0.8,
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                            if (_totalItems != receipt.length) {
+                                              setState(() {
+                                                _totalItems = receipt.length;
+                                                _currentReceipts = receipt;
+                                                if (receipt.isNotEmpty) {
+                                                  selectInvoiceId =
+                                                      receipt[0].receiptId;
+                                                }
+                                              });
+                                            }
+                                          });
+
+                                      if (receipt.isEmpty) {
+                                        return EmptyItem();
+                                      }
+
+                                      return ListView.builder(
+                                        controller: _scrollController,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 8,
+                                          horizontal: 0,
+                                        ),
+                                        itemCount: receipt.length,
+                                        itemBuilder: (context, index) {
+                                          return OrderRowItem(
+                                            index: index,
+                                            isSelect: selectIndex == index,
+                                            onTap: () => setState(() {
+                                              _updateSelection(index);
+                                              _focusNode.requestFocus();
+                                            }),
+                                            navigateTap: () {},
+                                            invoiceNumber:
+                                                receipt[index].receiptId,
+                                            items: receipt[index].items.length
+                                                .toString(),
+                                            time:
+                                                receipt[index].receiptDateTime,
+                                            amount: receipt[index].totalAmount,
+                                            status:
+                                                receipt[index].paymentStatus,
+                                          );
+                                        },
+                                      );
+                                    }
+                                    return EmptyItem();
+                                  },
                                 ),
                               ),
                             ),
                           ],
                         ),
                       ),
-
-                      // Table rows
-                      Consumer<ReceiptProvider>(
-                        builder: (context, value, child) => Expanded(
-                          child: FutureBuilder(
-                            future: value.getAllReceipts(),
-                            builder: (context, asyncSnapshot) {
-                              if (asyncSnapshot.hasData) {
-                                final receipt = asyncSnapshot.data!;
-                                // Update total items for arrow key navigation
-                                WidgetsBinding.instance.addPostFrameCallback((
-                                  _,
-                                ) {
-                                  if (_totalItems != receipt.length) {
-                                    setState(() {
-                                      _totalItems = receipt.length;
-                                    });
-                                  }
-                                });
-
-                                if (receipt.isEmpty) {
-                                  return EmptyItem();
-                                }
-
-                                return ListView.builder(
-                                  controller: _scrollController,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 8,
-                                    horizontal: 0,
-                                  ),
-                                  itemCount: receipt.length,
-                                  itemBuilder: (context, index) {
-                                    return OrderRowItem(
-                                      index: index,
-                                      isSelect: selectIndex == index,
-                                      onTap: () => setState(() {
-                                        selectIndex = index;
-                                        _focusNode.requestFocus();
-                                      }),
-                                      navigateTap: () {},
-                                      invoiceNumber: receipt[index].receiptId,
-                                      items: receipt[index].items.length
-                                          .toString(),
-                                      time: receipt[index].receiptDateTime,
-                                      amount: receipt[index].totalAmount,
-                                      status: receipt[index].paymentStatus,
-                                    );
-                                  },
-                                );
-                              }
-                              return EmptyItem();
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],

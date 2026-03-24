@@ -13,18 +13,7 @@ class DummyData {
       totalAmount: "0",
       paidAmount: "0",
       balanceAmount: "0",
-      items: [
-        ReceiptItemsModel(
-          categoryId: "0",
-          itemName: "0",
-          description: "",
-          price: "0",
-          cost: "0",
-          imagePath: "imagePath",
-          qty: "0",
-          netAmount: "0",
-        ),
-      ],
+      items: [],
     );
   }
 

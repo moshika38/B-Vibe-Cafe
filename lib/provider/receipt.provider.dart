@@ -13,7 +13,6 @@ class ReceiptProvider extends ChangeNotifier {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
     notifyListeners();
-     
   }
 
   // Get
@@ -33,7 +32,7 @@ class ReceiptProvider extends ChangeNotifier {
   Future<List<ReceiptModel>> getAllReceipts() async {
     final db = await DatabaseHelper.instance.database;
     final maps = await db.query('receipts');
-    return maps.map((e) => ReceiptModel.fromMap(e)).toList();
+    return maps.map((e) => ReceiptModel.fromMap(e)).toList().reversed.toList();
   }
 
   // delete receipt
