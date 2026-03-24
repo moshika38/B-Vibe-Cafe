@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:bvibe/const/theme.dart';
 import 'package:bvibe/data/model/receipt.model.dart';
+import 'package:bvibe/data/workspace/number.format.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -108,7 +109,7 @@ class BuildItemCard extends StatelessWidget {
                 children: [
                   /// PRICE
                   Text(
-                    price,
+                    "${NumberFormat.formatNumber(double.parse(price))} LKR",
                     style: theme.textTheme.titleSmall!.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,

@@ -1,5 +1,6 @@
 import 'package:bvibe/const/theme.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
+import 'package:bvibe/data/workspace/number.format.dart';
 import 'package:flutter/material.dart';
 
 class EmptyCard extends StatelessWidget {
@@ -27,7 +28,7 @@ class EmptyCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Total 50",
+                    "Total ${NumberFormat.formatNumber(50)} LKR",
                     style: Theme.of(context).textTheme.titleSmall!.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -64,7 +65,7 @@ class EmptyCard extends StatelessWidget {
               ),
             ),
             Text(
-              "0 LKR",
+              "${NumberFormat.formatNumber(0)} LKR",
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
               style: Theme.of(context).textTheme.titleSmall!.copyWith(
@@ -90,7 +91,7 @@ class EmptyCard extends StatelessWidget {
             SizedBox(
               width: 220,
               child: Text(
-                "0 LKR",
+                "${NumberFormat.formatNumber(0)} LKR",
                 textAlign: TextAlign.end,
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,

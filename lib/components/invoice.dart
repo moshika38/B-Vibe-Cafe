@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bvibe/data/workspace/number.format.dart';
 
 // ─── Data Models ───────────────────────────────────────────────
 
@@ -222,7 +223,7 @@ class ThermalReceipt extends StatelessWidget {
 
   TextStyle _boldStyle() => const TextStyle(fontWeight: FontWeight.bold, fontSize: 11);
 
-  String _fmt(double amount) => 'Rs. ${amount.toStringAsFixed(2)}';
+  String _fmt(double amount) => '${NumberFormat.formatNumber(amount)} LKR';
 }
 
 // ─── Example Usage ─────────────────────────────────────────────

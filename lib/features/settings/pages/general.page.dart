@@ -1,5 +1,6 @@
 import 'package:bvibe/const/theme.dart';
 import 'package:bvibe/features/settings/widgets/key.preview.dart';
+import 'package:bvibe/data/workspace/number.format.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -241,9 +242,9 @@ class _GeneralPageState extends State<GeneralPage> {
           const SizedBox(height: 12),
 
           // Sample Items
-          _buildReceiptItem(theme, "Item 1", "x2", "Rs. 200.00"),
-          _buildReceiptItem(theme, "Item 2", "x1", "Rs. 150.00"),
-          _buildReceiptItem(theme, "Item 3", "x3", "Rs. 450.00"),
+          _buildReceiptItem(theme, "Item 1", "x2", "${NumberFormat.formatNumber(200)} LKR"),
+          _buildReceiptItem(theme, "Item 2", "x1", "${NumberFormat.formatNumber(150)} LKR"),
+          _buildReceiptItem(theme, "Item 3", "x3", "${NumberFormat.formatNumber(450)} LKR"),
 
           const SizedBox(height: 8),
           _buildDashedDivider(),
@@ -261,7 +262,7 @@ class _GeneralPageState extends State<GeneralPage> {
                 ),
               ),
               Text(
-                "Rs. 800.00",
+                "${NumberFormat.formatNumber(800)} LKR",
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,

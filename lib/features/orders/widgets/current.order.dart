@@ -250,7 +250,7 @@ Widget _buildItemCard(
                   ),
                 ),
                 Text(
-                  price,
+                  "${NumberFormat.formatNumber(double.parse(price))} LKR",
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleSmall,
@@ -279,7 +279,7 @@ Widget _buildItemCard(
                 Padding(
                   padding: const EdgeInsets.only(right: 3),
                   child: Text(
-                    total,
+                    "${NumberFormat.formatNumber(double.parse(total))} LKR",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleSmall,

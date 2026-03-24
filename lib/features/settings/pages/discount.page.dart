@@ -1,4 +1,5 @@
 import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/data/workspace/number.format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -340,7 +341,7 @@ class _DiscountPageState extends State<DiscountPage> {
           const SizedBox(height: 10),
           Divider(color: AppColors.divider),
           const SizedBox(height: 6),
-          _billRow(theme, "Subtotal", "Rs. ${_fmt(subtotal)}"),
+          _billRow(theme, "Subtotal", "${NumberFormat.formatNumber(subtotal)} LKR"),
           if (discountAmount > 0) ...[
             const SizedBox(height: 4),
             _billRow(
@@ -348,7 +349,7 @@ class _DiscountPageState extends State<DiscountPage> {
               bestRule!.type == DiscountType.percentage
                   ? "Discount (${bestRule.value.toStringAsFixed(1)}%)"
                   : "Discount",
-              "- Rs. ${_fmt(discountAmount)}",
+              "- ${NumberFormat.formatNumber(discountAmount)} LKR",
               valueColor: const Color(0xFF22C55E),
             ),
           ],
@@ -359,7 +360,7 @@ class _DiscountPageState extends State<DiscountPage> {
               _taxInclusive
                   ? "Tax (${taxRate.toStringAsFixed(1)}% incl.)"
                   : "Tax (${taxRate.toStringAsFixed(1)}%)",
-              "Rs. ${_fmt(taxAmount)}",
+              "${NumberFormat.formatNumber(taxAmount)} LKR",
               valueColor: AppColors.textSecondary,
             ),
           ],
@@ -377,7 +378,7 @@ class _DiscountPageState extends State<DiscountPage> {
                 ),
               ),
               Text(
-                "Rs. ${_fmt(total)}",
+                "${NumberFormat.formatNumber(total)} LKR",
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,
@@ -427,16 +428,13 @@ class _DiscountPageState extends State<DiscountPage> {
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   String _ruleLabel(DiscountRule rule) {
-    final threshold = "Rs. ${_fmt(rule.thresholdAmount)}";
+    final threshold = "${NumberFormat.formatNumber(rule.thresholdAmount)} LKR";
     final discount = rule.type == DiscountType.percentage
         ? "${rule.value.toStringAsFixed(1)}% off"
-        : "Rs. ${_fmt(rule.value)} off";
+        : "${NumberFormat.formatNumber(rule.value)} LKR off";
     return "Spend over $threshold → $discount";
   }
 
-  String _fmt(double v) => v
-      .toStringAsFixed(2)
-      .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},');
 
   Widget _card({required Widget child}) => Container(
         width: double.infinity,
@@ -680,16 +678,13 @@ class _RuleCardState extends State<_RuleCard> {
 
   String _ruleLabel() {
     final r = widget.rule;
-    final threshold = "Rs. ${_fmt(r.thresholdAmount)}";
+    final threshold = "${NumberFormat.formatNumber(r.thresholdAmount)} LKR";
     final discount = r.type == DiscountType.percentage
         ? "${r.value.toStringAsFixed(1)}% off"
-        : "Rs. ${_fmt(r.value)} off";
+        : "${NumberFormat.formatNumber(r.value)} LKR off";
     return "Spend over $threshold → $discount";
   }
 
-  String _fmt(double v) => v
-      .toStringAsFixed(2)
-      .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},');
 
   @override
   Widget build(BuildContext context) {

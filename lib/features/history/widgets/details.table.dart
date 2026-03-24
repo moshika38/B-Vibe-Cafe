@@ -1,5 +1,6 @@
 import 'package:bvibe/const/theme.dart';
 import 'package:bvibe/features/history/widgets/table.components.dart';
+import 'package:bvibe/data/workspace/number.format.dart';
 import 'package:flutter/material.dart';
 
 class DetailsTable extends StatefulWidget {
@@ -41,7 +42,7 @@ class _DetailsTableState extends State<DetailsTable> {
                       "25/01/02",
                       "10:10 PM",
                       "2",
-                      "10,700 LKR",
+                      "${NumberFormat.formatNumber(10700)} LKR",
                        "Paid",
                     );
                   },
