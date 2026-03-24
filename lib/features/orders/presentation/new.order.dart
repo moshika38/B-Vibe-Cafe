@@ -1,11 +1,13 @@
 import 'package:bvibe/components/navigation.title.dart';
 import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/data/workspace/dummy.dart';
 import 'package:bvibe/features/orders/widgets/build.cate.card.dart';
 import 'package:bvibe/features/orders/widgets/build.item.card.dart';
 import 'package:bvibe/features/orders/widgets/current.order.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/provider/categories.helper.dart';
 import 'package:bvibe/provider/item.provider.dart';
+import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,6 +20,22 @@ class NewOrders extends StatefulWidget {
 
 class _NewOrdersState extends State<NewOrders> {
   int activeCate = 0;
+  String receiptId = "";
+
+  void _create() {
+    final id = DummyData.dummyReceipt;
+    setState(() {
+      receiptId = id.receiptId;
+      print(receiptId);
+    });
+    Provider.of<ReceiptProvider>(context, listen: false).saveReceipt(id);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _create();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +109,6 @@ class _NewOrdersState extends State<NewOrders> {
                   }
 
                   if (activeCate >= categories.length) {
-                    // Safe fallback if activeCate is out of bounds
                     Future.microtask(() {
                       if (mounted) setState(() => activeCate = 0);
                     });
@@ -163,6 +180,11 @@ class _NewOrdersState extends State<NewOrders> {
                                       itemCount: data.length,
                                       itemBuilder: (context, index) {
                                         return BuildItemCard(
+                                          itemId: data[index].id.toString(),
+                                          cate: data[index].categoryId,
+                                          cost: data[index].cost,
+                                          des: data[index].description,
+                                          receiptId: receiptId,
                                           image: data[index].imagePath,
                                           price: data[index].price.toString(),
                                           title: data[index].itemName,
@@ -193,6 +215,6 @@ class _NewOrdersState extends State<NewOrders> {
 
   /// RIGHT SIDE (Cart)
   Widget _cartSection() {
-    return CurrentOrder();
+    return CurrentOrder(receiptId: receiptId);
   }
 }

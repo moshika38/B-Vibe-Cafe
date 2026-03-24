@@ -24,19 +24,25 @@ class BuildCateCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
             decoration: BoxDecoration(
-              color: isActive ? AppColors.primary : AppColors.surface,
+              border: Border.all(
+                color: isActive ? AppColors.primary : AppColors.surface,
+                width: 1.5,
+              ),
+              color: isActive
+                  ? AppColors.primaryLight.withValues(alpha: 0.2)
+                  : AppColors.surface,
               shape: BoxShape.rectangle,
               borderRadius: BorderRadius.circular(100),
             ),
             child: Row(
               children: [
-                Image.asset("assets/cate/$icon.png", width: 20,height: 20,),
+                Image.asset("assets/cate/$icon.png", width: 20, height: 20),
                 const SizedBox(width: 5),
                 Text(
                   title,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: isActive
-                        ? AppColors.surface
+                        ? AppColors.textPrimary
                         : AppColors.textSecondary,
                   ),
                 ),

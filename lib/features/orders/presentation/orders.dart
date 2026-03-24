@@ -1,8 +1,7 @@
 import 'package:bvibe/components/navigation.title.dart';
 import 'package:bvibe/const/theme.dart';
 import 'package:bvibe/data/model/receipt.model.dart';
-import 'package:bvibe/data/workspace/dummy.dart';
-import 'package:bvibe/features/orders/widgets/empty.item.dart';
+ import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/features/orders/widgets/item.preview.dart';
 import 'package:bvibe/features/orders/widgets/order.row.item.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
@@ -29,10 +28,7 @@ class _OrdersState extends State<Orders> {
   static const double _rowHeight = 58.0;
 
   void _createNewReceipt() {
-    Provider.of<ReceiptProvider>(
-      context,
-      listen: false,
-    ).saveReceipt(DummyData.dummyReceipt);
+     
     context.go("/orders/newOrder");
   }
 

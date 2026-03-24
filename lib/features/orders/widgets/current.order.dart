@@ -1,10 +1,24 @@
+import 'dart:io';
+
 import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/data/model/receipt.model.dart';
+import 'package:bvibe/features/orders/widgets/empty.card.dart';
+import 'package:bvibe/features/orders/widgets/empty.item.dart';
+import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
-class CurrentOrder extends StatelessWidget {
-  const CurrentOrder({super.key});
+class CurrentOrder extends StatefulWidget {
+  final String receiptId;
+  const CurrentOrder({super.key, required this.receiptId});
 
+  @override
+  State<CurrentOrder> createState() => _CurrentOrderState();
+}
+
+class _CurrentOrderState extends State<CurrentOrder> {
+  double tot = 0;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -13,72 +27,115 @@ class CurrentOrder extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
       ),
       padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Row(
+      child: Consumer<ReceiptProvider>(
+        builder: (context, value, child) {
+          return FutureBuilder(
+            future: value.getReceipt(widget.receiptId),
+            builder: (context, asyncSnapshot) {
+              if (asyncSnapshot.hasData) {
+                final data = asyncSnapshot.data;
+                if (data!.items.isEmpty) {
+                  return EmptyCard();
+                }
+
+                tot = double.parse(data.totalAmount);
+
+                return Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Current Order",
-                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
+                    // ... header
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: data.items.length,
+                        itemBuilder: (context, index) {
+                          final item = data.items[index];
+                          return _buildItemCard(
+                            context,
+                            item.itemName,
+                            item.price,
+                            item.imagePath,
+                            int.parse(item.qty),
+                            (int.parse(item.qty) * double.parse(item.price))
+                                .toString(),
+                            () async {
+                              // + button
+                              await value.addOrIncrementItem(
+                                widget.receiptId,
+                                ReceiptItemsModel(
+                                  id: item.id,
+                                  category: item.category,
+                                  itemName: item.itemName,
+                                  description: item.description,
+                                  price: item.price,
+                                  cost: item.cost,
+                                  imagePath: item.imagePath,
+                                  qty: "1",
+                                  netAmount: item.price,
+                                ),
+                              );
+                            },
+                            () async {
+                              // - button
+                              final receipt = await value.getReceipt(
+                                widget.receiptId,
+                              );
+                              if (receipt == null) return;
+
+                              final currentQty = int.parse(item.qty);
+                              List<ReceiptItemsModel> updatedItems;
+
+                              if (currentQty <= 1) {
+                                updatedItems = receipt.items
+                                    .where((e) => e.id != item.id)
+                                    .toList();
+                              } else {
+                                updatedItems = receipt.items.map((e) {
+                                  if (e.id == item.id) {
+                                    final newQty = (currentQty - 1).toString();
+                                    return ReceiptItemsModel(
+                                      id: e.id,
+                                      category: e.category,
+                                      itemName: e.itemName,
+                                      description: e.description,
+                                      price: e.price,
+                                      cost: e.cost,
+                                      imagePath: e.imagePath,
+                                      qty: newQty,
+                                      netAmount:
+                                          ((currentQty - 1) *
+                                                  double.parse(e.price))
+                                              .toString(),
+                                    );
+                                  }
+                                  return e;
+                                }).toList();
+                              }
+
+                              await value.updateReceiptItems(
+                                widget.receiptId,
+                                updatedItems,
+                              );
+                            },
+                          );
+                        },
                       ),
                     ),
-                    Text(
-                      "Total 50",
-                      style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
+                    Divider(),
+                    SizedBox(height: 20),
+                    _buildCheckOutSection(context, tot.toString()),
                   ],
-                ),
-              ),
-
-              Divider(),
-            ],
-          ),
-
-          Expanded(
-            child: ListView.builder(
-              itemCount: 20,
-              itemBuilder: (context, index) {
-                return _buildItemCard(
-                  context,
-                  "Current Order",
-                  "10,000 LKR",
-                  "assets/img/rice.jpg",
-                  1,
-                  "1,004,488 LKR",
-                  () {
-                    // add item
-                  },
-                  () {
-                    // remove item
-                  },
                 );
-              },
-            ),
-          ),
-
-          Divider(),
-
-          SizedBox(height: 20),
-
-          _buildCheckOutSection(context),
-        ],
+              }
+              return EmptyItem();
+            },
+          );
+        },
       ),
     );
   }
 
-  Widget _buildCheckOutSection(BuildContext context) {
+  Widget _buildCheckOutSection(BuildContext context, String total) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -120,7 +177,7 @@ class CurrentOrder extends StatelessWidget {
             SizedBox(
               width: 220,
               child: Text(
-                "1,004 LKR",
+                total,
                 textAlign: TextAlign.end,
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
@@ -191,14 +248,18 @@ Widget _buildItemCard(
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: Image.asset(
-                image,
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-              ),
+              child: image.startsWith("assets/")
+                  ? Image.asset(image, width: 60, height: 60, fit: BoxFit.cover)
+                  : Image.file(
+                      File(image),
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    ),
             ),
             SizedBox(width: 10),
+
+            // ← fix
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,7 +282,6 @@ Widget _buildItemCard(
             ),
 
             Spacer(),
-
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -238,9 +298,7 @@ Widget _buildItemCard(
                     _buildIconBtn(true, onAdd),
                   ],
                 ),
-
                 SizedBox(height: 10),
-
                 Padding(
                   padding: const EdgeInsets.only(right: 3),
                   child: Text(

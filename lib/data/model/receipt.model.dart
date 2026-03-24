@@ -60,7 +60,7 @@ class ReceiptModel {
 
 class ReceiptItemsModel {
   final String? id;
-  final String categoryId;
+  final String category;
   final String itemName;
   final String description;
   final String price;
@@ -70,8 +70,8 @@ class ReceiptItemsModel {
   final String netAmount;
 
   ReceiptItemsModel({
-      this.id,
-    required this.categoryId,
+    this.id,
+    required this.category,
     required this.itemName,
     required this.description,
     required this.price,
@@ -84,7 +84,7 @@ class ReceiptItemsModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'category_id': categoryId,
+      'category_id': category,
       'item_name': itemName,
       'description': description,
       'price': price,
@@ -98,7 +98,7 @@ class ReceiptItemsModel {
   factory ReceiptItemsModel.fromMap(Map<String, dynamic> map) {
     return ReceiptItemsModel(
       id: map['id'],
-      categoryId: map['category_id'],
+      category: map['category_id'],
       itemName: map['item_name'],
       description: map['description'],
       price: map['price'],
