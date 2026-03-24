@@ -7,6 +7,7 @@ import 'package:bvibe/const/theme.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'dart:io';
+import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:bvibe/data/helper/database.helper.dart';
 
 void main() async {
@@ -34,6 +35,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider.value(value: CategoriesProvider.instance),
         ChangeNotifierProvider.value(value: ItemProvider.instance),
+        ChangeNotifierProvider(create: (_) => ReceiptProvider()),
       ],
       child: const MyApp(),
     ),

@@ -1,9 +1,13 @@
 import 'package:bvibe/components/navigation.title.dart';
 import 'package:bvibe/const/theme.dart';
-import 'package:bvibe/features/orders/widgets/build.cate.card.dart';
-import 'package:bvibe/features/orders/widgets/build.item.card.dart';
-import 'package:bvibe/features/orders/widgets/current.order.dart';
+import 'package:bvibe/data/workspace/dummy.dart';
+import 'package:bvibe/features/orders/widgets/empty.item.dart';
+import 'package:bvibe/features/orders/widgets/order.row.item.dart';
+import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class Orders extends StatefulWidget {
   const Orders({super.key});
@@ -13,111 +17,259 @@ class Orders extends StatefulWidget {
 }
 
 class _OrdersState extends State<Orders> {
-  int activeCate = 0;
+  int selectIndex = 0;
+  int _totalItems = 0;
+
+  final FocusNode _focusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
+  static const double _rowHeight = 58.0;
+
+  void _cerateNewReceipt() {
+    Provider.of<ReceiptProvider>(
+      context,
+      listen: false,
+    ).saveReceipt(DummyData.dummyReceipt);
+    context.go("/orders/newOrder");
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _focusNode.requestFocus(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToSelected(int index) {
+    if (!_scrollController.hasClients) return;
+
+    final viewportHeight = _scrollController.position.viewportDimension;
+    final currentScroll = _scrollController.offset;
+    final itemTop = index * _rowHeight;
+    final itemBottom = itemTop + _rowHeight;
+
+    double? targetOffset;
+
+    if (itemTop < currentScroll) {
+      targetOffset = itemTop;
+    } else if (itemBottom > currentScroll + viewportHeight) {
+      targetOffset = itemBottom - viewportHeight;
+    }
+
+    if (targetOffset != null) {
+      _scrollController.animateTo(
+        targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final theme = Theme.of(context).textTheme;
 
-    /// responsive breakpoints
-    final bool isTablet = width < 1100;
-    final bool isMobile = width < 750;
-
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: isMobile
-          ? Column(
-              children: [
-                Expanded(child: _menuSection()),
-                const SizedBox(height: 20),
-                SizedBox(height: 350, child: _cartSection()),
-              ],
-            )
-          : Row(
-              children: [
-                Expanded(flex: isTablet ? 6 : 7, child: _menuSection()),
-                const SizedBox(width: 20),
-                Expanded(flex: 3, child: _cartSection()),
-              ],
-            ),
-    );
-  }
-
-  /// LEFT SIDE (Menu)
-  Widget _menuSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const NavigationTitle(title: "Orders", subtitle: "Menu Selection"),
-
-        TextField(
-          decoration: InputDecoration(
-            hintText: 'Search...',
-            prefixIcon: const Icon(Icons.search, color: AppColors.textHint),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColors.textHint),
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 20),
-
-        SizedBox(
-          height: 40,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: 20,
-            itemBuilder: (context, index) {
-              return BuildCateCard(
-                isActive: index == activeCate,
-                title: 'Rice & Curry',
-                icon: Icons.rice_bowl,
-                onTap: () {
-                  setState(() {
-                    activeCate = index;
-                  });
-                },
+    return Focus(
+      focusNode: _focusNode,
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent || event is KeyRepeatEvent) {
+          if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+            setState(() {
+              selectIndex = (selectIndex + 1).clamp(
+                0,
+                (_totalItems - 1).clamp(0, _totalItems),
               );
-            },
-          ),
-        ),
+            });
+            _scrollToSelected(selectIndex);
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+            setState(() {
+              selectIndex = (selectIndex - 1).clamp(
+                0,
+                (_totalItems - 1).clamp(0, _totalItems),
+              );
+            });
+            _scrollToSelected(selectIndex);
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Container(
+        color: AppColors.background,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              NavigationTitle(
+                title: "Orders",
+                subtitle: "Recent orders",
+                isBtn: true,
+                onTap: () => _cerateNewReceipt(),
+              ),
+              const SizedBox(height: 20),
 
-        const SizedBox(height: 20),
+              // Table card
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.divider),
+                  ),
+                  child: Column(
+                    children: [
+                      // Table header
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 16,
+                        ),
+                        decoration: const BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: AppColors.divider),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 250,
+                              child: Text(
+                                'Invoice Number',
+                                style: theme.labelSmall?.copyWith(
+                                  color: AppColors.textHint,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 150,
+                              child: Text(
+                                'Items',
+                                style: theme.labelSmall?.copyWith(
+                                  color: AppColors.textHint,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 150,
+                              child: Text(
+                                'Date',
+                                style: theme.labelSmall?.copyWith(
+                                  color: AppColors.textHint,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 100,
+                              child: Text(
+                                'Time',
+                                style: theme.labelSmall?.copyWith(
+                                  color: AppColors.textHint,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
 
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              int crossAxisCount = 4;
+                            SizedBox(
+                              width: 100,
+                              child: Text(
+                                'Status',
+                                textAlign: TextAlign.center,
+                                style: theme.labelSmall?.copyWith(
+                                  color: AppColors.textHint,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Amount',
 
-              if (constraints.maxWidth < 800) {
-                crossAxisCount = 3;
-              }
-              if (constraints.maxWidth < 600) {
-                crossAxisCount = 2;
-              }
+                                textAlign: TextAlign.end,
+                                style: theme.labelSmall?.copyWith(
+                                  color: AppColors.textHint,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
 
-              return GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  mainAxisExtent: 220,
+                      // Table rows
+                      Consumer<ReceiptProvider>(
+                        builder: (context, value, child) => Expanded(
+                          child: FutureBuilder(
+                            future: value.getAllReceipts(),
+                            builder: (context, asyncSnapshot) {
+                              if (asyncSnapshot.hasData) {
+                                final receipt = asyncSnapshot.data!;
+                                // Update total items for arrow key navigation
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) {
+                                  if (_totalItems != receipt.length) {
+                                    setState(() {
+                                      _totalItems = receipt.length;
+                                    });
+                                  }
+                                });
+
+                                if (receipt.isEmpty) {
+                                  return EmptyItem();
+                                }
+
+                                return ListView.builder(
+                                  controller: _scrollController,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 0,
+                                  ),
+                                  itemCount: receipt.length,
+                                  itemBuilder: (context, index) {
+                                    return OrderRowItem(
+                                      index: index,
+                                      isSelect: selectIndex == index,
+                                      onTap: () => setState(() {
+                                        selectIndex = index;
+                                        _focusNode.requestFocus();
+                                      }),
+                                      navigateTap: () {},
+                                      invoiceNumber: receipt[index].receiptId,
+                                      items: receipt[index].items.length
+                                          .toString(),
+                                      time: receipt[index].receiptDateTime,
+                                      amount: receipt[index].totalAmount,
+                                      status: receipt[index].paymentStatus,
+                                    );
+                                  },
+                                );
+                              }
+                              return EmptyItem();
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                itemCount: 20,
-                itemBuilder: (context, index) {
-                  return const BuildItemCard();
-                },
-              );
-            },
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
-  }
-
-  /// RIGHT SIDE (Cart)
-  Widget _cartSection() {
-    return CurrentOrder();
   }
 }

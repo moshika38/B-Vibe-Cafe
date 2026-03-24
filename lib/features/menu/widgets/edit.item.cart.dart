@@ -141,7 +141,7 @@ class _EditItemCartState extends State<EditItemCart> {
     final updatedItem = ItemModel(
       id: widget.id,
       categoryId: widget.categoryId, // Pass the category ID for db updating
-      name: name,
+      itemName: name,
       description: des,
       price: price,
       cost: cost,

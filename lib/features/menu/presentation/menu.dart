@@ -1,6 +1,7 @@
 import 'package:bvibe/components/app.title.dart';
 import 'package:bvibe/const/snack/app.snack.dart';
 import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/provider/categories.helper.dart';
 import 'package:bvibe/features/dashboard/widgets/cate.card.dart';
 import 'package:bvibe/features/menu/widgets/edit.item.cart.dart';
@@ -124,9 +125,7 @@ class _AppMenuState extends State<AppMenu> {
                               }
 
                               if (cate.categories.isEmpty) {
-                                return const Center(
-                                  child: Text("No categories found"),
-                                );
+                                return const Center(child: EmptyItem());
                               }
 
                               final listOfCate = cate.categories;
@@ -235,11 +234,13 @@ class _AppMenuState extends State<AppMenu> {
                               )
                             : EditItemCart(
                                 id: selectedItem.id ?? '',
-                                categoryId: cate.categories[activeIndex].id ?? '',
-                                categoryName: cate.categories[activeIndex].itemName,
+                                categoryId:
+                                    cate.categories[activeIndex].id ?? '',
+                                categoryName:
+                                    cate.categories[activeIndex].itemName,
                                 cost: selectedItem.cost,
                                 image: selectedItem.imagePath,
-                                name: selectedItem.name,
+                                name: selectedItem.itemName,
                                 price: selectedItem.price,
                                 des: selectedItem.description,
                               );

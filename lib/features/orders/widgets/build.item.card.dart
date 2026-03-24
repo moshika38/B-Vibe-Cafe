@@ -1,8 +1,18 @@
+import 'dart:io';
 import 'package:bvibe/const/theme.dart';
 import 'package:flutter/material.dart';
 
 class BuildItemCard extends StatelessWidget {
-  const BuildItemCard({super.key});
+  final String title;
+  final String price;
+  final String image;
+  final bool isSelect;
+  const BuildItemCard({
+    super.key,
+    required this.title,
+    required this.price,
+    required this.image, required this.isSelect,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,12 +31,19 @@ class BuildItemCard extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(18),
                 ),
-                child: Image.asset(
-                  "assets/img/rice.jpg",
-                  height: 130,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
+                child: image.startsWith("assets/")
+                    ? Image.asset(
+                        image,
+                        height: 130,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.file(
+                        File(image),
+                        height: 130,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
               ),
 
               /// subtle gradient
@@ -56,7 +73,7 @@ class BuildItemCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
-              "Rice & Curry",
+              title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.titleSmall!.copyWith(
@@ -76,7 +93,7 @@ class BuildItemCard extends StatelessWidget {
               children: [
                 /// PRICE
                 Text(
-                  "1000 LKR",
+                  price,
                   style: theme.textTheme.titleSmall!.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold,

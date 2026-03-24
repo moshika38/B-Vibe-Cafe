@@ -22,10 +22,11 @@ class DatabaseHelper {
     print('DATABASE LOCATION: $path');
 
     return await openDatabase(
-      path, 
-      version: 5, 
+      path,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
+
         if (oldVersion < 2) {
           await db.execute('''
 CREATE TABLE IF NOT EXISTS categories (
@@ -35,6 +36,7 @@ CREATE TABLE IF NOT EXISTS categories (
 )
 ''');
         }
+
         if (oldVersion < 4) {
           await db.execute('''
 CREATE TABLE IF NOT EXISTS items (
@@ -48,15 +50,50 @@ CREATE TABLE IF NOT EXISTS items (
 )
 ''');
         }
+
         if (oldVersion < 5) {
-          await db.execute('ALTER TABLE items ADD COLUMN categoryId TEXT NOT NULL DEFAULT ""');
+          await db.execute(
+              'ALTER TABLE items ADD COLUMN categoryId TEXT NOT NULL DEFAULT ""');
+        }
+
+        if (oldVersion < 6) {
+          await db.execute('''
+CREATE TABLE IF NOT EXISTS receipts (
+  receipt_id TEXT PRIMARY KEY,
+  receipt_date_time TEXT NOT NULL,
+  payment_status INTEGER NOT NULL,
+  payment_date TEXT NOT NULL,
+  payment_time TEXT NOT NULL,
+  payment_method TEXT NOT NULL,
+  total_amount TEXT NOT NULL,
+  paid_amount TEXT NOT NULL,
+  balance_amount TEXT NOT NULL,
+  items TEXT NOT NULL
+)
+''');
+        }
+
+        if (oldVersion < 7) {
+          await db.execute('''
+CREATE TABLE IF NOT EXISTS receipts (
+  receipt_id TEXT PRIMARY KEY,
+  receipt_date_time TEXT NOT NULL,
+  payment_status INTEGER NOT NULL,
+  payment_date TEXT NOT NULL,
+  payment_time TEXT NOT NULL,
+  payment_method TEXT NOT NULL,
+  total_amount TEXT NOT NULL,
+  paid_amount TEXT NOT NULL,
+  balance_amount TEXT NOT NULL,
+  items TEXT NOT NULL
+)
+''');
         }
       },
     );
   }
 
   Future _createDB(Database db, int version) async {
-    // Shared Types
     const idTypeInt = 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const idTypeText = 'TEXT PRIMARY KEY';
     const textType = 'TEXT NOT NULL';
@@ -92,11 +129,28 @@ CREATE TABLE IF NOT EXISTS items (
   imagePath $textType
 )
 ''');
+
+    // ── Table: Receipts ──
+    await db.execute('''
+CREATE TABLE IF NOT EXISTS receipts (
+  receipt_id $idTypeText,
+  receipt_date_time $textType,
+  payment_status $intType,
+  payment_date $textType,
+  payment_time $textType,
+  payment_method $textType,
+  total_amount $textType,
+  paid_amount $textType,
+  balance_amount $textType,
+  items $textType
+)
+''');
   }
 
   Future<void> initializeAppDatabase() async {
     final db = await instance.database;
     final result = await db.query('users');
+
     if (result.isEmpty) {
       await db.insert('users', {
         'username': 'user',

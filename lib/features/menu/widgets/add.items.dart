@@ -1,4 +1,4 @@
- import 'dart:io';
+import 'dart:io';
 import 'package:bvibe/const/theme.dart';
 import 'package:bvibe/const/snack/app.snack.dart';
 import 'package:bvibe/data/model/item.model.dart';
@@ -114,7 +114,9 @@ class _AddItemsState extends State<AddItems> {
 
             Expanded(
               child: ScrollConfiguration(
-                behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                behavior: ScrollConfiguration.of(
+                  context,
+                ).copyWith(scrollbars: false),
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
@@ -170,7 +172,7 @@ class _AddItemsState extends State<AddItems> {
                         icon: Icons.fastfood_outlined,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       _buildTextField(
                         context,
                         label: 'Description',
@@ -211,7 +213,7 @@ class _AddItemsState extends State<AddItems> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
             // Buttons
             Row(
@@ -253,7 +255,9 @@ class _AddItemsState extends State<AddItems> {
                         final price = _priceController.text.trim();
                         final cost = _costController.text.trim();
 
-                        if (name.isEmpty || price.isEmpty || _selectedImage == null) {
+                        if (name.isEmpty ||
+                            price.isEmpty ||
+                            _selectedImage == null) {
                           AppSnack.errorSnack(
                             context,
                             "Please fill all required fields and select an image",
@@ -264,25 +268,33 @@ class _AddItemsState extends State<AddItems> {
                         final priceVal = double.tryParse(price) ?? 0;
                         final costVal = double.tryParse(cost) ?? 0;
                         if (costVal >= priceVal && priceVal > 0) {
-                          AppSnack.errorSnack(context, "Price must be greater than Cost");
+                          AppSnack.errorSnack(
+                            context,
+                            "Price must be greater than Cost",
+                          );
                           return;
                         }
 
                         // Copy image to the project folder
                         final currentPath = Directory.current.path;
-                        final imagesDir = Directory('$currentPath/assets/items');
+                        final imagesDir = Directory(
+                          '$currentPath/assets/items',
+                        );
                         if (!await imagesDir.exists()) {
                           await imagesDir.create(recursive: true);
                         }
 
                         final ext = p.extension(_selectedImage!.path);
-                        final newImagePath = '${imagesDir.path}/${DateTime.now().millisecondsSinceEpoch}$ext';
-                        final savedImage = await _selectedImage!.copy(newImagePath);
+                        final newImagePath =
+                            '${imagesDir.path}/${DateTime.now().millisecondsSinceEpoch}$ext';
+                        final savedImage = await _selectedImage!.copy(
+                          newImagePath,
+                        );
 
                         // Prepare ItemModel
                         final itemModel = ItemModel(
                           categoryId: widget.currentCategory.id ?? "",
-                          name: name,
+                          itemName: name,
                           description: desc,
                           price: price,
                           cost: cost,
@@ -334,10 +346,9 @@ class _AddItemsState extends State<AddItems> {
       children: [
         Text(
           label,
-          style: Theme.of(context)
-              .textTheme
-              .labelMedium
-              ?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(
+            context,
+          ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -347,9 +358,9 @@ class _AddItemsState extends State<AddItems> {
           style: Theme.of(context).textTheme.labelMedium,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppColors.textHint,
-                ),
+            hintStyle: Theme.of(
+              context,
+            ).textTheme.labelMedium?.copyWith(color: AppColors.textHint),
             prefixIcon: maxLines == 1
                 ? Icon(icon, color: AppColors.textHint)
                 : Padding(

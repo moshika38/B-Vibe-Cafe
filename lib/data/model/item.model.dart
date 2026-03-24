@@ -1,7 +1,7 @@
 class ItemModel {
   final String? id;
   final String categoryId;
-  final String name;
+  final String itemName;
   final String description;
   final String price;
   final String cost;
@@ -10,7 +10,7 @@ class ItemModel {
   ItemModel({
     this.id,
     required this.categoryId,
-    required this.name,
+    required this.itemName,
     required this.description,
     required this.price,
     required this.cost,
@@ -21,7 +21,7 @@ class ItemModel {
     return ItemModel(
       id: map['id'],
       categoryId: map['categoryId'],
-      name: map['name'],
+      itemName: map['name'],
       description: map['description'],
       price: map['price'],
       cost: map['cost'],
@@ -33,7 +33,7 @@ class ItemModel {
     return {
       'id': id,
       'categoryId': categoryId,
-      'name': name,
+      'name': itemName,
       'description': description,
       'price': price,
       'cost': cost,

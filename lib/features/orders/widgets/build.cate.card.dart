@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class BuildCateCard extends StatelessWidget {
   final bool isActive;
   final String title;
-  final IconData icon;
+  final int icon;
   final VoidCallback onTap;
   const BuildCateCard({
     super.key,
@@ -30,11 +30,7 @@ class BuildCateCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  color: isActive ? AppColors.surface : AppColors.textSecondary,
-                  size: 20,
-                ),
+                Image.asset("assets/cate/$icon.png", width: 20,height: 20,),
                 const SizedBox(width: 5),
                 Text(
                   title,

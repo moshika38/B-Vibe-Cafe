@@ -136,21 +136,32 @@ class CurrentOrder extends StatelessWidget {
 
         SizedBox(height: 20),
 
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {
-              // go to checkout page
-              context.push('/orders/checkout');
-            },
-            child: Text(
-              "Place Order",
-              style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                color: AppColors.surface,
-                fontWeight: FontWeight.bold,
+        Row(
+          children: [
+            Card(
+              color: AppColors.background,
+              child: IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.delete, size: 25),
               ),
             ),
-          ),
+            SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  // go to checkout page
+                  context.push('/orders/checkout');
+                },
+                child: Text(
+                  "Place Order",
+                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                    color: AppColors.surface,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );

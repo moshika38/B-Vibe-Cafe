@@ -1,0 +1,198 @@
+import 'package:bvibe/components/navigation.title.dart';
+import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/features/orders/widgets/build.cate.card.dart';
+import 'package:bvibe/features/orders/widgets/build.item.card.dart';
+import 'package:bvibe/features/orders/widgets/current.order.dart';
+import 'package:bvibe/features/orders/widgets/empty.item.dart';
+import 'package:bvibe/provider/categories.helper.dart';
+import 'package:bvibe/provider/item.provider.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+class NewOrders extends StatefulWidget {
+  const NewOrders({super.key});
+
+  @override
+  State<NewOrders> createState() => _NewOrdersState();
+}
+
+class _NewOrdersState extends State<NewOrders> {
+  int activeCate = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+
+    /// responsive breakpoints
+    final bool isTablet = width < 1100;
+    final bool isMobile = width < 750;
+
+    return Container(
+      color: AppColors.background,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: isMobile
+            ? Column(
+                children: [
+                  Expanded(child: _menuSection()),
+                  const SizedBox(height: 20),
+                  SizedBox(height: 350, child: _cartSection()),
+                ],
+              )
+            : Row(
+                children: [
+                  Expanded(flex: isTablet ? 6 : 7, child: _menuSection()),
+                  const SizedBox(width: 20),
+                  Expanded(flex: 3, child: _cartSection()),
+                ],
+              ),
+      ),
+    );
+  }
+
+  /// LEFT SIDE (Menu)
+  Widget _menuSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const NavigationTitle(
+          title: "Orders",
+          subtitle: "New Order",
+          isBackIcon: true,
+        ),
+
+        TextField(
+          decoration: InputDecoration(
+            hintText: 'Search...',
+            prefixIcon: const Icon(Icons.search, color: AppColors.textHint),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.textHint),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        Expanded(
+          child: Consumer<CategoriesProvider>(
+            builder: (context, provider, child) => FutureBuilder(
+              future: provider.readAllCategories(),
+              builder: (context, asyncSnapshot) {
+                if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (asyncSnapshot.hasData) {
+                  final categories = asyncSnapshot.data!;
+
+                  if (categories.isEmpty) {
+                    return const Center(child: EmptyItem());
+                  }
+
+                  if (activeCate >= categories.length) {
+                    // Safe fallback if activeCate is out of bounds
+                    Future.microtask(() {
+                      if (mounted) setState(() => activeCate = 0);
+                    });
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  return Column(
+                    children: [
+                      SizedBox(
+                        height: 40,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: categories.length,
+                          itemBuilder: (context, index) {
+                            return BuildCateCard(
+                              isActive: index == activeCate,
+                              title: categories[index].itemName,
+                              icon: categories[index].iconNumber,
+                              onTap: () {
+                                setState(() {
+                                  activeCate = index;
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      Expanded(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            int crossAxisCount = 4;
+
+                            if (constraints.maxWidth < 800) {
+                              crossAxisCount = 3;
+                            }
+                            if (constraints.maxWidth < 600) {
+                              crossAxisCount = 2;
+                            }
+
+                            return Consumer<ItemProvider>(
+                              builder: (context, itemProv, child) => FutureBuilder(
+                                future: itemProv.readAllItems(
+                                  categories[activeCate].id ?? "",
+                                ),
+                                builder: (context, itemSnapshot) {
+                                  if (itemSnapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
+
+                                  if (itemSnapshot.hasData) {
+                                    final data = itemSnapshot.data!;
+                                    if (data.isEmpty) {
+                                      return const EmptyItem();
+                                    }
+                                    return GridView.builder(
+                                      gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: crossAxisCount,
+                                            crossAxisSpacing: 10,
+                                            mainAxisSpacing: 10,
+                                            mainAxisExtent: 220,
+                                          ),
+                                      itemCount: data.length,
+                                      itemBuilder: (context, index) {
+                                        return BuildItemCard(
+                                          image: data[index].imagePath,
+                                          price: data[index].price.toString(),
+                                          title: data[index].itemName,
+                                          isSelect: true,
+                                        );
+                                      },
+                                    );
+                                  }
+
+                                  return const EmptyItem();
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }
+                return const Center(child: Text('Loading Categories...'));
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// RIGHT SIDE (Cart)
+  Widget _cartSection() {
+    return CurrentOrder();
+  }
+}

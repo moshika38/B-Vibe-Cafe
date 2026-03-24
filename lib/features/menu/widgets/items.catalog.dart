@@ -8,13 +8,8 @@ import 'package:provider/provider.dart';
 class ItemCatalog extends StatelessWidget {
   final String category;
   final Function(ItemModel)? onItemSelected;
-  
-  const ItemCatalog({
-    super.key, 
-    required this.category,
-    this.onItemSelected,
-  });
 
+  const ItemCatalog({super.key, required this.category, this.onItemSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +68,7 @@ class ItemCatalog extends StatelessWidget {
                                 child: _buildItemCard(
                                   theme,
                                   item.imagePath,
-                                  item.name,
+                                  item.itemName,
                                   item.description,
                                   item.price,
                                 ),
@@ -83,7 +78,10 @@ class ItemCatalog extends StatelessWidget {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 20,
+                          horizontal: 30,
+                        ),
                         child: Text(
                           "Showing ${items.length} of results",
                           style: theme.textTheme.labelSmall!.copyWith(

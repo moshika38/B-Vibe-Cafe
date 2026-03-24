@@ -4,6 +4,7 @@ import 'package:bvibe/features/orders/widgets/checkout.order.summary.dart';
 import 'package:bvibe/features/orders/widgets/checkout.payment.section.dart';
 import 'package:flutter/material.dart';
 
+
 class CheckoutPage extends StatelessWidget {
   const CheckoutPage({super.key});
 
@@ -15,23 +16,18 @@ class CheckoutPage extends StatelessWidget {
     final bool isMobile = width < 800;
 
     return Container(
-      decoration: BoxDecoration(color: AppColors.background),
+      color: AppColors.background,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const NavigationTitle(
-                  title: "Orders",
-                  subtitle: "Checkout",
-                  isBackIcon: true,
-                ),
-              ],
+            const NavigationTitle(
+              title: "Orders",
+              subtitle: "Checkout",
+              isBackIcon: true,
             ),
+
             const SizedBox(height: 20),
             Expanded(
               child: isMobile

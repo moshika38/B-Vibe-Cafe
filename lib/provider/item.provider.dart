@@ -29,18 +29,19 @@ class ItemProvider extends ChangeNotifier {
   // ── CREATE ──
   Future<int> insertItem(ItemModel item) async {
     final db = await DatabaseHelper.instance.database;
-    final String itemId = item.id ?? DateTime.now().millisecondsSinceEpoch.toString();
-    
+    final String itemId =
+        item.id ?? DateTime.now().millisecondsSinceEpoch.toString();
+
     final itemToSave = ItemModel(
       id: itemId,
       categoryId: item.categoryId,
-      name: item.name,
+      itemName: item.itemName,
       description: item.description,
       price: item.price,
       cost: item.cost,
       imagePath: item.imagePath,
     );
-    
+
     final res = await db.insert(
       'items',
       itemToSave.toMap(),
@@ -54,10 +55,10 @@ class ItemProvider extends ChangeNotifier {
   Future<List<ItemModel>> readAllItems(String categoryId) async {
     final db = await DatabaseHelper.instance.database;
     final result = await db.query(
-      'items', 
+      'items',
       where: 'categoryId = ?',
       whereArgs: [categoryId],
-      orderBy: 'name ASC'
+      orderBy: 'name ASC',
     );
     return result.map((map) => ItemModel.fromMap(map)).toList();
   }
@@ -82,11 +83,11 @@ class ItemProvider extends ChangeNotifier {
       where: 'id = ?',
       whereArgs: [item.id],
     );
-    
+
     if (selectedItem?.id == item.id) {
       selectedItem = item;
     }
-    
+
     await fetchItems();
     return res;
   }
@@ -95,11 +96,11 @@ class ItemProvider extends ChangeNotifier {
   Future<int> deleteItem(String id) async {
     final db = await DatabaseHelper.instance.database;
     final res = await db.delete('items', where: 'id = ?', whereArgs: [id]);
-    
+
     if (selectedItem?.id == id) {
       selectedItem = null;
     }
-    
+
     await fetchItems();
     return res;
   }

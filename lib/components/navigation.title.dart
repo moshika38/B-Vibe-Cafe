@@ -5,29 +5,37 @@ class NavigationTitle extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool? isBackIcon;
+  final VoidCallback? onTap;
+  final bool? isBtn;
   const NavigationTitle({
     super.key,
     required this.title,
     required this.subtitle,
     this.isBackIcon,
+    this.onTap,
+    this.isBtn,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).textTheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          isBackIcon == true? IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.arrow_back,
-              size: 20,
-              color: AppColors.textPrimary,
-            ),
-          ):SizedBox.shrink() ,
+          isBackIcon == true
+              ? IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: Icon(
+                    Icons.arrow_back,
+                    size: 20,
+                    color: AppColors.textPrimary,
+                  ),
+                )
+              : SizedBox.shrink(),
           Text(
             title,
             maxLines: 1,
@@ -56,6 +64,19 @@ class NavigationTitle extends StatelessWidget {
               ),
             ),
           ),
+          Spacer(),
+          isBtn == true
+              ? SizedBox(
+                  width: 200,
+                  child: ElevatedButton(
+                    onPressed: onTap,
+                    child: Text(
+                      "New Order (Ctrl + N)",
+                      style: theme.labelSmall!.copyWith(color: Colors.white),
+                    ),
+                  ),
+                )
+              : SizedBox.shrink(),
         ],
       ),
     );
