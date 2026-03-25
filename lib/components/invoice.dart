@@ -36,11 +36,11 @@ class ReceiptData {
   final List<ReceiptItem> items;
 
   // Financials
-  final double discountAmount;   // fixed amount discount
-  final double taxRate;          // e.g. 0.08 = 8%
+  final double discountAmount; // fixed amount discount
+  final double taxRate; // e.g. 0.08 = 8%
 
   // Payment
-  final String paymentMethod;   // e.g. "CASH", "CARD"
+  final String paymentMethod; // e.g. "CASH", "CARD"
   final double amountPaid;
 
   const ReceiptData({
@@ -73,11 +73,7 @@ class ThermalReceipt extends StatelessWidget {
   /// paperWidth: 58mm = 220px | 80mm = 302px (at 96dpi approx)
   final double paperWidth;
 
-  const ThermalReceipt({
-    super.key,
-    required this.data,
-    this.paperWidth = 302,
-  });
+  const ThermalReceipt({super.key, required this.data, this.paperWidth = 302});
 
   @override
   Widget build(BuildContext context) {
@@ -117,16 +113,15 @@ class ThermalReceipt extends StatelessWidget {
               _row(
                 'Date:',
                 '${data.dateTime.day.toString().padLeft(2, '0')}/'
-                '${data.dateTime.month.toString().padLeft(2, '0')}/'
-                '${data.dateTime.year}',
+                    '${data.dateTime.month.toString().padLeft(2, '0')}/'
+                    '${data.dateTime.year}',
               ),
               _row(
                 'Time:',
                 '${data.dateTime.hour.toString().padLeft(2, '0')}:'
-                '${data.dateTime.minute.toString().padLeft(2, '0')}',
+                    '${data.dateTime.minute.toString().padLeft(2, '0')}',
               ),
-              if (data.cashierName != null)
-                _row('Cashier:', data.cashierName!),
+              if (data.cashierName != null) _row('Cashier:', data.cashierName!),
               if (data.customerName != null)
                 _row('Customer:', data.customerName!),
 
@@ -136,25 +131,63 @@ class ThermalReceipt extends StatelessWidget {
               Row(
                 children: [
                   Expanded(flex: 4, child: Text('Item', style: _boldStyle())),
-                  Expanded(flex: 1, child: Text('Qty', style: _boldStyle(), textAlign: TextAlign.center)),
-                  Expanded(flex: 2, child: Text('Price', style: _boldStyle(), textAlign: TextAlign.right)),
-                  Expanded(flex: 2, child: Text('Total', style: _boldStyle(), textAlign: TextAlign.right)),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      'Qty',
+                      style: _boldStyle(),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      'Price',
+                      style: _boldStyle(),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      'Total',
+                      style: _boldStyle(),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
                 ],
               ),
               const Divider(color: Colors.black, thickness: 0.5, height: 8),
 
               // ── Items ──
-              ...data.items.map((item) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                child: Row(
-                  children: [
-                    Expanded(flex: 4, child: Text(item.name)),
-                    Expanded(flex: 1, child: Text('${item.qty}', textAlign: TextAlign.center)),
-                    Expanded(flex: 2, child: Text(_fmt(item.unitPrice), textAlign: TextAlign.right)),
-                    Expanded(flex: 2, child: Text(_fmt(item.total), textAlign: TextAlign.right)),
-                  ],
+              ...data.items.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    children: [
+                      Expanded(flex: 4, child: Text(item.name)),
+                      Expanded(
+                        flex: 1,
+                        child: Text('${item.qty}', textAlign: TextAlign.center),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          _fmt(item.unitPrice),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          _fmt(item.total),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              )),
+              ),
 
               _dottedDivider(),
 
@@ -163,22 +196,19 @@ class ThermalReceipt extends StatelessWidget {
               if (data.discountAmount > 0)
                 _row('Discount:', '- ${_fmt(data.discountAmount)}'),
               if (data.taxRate > 0)
-                _row('Tax (${(data.taxRate * 100).toStringAsFixed(0)}%):', _fmt(data.taxAmount)),
+                _row(
+                  'Tax (${(data.taxRate * 100).toStringAsFixed(0)}%):',
+                  _fmt(data.taxAmount),
+                ),
 
               const Divider(color: Colors.black, thickness: 1, height: 8),
 
-              _row(
-                'TOTAL:',
-                _fmt(data.grandTotal),
-                bold: true,
-                fontSize: 13,
-              ),
+              _row('TOTAL:', _fmt(data.grandTotal), bold: true, fontSize: 13),
 
               const SizedBox(height: 4),
 
               _row('Payment (${data.paymentMethod}):', _fmt(data.amountPaid)),
-              if (data.change >= 0)
-                _row('Change:', _fmt(data.change)),
+              if (data.change >= 0) _row('Change:', _fmt(data.change)),
 
               _dottedDivider(),
 
@@ -199,16 +229,21 @@ class ThermalReceipt extends StatelessWidget {
   // ─── Helpers ───────────────────────────────────────────────────
 
   Widget _dottedDivider() => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Text(
-          '- ' * 22,
-          style: const TextStyle(fontSize: 9, letterSpacing: 0),
-          overflow: TextOverflow.clip,
-          maxLines: 1,
-        ),
-      );
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Text(
+      '- ' * 22,
+      style: const TextStyle(fontSize: 9, letterSpacing: 0),
+      overflow: TextOverflow.clip,
+      maxLines: 1,
+    ),
+  );
 
-  Widget _row(String label, String value, {bool bold = false, double fontSize = 11}) {
+  Widget _row(
+    String label,
+    String value, {
+    bool bold = false,
+    double fontSize = 11,
+  }) {
     final style = TextStyle(
       fontWeight: bold ? FontWeight.bold : FontWeight.normal,
       fontSize: fontSize,
@@ -216,14 +251,18 @@ class ThermalReceipt extends StatelessWidget {
     return Row(
       children: [
         Expanded(flex: 5, child: Text(label, style: style)),
-        Expanded(flex: 4, child: Text(value, style: style, textAlign: TextAlign.right)),
+        Expanded(
+          flex: 4,
+          child: Text(value, style: style, textAlign: TextAlign.right),
+        ),
       ],
     );
   }
 
-  TextStyle _boldStyle() => const TextStyle(fontWeight: FontWeight.bold, fontSize: 11);
+  TextStyle _boldStyle() =>
+      const TextStyle(fontWeight: FontWeight.bold, fontSize: 11);
 
-  String _fmt(double amount) => '${NumberFormat.formatNumber(amount)} LKR';
+  String _fmt(double amount) => '${AppNumberFormat.formatNumber(amount)} LKR';
 }
 
 // ─── Example Usage ─────────────────────────────────────────────
@@ -250,10 +289,10 @@ class ReceiptPreviewApp extends StatelessWidget {
 
       // Items
       items: const [
-        ReceiptItem(name: 'Coca Cola 1L',   qty: 2, unitPrice: 280.00),
-        ReceiptItem(name: 'Bread',          qty: 1, unitPrice: 120.00),
-        ReceiptItem(name: 'Rice 1kg',       qty: 3, unitPrice: 195.00),
-        ReceiptItem(name: 'Milk Powder',    qty: 1, unitPrice: 850.00),
+        ReceiptItem(name: 'Coca Cola 1L', qty: 2, unitPrice: 280.00),
+        ReceiptItem(name: 'Bread', qty: 1, unitPrice: 120.00),
+        ReceiptItem(name: 'Rice 1kg', qty: 3, unitPrice: 195.00),
+        ReceiptItem(name: 'Milk Powder', qty: 1, unitPrice: 850.00),
       ],
 
       // Financials

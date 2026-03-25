@@ -1,4 +1,4 @@
-class NumberFormat {
+class AppNumberFormat {
   static String formatNumber(num value) {
     final parts = value.toStringAsFixed(2).split('.');
     final intPart = parts[0];

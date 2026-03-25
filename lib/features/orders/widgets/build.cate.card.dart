@@ -32,7 +32,7 @@ class BuildCateCard extends StatelessWidget {
                   ? AppColors.primaryLight.withValues(alpha: 0.2)
                   : AppColors.surface,
               shape: BoxShape.rectangle,
-              borderRadius: BorderRadius.circular(100),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [

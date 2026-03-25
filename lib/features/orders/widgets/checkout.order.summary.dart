@@ -1,15 +1,20 @@
 import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/data/model/receipt.model.dart';
+import 'package:bvibe/data/workspace/number.format.dart';
 import 'package:flutter/material.dart';
 
 class CheckoutOrderSummary extends StatefulWidget {
-  const CheckoutOrderSummary({super.key});
+  final ReceiptModel receipt;
+  const CheckoutOrderSummary({super.key, required this.receipt});
 
   @override
   State<CheckoutOrderSummary> createState() => _CheckoutOrderSummaryState();
 }
 
 class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
-  final TextEditingController _discountController = TextEditingController(text: "10");
+  final TextEditingController _discountController = TextEditingController(
+    text: "10",
+  );
 
   @override
   void dispose() {
@@ -52,70 +57,50 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSubtleRow(context, "Subtotal", "\$84.00"),
+                      _buildSubtleRow(
+                        context,
+                        "Subtotal",
+                        "${AppNumberFormat.formatNumber(double.parse(widget.receipt.totalAmount))} LKR",
+                      ),
                       const SizedBox(height: 15),
-                      
+
                       // Editable Discount Row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Discount",
-                                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          Text(
+                            "Total Discount",
+                            style: Theme.of(context).textTheme.bodyMedium!
+                                .copyWith(
                                   color: AppColors.textSecondary,
                                   fontSize: 16,
                                 ),
-                              ),
-                              const SizedBox(width: 15),
-                              SizedBox(
-                                width: 80,
-                                height: 35,
-                                child: TextField(
-                                  controller: _discountController,
-                                  keyboardType: TextInputType.number,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-                                    isDense: true,
-                                    suffixText: "%",
-                                    filled: true,
-                                    fillColor: AppColors.inputFill,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(color: AppColors.divider),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(color: AppColors.divider),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
                           ),
+
                           Text(
                             "-\$8.40",
-                            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium!
+                                .copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 15),
-                      _buildSubtleRow(context, "Tax (15%)", "\$11.34"),
+                      _buildSubtleRow(
+                        context,
+                        "Service Charge (10%)",
+                        "LKR 1000",
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 30),
 
             // Grand Total (Moved to Top)
@@ -132,7 +117,7 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                   ),
                 ),
                 Text(
-                  "\$86.94",
+                  "${AppNumberFormat.formatNumber(double.parse(widget.receipt.totalAmount))} LKR",
                   style: Theme.of(context).textTheme.headlineLarge!.copyWith(
                     fontWeight: FontWeight.w900,
                     color: AppColors.primary,
@@ -141,7 +126,7 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 30),
             const Divider(height: 1, color: AppColors.divider),
             const SizedBox(height: 25),
@@ -155,15 +140,27 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                 ),
                 Expanded(
                   flex: 1,
-                  child: _buildTableHeader(context, "QTY", align: TextAlign.center),
+                  child: _buildTableHeader(
+                    context,
+                    "QTY",
+                    align: TextAlign.center,
+                  ),
                 ),
                 Expanded(
                   flex: 2,
-                  child: _buildTableHeader(context, "PRICE", align: TextAlign.right),
+                  child: _buildTableHeader(
+                    context,
+                    "PRICE",
+                    align: TextAlign.right,
+                  ),
                 ),
                 Expanded(
                   flex: 2,
-                  child: _buildTableHeader(context, "TOTAL", align: TextAlign.right),
+                  child: _buildTableHeader(
+                    context,
+                    "TOTAL",
+                    align: TextAlign.right,
+                  ),
                 ),
               ],
             ),
@@ -176,16 +173,17 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               padding: EdgeInsets.zero,
-              itemCount: 3, // Dummy data
-              separatorBuilder: (context, index) => const Divider(height: 40, color: AppColors.divider),
+              itemCount: widget.receipt.items.length,
+              separatorBuilder: (context, index) =>
+                  const Divider(height: 40, color: AppColors.divider),
               itemBuilder: (context, index) {
                 return _buildSummaryItemRow(
-                  context, 
-                  "Smoked Salmon Smørrebrød", 
-                  "Gluten-free rye bread, dill cream",
-                  2, 
-                  18.00,
-                  36.00,
+                  context,
+                  widget.receipt.items[index].itemName,
+                  int.parse(widget.receipt.items[index].qty),
+                  double.parse(widget.receipt.items[index].price),
+                  (int.parse(widget.receipt.items[index].qty) *
+                      double.parse(widget.receipt.items[index].price)),
                 );
               },
             ),
@@ -195,7 +193,11 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
     );
   }
 
-  Widget _buildTableHeader(BuildContext context, String title, {TextAlign align = TextAlign.left}) {
+  Widget _buildTableHeader(
+    BuildContext context,
+    String title, {
+    TextAlign align = TextAlign.left,
+  }) {
     return Text(
       title,
       textAlign: align,
@@ -207,37 +209,35 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
     );
   }
 
-  Widget _buildSummaryItemRow(BuildContext context, String name, String desc, int qty, double price, double total) {
+  Widget _buildSummaryItemRow(
+    BuildContext context,
+    String name,
+    int qty,
+    double price,
+    double total,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           flex: 4,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name,
-                style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                desc,
-                style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                  color: AppColors.textHint,
-                ),
-              ),
-            ],
+          child: Text(
+            name,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+            style: Theme.of(context).textTheme.titleMedium!.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w800,
+              fontSize: 16,
+            ),
           ),
         ),
         Expanded(
           flex: 1,
           child: Text(
             qty.toString(),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium!.copyWith(
               color: AppColors.textPrimary,
@@ -248,7 +248,9 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
         Expanded(
           flex: 2,
           child: Text(
-            "\$${price.toStringAsFixed(2)}",
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+            "RS ${price.toStringAsFixed(2)}",
             textAlign: TextAlign.right,
             style: Theme.of(context).textTheme.bodyMedium!.copyWith(
               color: AppColors.textSecondary,
@@ -259,7 +261,9 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
         Expanded(
           flex: 2,
           child: Text(
-            "\$${total.toStringAsFixed(2)}",
+            "RS ${total.toStringAsFixed(2)}",
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
             textAlign: TextAlign.right,
             style: Theme.of(context).textTheme.titleMedium!.copyWith(
               color: AppColors.textPrimary,

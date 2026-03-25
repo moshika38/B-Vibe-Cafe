@@ -242,9 +242,24 @@ class _GeneralPageState extends State<GeneralPage> {
           const SizedBox(height: 12),
 
           // Sample Items
-          _buildReceiptItem(theme, "Item 1", "x2", "${NumberFormat.formatNumber(200)} LKR"),
-          _buildReceiptItem(theme, "Item 2", "x1", "${NumberFormat.formatNumber(150)} LKR"),
-          _buildReceiptItem(theme, "Item 3", "x3", "${NumberFormat.formatNumber(450)} LKR"),
+          _buildReceiptItem(
+            theme,
+            "Item 1",
+            "x2",
+            "${AppNumberFormat.formatNumber(200)} LKR",
+          ),
+          _buildReceiptItem(
+            theme,
+            "Item 2",
+            "x1",
+            "${AppNumberFormat.formatNumber(150)} LKR",
+          ),
+          _buildReceiptItem(
+            theme,
+            "Item 3",
+            "x3",
+            "${AppNumberFormat.formatNumber(450)} LKR",
+          ),
 
           const SizedBox(height: 8),
           _buildDashedDivider(),
@@ -262,7 +277,7 @@ class _GeneralPageState extends State<GeneralPage> {
                 ),
               ),
               Text(
-                "${NumberFormat.formatNumber(800)} LKR",
+                "${AppNumberFormat.formatNumber(800)} LKR",
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,

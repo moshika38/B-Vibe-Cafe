@@ -1,4 +1,5 @@
 import 'package:bvibe/components/conform.window.dart';
+import 'package:bvibe/data/workspace/number.format.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
 import 'package:bvibe/const/theme.dart';
@@ -145,7 +146,7 @@ class OrderRowItem extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      "Rs $amount",
+                      "Rs ${AppNumberFormat.formatNumber(double.parse(amount))} ",
 
                       style: theme.textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.w700,

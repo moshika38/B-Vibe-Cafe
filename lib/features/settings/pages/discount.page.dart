@@ -180,7 +180,10 @@ class _DiscountPageState extends State<DiscountPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Tax Rate (%)", style: theme.textTheme.labelMedium),
+                          Text(
+                            "Tax Rate (%)",
+                            style: theme.textTheme.labelMedium,
+                          ),
                           const SizedBox(height: 6),
                           TextField(
                             controller: _taxController,
@@ -212,7 +215,8 @@ class _DiscountPageState extends State<DiscountPage> {
                             theme,
                             options: ["Exclusive", "Inclusive"],
                             selected: _taxInclusive ? 1 : 0,
-                            onTap: (i) => setState(() => _taxInclusive = i == 1),
+                            onTap: (i) =>
+                                setState(() => _taxInclusive = i == 1),
                           ),
                         ],
                       ),
@@ -284,10 +288,13 @@ class _DiscountPageState extends State<DiscountPage> {
     const subtotal = 8500.0;
     final taxRate = double.tryParse(_taxController.text) ?? 0;
 
-    final activeRules = _rules
-        .where((r) => r.enabled && r.thresholdAmount <= subtotal && r.value > 0)
-        .toList()
-      ..sort((a, b) => b.thresholdAmount.compareTo(a.thresholdAmount));
+    final activeRules =
+        _rules
+            .where(
+              (r) => r.enabled && r.thresholdAmount <= subtotal && r.value > 0,
+            )
+            .toList()
+          ..sort((a, b) => b.thresholdAmount.compareTo(a.thresholdAmount));
     final bestRule = activeRules.isNotEmpty ? activeRules.first : null;
 
     double discountAmount = 0;
@@ -341,7 +348,11 @@ class _DiscountPageState extends State<DiscountPage> {
           const SizedBox(height: 10),
           Divider(color: AppColors.divider),
           const SizedBox(height: 6),
-          _billRow(theme, "Subtotal", "${NumberFormat.formatNumber(subtotal)} LKR"),
+          _billRow(
+            theme,
+            "Subtotal",
+            "${AppNumberFormat.formatNumber(subtotal)} LKR",
+          ),
           if (discountAmount > 0) ...[
             const SizedBox(height: 4),
             _billRow(
@@ -349,7 +360,7 @@ class _DiscountPageState extends State<DiscountPage> {
               bestRule!.type == DiscountType.percentage
                   ? "Discount (${bestRule.value.toStringAsFixed(1)}%)"
                   : "Discount",
-              "- ${NumberFormat.formatNumber(discountAmount)} LKR",
+              "- ${AppNumberFormat.formatNumber(discountAmount)} LKR",
               valueColor: const Color(0xFF22C55E),
             ),
           ],
@@ -360,7 +371,7 @@ class _DiscountPageState extends State<DiscountPage> {
               _taxInclusive
                   ? "Tax (${taxRate.toStringAsFixed(1)}% incl.)"
                   : "Tax (${taxRate.toStringAsFixed(1)}%)",
-              "${NumberFormat.formatNumber(taxAmount)} LKR",
+              "${AppNumberFormat.formatNumber(taxAmount)} LKR",
               valueColor: AppColors.textSecondary,
             ),
           ],
@@ -378,7 +389,7 @@ class _DiscountPageState extends State<DiscountPage> {
                 ),
               ),
               Text(
-                "${NumberFormat.formatNumber(total)} LKR",
+                "${AppNumberFormat.formatNumber(total)} LKR",
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,
@@ -428,39 +439,39 @@ class _DiscountPageState extends State<DiscountPage> {
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   String _ruleLabel(DiscountRule rule) {
-    final threshold = "${NumberFormat.formatNumber(rule.thresholdAmount)} LKR";
+    final threshold =
+        "${AppNumberFormat.formatNumber(rule.thresholdAmount)} LKR";
     final discount = rule.type == DiscountType.percentage
         ? "${rule.value.toStringAsFixed(1)}% off"
-        : "${NumberFormat.formatNumber(rule.value)} LKR off";
+        : "${AppNumberFormat.formatNumber(rule.value)} LKR off";
     return "Spend over $threshold → $discount";
   }
 
-
   Widget _card({required Widget child}) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.textSecondary.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 2),
-            ),
-          ],
+    width: double.infinity,
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.textSecondary.withValues(alpha: 0.06),
+          blurRadius: 12,
+          offset: const Offset(0, 2),
         ),
-        child: child,
-      );
+      ],
+    ),
+    child: child,
+  );
 
   Widget _sectionTitle(ThemeData theme, String title) => Text(
-        title,
-        style: theme.textTheme.labelMedium?.copyWith(
-          color: AppColors.textPrimary,
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-        ),
-      );
+    title,
+    style: theme.textTheme.labelMedium?.copyWith(
+      color: AppColors.textPrimary,
+      fontSize: 13,
+      fontWeight: FontWeight.w700,
+    ),
+  );
 
   Widget _toggleRow(
     ThemeData theme, {
@@ -497,7 +508,11 @@ class _DiscountPageState extends State<DiscountPage> {
             ],
           ),
         ),
-        Switch(value: value, onChanged: onChanged, activeThumbColor: AppColors.primary),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeThumbColor: AppColors.primary,
+        ),
       ],
     );
   }
@@ -542,26 +557,26 @@ class _DiscountPageState extends State<DiscountPage> {
   }
 
   Widget _infoChip(ThemeData theme, String text) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          children: [
-            Icon(Symbols.info, size: 14, color: AppColors.primary),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                text,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: AppColors.primary,
-                ),
-              ),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    decoration: BoxDecoration(
+      color: AppColors.primary.withValues(alpha: 0.06),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Row(
+      children: [
+        Icon(Symbols.info, size: 14, color: AppColors.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: AppColors.primary,
             ),
-          ],
+          ),
         ),
-      );
+      ],
+    ),
+  );
 
   Widget _billRow(
     ThemeData theme,
@@ -574,7 +589,10 @@ class _DiscountPageState extends State<DiscountPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: theme.textTheme.bodyMedium?.copyWith(fontSize: 12)),
+          Text(
+            label,
+            style: theme.textTheme.bodyMedium?.copyWith(fontSize: 12),
+          ),
           Text(
             value,
             style: theme.textTheme.bodyMedium?.copyWith(
@@ -589,34 +607,35 @@ class _DiscountPageState extends State<DiscountPage> {
   }
 
   Widget _emptyRules(ThemeData theme) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 32),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.divider),
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(vertical: 32),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: AppColors.divider),
+    ),
+    child: Column(
+      children: [
+        Icon(
+          Symbols.local_offer,
+          size: 32,
+          color: AppColors.textSecondary.withValues(alpha: 0.4),
         ),
-        child: Column(
-          children: [
-            Icon(
-              Symbols.local_offer,
-              size: 32,
-              color: AppColors.textSecondary.withValues(alpha: 0.4),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              "No discount rules yet",
-              style: theme.textTheme.labelMedium
-                  ?.copyWith(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "Tap \"Add Rule\" to create one.",
-              style: theme.textTheme.labelSmall,
-            ),
-          ],
+        const SizedBox(height: 10),
+        Text(
+          "No discount rules yet",
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: AppColors.textSecondary,
+          ),
         ),
-      );
+        const SizedBox(height: 4),
+        Text(
+          "Tap \"Add Rule\" to create one.",
+          style: theme.textTheme.labelSmall,
+        ),
+      ],
+    ),
+  );
 }
 
 // ── Rule Card — own StatefulWidget so controllers are NOT recreated on parent rebuild ──
@@ -665,7 +684,12 @@ class _RuleCardState extends State<_RuleCard> {
     super.dispose();
   }
 
-  void _notify({double? threshold, DiscountType? type, double? value, bool? enabled}) {
+  void _notify({
+    double? threshold,
+    DiscountType? type,
+    double? value,
+    bool? enabled,
+  }) {
     widget.onChanged(
       widget.rule.copyWith(
         thresholdAmount: threshold,
@@ -678,13 +702,12 @@ class _RuleCardState extends State<_RuleCard> {
 
   String _ruleLabel() {
     final r = widget.rule;
-    final threshold = "${NumberFormat.formatNumber(r.thresholdAmount)} LKR";
+    final threshold = "${AppNumberFormat.formatNumber(r.thresholdAmount)} LKR";
     final discount = r.type == DiscountType.percentage
         ? "${r.value.toStringAsFixed(1)}% off"
-        : "${NumberFormat.formatNumber(r.value)} LKR off";
+        : "${AppNumberFormat.formatNumber(r.value)} LKR off";
     return "Spend over $threshold → $discount";
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -737,7 +760,9 @@ class _RuleCardState extends State<_RuleCard> {
                     color: AppColors.textSecondary.withValues(alpha: 0.6),
                   ),
                   style: IconButton.styleFrom(
-                    backgroundColor: AppColors.textSecondary.withValues(alpha: 0.06),
+                    backgroundColor: AppColors.textSecondary.withValues(
+                      alpha: 0.06,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -756,13 +781,19 @@ class _RuleCardState extends State<_RuleCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Min. Bill (LKR)", style: theme.textTheme.labelMedium),
+                      Text(
+                        "Min. Bill (LKR)",
+                        style: theme.textTheme.labelMedium,
+                      ),
                       const SizedBox(height: 6),
                       TextField(
                         controller: _thresholdCtrl,
                         keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        onChanged: (v) => _notify(threshold: double.tryParse(v) ?? 0),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        onChanged: (v) =>
+                            _notify(threshold: double.tryParse(v) ?? 0),
                         decoration: const InputDecoration(
                           prefixIcon: Icon(Symbols.currency_rupee, size: 18),
                         ),
@@ -778,7 +809,10 @@ class _RuleCardState extends State<_RuleCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Discount Value", style: theme.textTheme.labelMedium),
+                      Text(
+                        "Discount Value",
+                        style: theme.textTheme.labelMedium,
+                      ),
                       const SizedBox(height: 6),
                       TextField(
                         controller: _valueCtrl,
@@ -786,9 +820,12 @@ class _RuleCardState extends State<_RuleCard> {
                           decimal: true,
                         ),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d*'),
+                          ),
                         ],
-                        onChanged: (v) => _notify(value: double.tryParse(v) ?? 0),
+                        onChanged: (v) =>
+                            _notify(value: double.tryParse(v) ?? 0),
                         decoration: InputDecoration(
                           prefixIcon: Icon(
                             rule.type == DiscountType.percentage
@@ -796,8 +833,9 @@ class _RuleCardState extends State<_RuleCard> {
                                 : Symbols.currency_rupee,
                             size: 18,
                           ),
-                          suffixText:
-                              rule.type == DiscountType.percentage ? "%" : "LKR",
+                          suffixText: rule.type == DiscountType.percentage
+                              ? "%"
+                              : "LKR",
                         ),
                       ),
                     ],
@@ -817,7 +855,9 @@ class _RuleCardState extends State<_RuleCard> {
                       options: ["%", "LKR"],
                       selected: rule.type == DiscountType.percentage ? 0 : 1,
                       onTap: (i) => _notify(
-                        type: i == 0 ? DiscountType.percentage : DiscountType.fixed,
+                        type: i == 0
+                            ? DiscountType.percentage
+                            : DiscountType.fixed,
                       ),
                     ),
                   ],

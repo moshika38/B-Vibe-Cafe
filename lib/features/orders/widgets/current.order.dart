@@ -155,7 +155,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
             SizedBox(
               width: 220,
               child: Text(
-                "${NumberFormat.formatNumber(double.parse(total))} LKR",
+                "${AppNumberFormat.formatNumber(double.parse(total))} LKR",
                 textAlign: TextAlign.end,
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
@@ -193,7 +193,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
               child: ElevatedButton(
                 onPressed: () {
                   // go to checkout page
-                  context.push('/orders/checkout');
+                  context.push('/orders/checkout', extra: widget.receiptId);
                 },
                 child: Text(
                   "Place Order ( Num+Enter )",
@@ -260,7 +260,7 @@ Widget _buildItemCard(
                   ),
                 ),
                 Text(
-                  "${NumberFormat.formatNumber(double.parse(price))} LKR",
+                  "${AppNumberFormat.formatNumber(double.parse(price))} LKR",
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleSmall,
@@ -289,7 +289,7 @@ Widget _buildItemCard(
                 Padding(
                   padding: const EdgeInsets.only(right: 3),
                   child: Text(
-                    "${NumberFormat.formatNumber(double.parse(total))} LKR",
+                    "${AppNumberFormat.formatNumber(double.parse(total))} LKR",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleSmall,

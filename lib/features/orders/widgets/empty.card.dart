@@ -33,7 +33,7 @@ class EmptyCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Total ${NumberFormat.formatNumber(50)} LKR",
+                    "Total ${AppNumberFormat.formatNumber(50)} LKR",
                     style: Theme.of(context).textTheme.titleSmall!.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -70,7 +70,7 @@ class EmptyCard extends StatelessWidget {
               ),
             ),
             Text(
-              "${NumberFormat.formatNumber(0)} LKR",
+              "${AppNumberFormat.formatNumber(0)} LKR",
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
               style: Theme.of(context).textTheme.titleSmall!.copyWith(
@@ -96,7 +96,7 @@ class EmptyCard extends StatelessWidget {
             SizedBox(
               width: 220,
               child: Text(
-                "${NumberFormat.formatNumber(0)} LKR",
+                "${AppNumberFormat.formatNumber(0)} LKR",
                 textAlign: TextAlign.end,
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,

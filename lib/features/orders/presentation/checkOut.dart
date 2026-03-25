@@ -2,19 +2,17 @@ import 'package:bvibe/components/navigation.title.dart';
 import 'package:bvibe/const/theme.dart';
 import 'package:bvibe/features/orders/widgets/checkout.order.summary.dart';
 import 'package:bvibe/features/orders/widgets/checkout.payment.section.dart';
+import 'package:bvibe/features/orders/widgets/empty.item.dart';
+import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 
 class CheckoutPage extends StatelessWidget {
-  const CheckoutPage({super.key});
+  final String receiptId;
+  const CheckoutPage({super.key, required this.receiptId});
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-
-    final bool isTablet = width < 1100;
-    final bool isMobile = width < 800;
-
     return Container(
       color: AppColors.background,
       child: Padding(
@@ -29,29 +27,33 @@ class CheckoutPage extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-            Expanded(
-              child: isMobile
-                  ? ListView(
-                      children: const [
-                        CheckoutOrderSummary(),
-                        SizedBox(height: 20),
-                        CheckoutPaymentSection(),
-                      ],
-                    )
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: isTablet ? 1 : 2,
-                          child: const CheckoutOrderSummary(),
-                        ),
-                        const SizedBox(width: 25),
-                        Expanded(
-                          flex: isTablet ? 1 : 2,
-                          child: const CheckoutPaymentSection(),
-                        ),
-                      ],
-                    ),
+            Consumer<ReceiptProvider>(
+              builder: (context, value, child) => FutureBuilder(
+                future: value.getReceipt(receiptId),
+                builder: (context, asyncSnapshot) {
+                  if (asyncSnapshot.hasData) {
+                    final receipt = asyncSnapshot.data;
+
+                    return Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: CheckoutOrderSummary(receipt: receipt!),
+                          ),
+                          const SizedBox(width: 25),
+                          Expanded(
+                            flex: 1,
+                            child: CheckoutPaymentSection(receipt: receipt),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return EmptyItem();
+                },
+              ),
             ),
           ],
         ),

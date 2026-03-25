@@ -42,8 +42,8 @@ class _DetailsTableState extends State<DetailsTable> {
                       "25/01/02",
                       "10:10 PM",
                       "2",
-                      "${NumberFormat.formatNumber(10700)} LKR",
-                       "Paid",
+                      "${AppNumberFormat.formatNumber(10700)} LKR",
+                      "Paid",
                     );
                   },
                 ),

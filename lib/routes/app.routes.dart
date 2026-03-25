@@ -3,7 +3,7 @@ import 'package:bvibe/features/auth/presentation/login_screen.dart';
 import 'package:bvibe/features/dashboard/presentation/dashboard.dart';
 import 'package:bvibe/features/menu/presentation/menu.dart';
 import 'package:bvibe/features/orders/presentation/checkOut.dart';
-import 'package:bvibe/features/orders/presentation/new.order.dart';
+import 'package:bvibe/features/orders/presentation/create.order.dart';
 import 'package:bvibe/features/orders/presentation/orders.dart';
 import 'package:bvibe/features/history/presentation/history.dart';
 import 'package:bvibe/features/settings/presentation/settings.dart';
@@ -32,13 +32,13 @@ class AppRoutes {
             routes: [
               GoRoute(
                 path: '/checkout',
-                builder: (context, state) => CheckoutPage(),
+                builder: (context, state) =>
+                    CheckoutPage(receiptId: state.extra as String),
               ),
               GoRoute(
                 path: '/newOrder',
-                builder: (context, state) => NewOrders(
-                    invoiceId: state.extra as String,
-                ),
+                builder: (context, state) =>
+                    CreateOrders(invoiceId: state.extra as String),
               ),
             ],
           ),

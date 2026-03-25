@@ -121,4 +121,34 @@ class ReceiptProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
+
+  // Update payment details by receipt id
+Future<void> updatePayment(
+  String receiptId, {
+  required bool paymentStatus,
+  required String paymentDate,
+  required String paymentTime,
+  required String paymentMethod,
+  required String paidAmount,
+  required String balanceAmount,
+}) async {
+  final db = await DatabaseHelper.instance.database;
+
+  await db.update(
+    'receipts',
+    {
+      'payment_status': paymentStatus ? 1 : 0,
+      'payment_date': paymentDate,
+      'payment_time': paymentTime,
+      'payment_method': paymentMethod,
+      'paid_amount': paidAmount,
+      'balance_amount': balanceAmount,
+    },
+    where: 'receipt_id = ?',
+    whereArgs: [receiptId],
+  );
+
+  notifyListeners();
+}
 }

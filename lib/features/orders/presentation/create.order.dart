@@ -11,15 +11,15 @@ import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class NewOrders extends StatefulWidget {
+class CreateOrders extends StatefulWidget {
   final String invoiceId;
-  const NewOrders({super.key, required this.invoiceId});
+  const CreateOrders({super.key, required this.invoiceId});
 
   @override
-  State<NewOrders> createState() => _NewOrdersState();
+  State<CreateOrders> createState() => _CreateOrdersState();
 }
 
-class _NewOrdersState extends State<NewOrders> {
+class _CreateOrdersState extends State<CreateOrders> {
   int activeCate = 0;
   String receiptId = "";
 
