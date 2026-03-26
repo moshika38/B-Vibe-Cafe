@@ -2,12 +2,13 @@ import 'package:bvibe/const/theme.dart';
 import 'package:flutter/material.dart';
 
 class UserRoleCard extends StatelessWidget {
-  const UserRoleCard({super.key});
+  final bool isOrder ;
+  const UserRoleCard({super.key, required this.isOrder});
 
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    return Row(
+    return !isOrder? Row(
       children: [
         Container(
           width: 35,
@@ -46,6 +47,22 @@ class UserRoleCard extends StatelessWidget {
           ],
         ),
       ],
-    );
+    ): Container(
+          width: 35,
+          height: 35,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: const Color(0xFF338f8e),
+          ),
+          child: Center(
+            child: Text(
+              "M",
+              style: theme.textTheme.bodyLarge!.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppColors.surface,
+              ),
+            ),
+          ),
+        );
   }
 }

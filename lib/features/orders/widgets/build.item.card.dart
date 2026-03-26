@@ -42,7 +42,6 @@ class _BuildItemCardState extends State<BuildItemCard> {
   @override
   void initState() {
     super.initState();
-    
     _qty = 1;
     _qtyController = TextEditingController(text: '1')
       ..selection = const TextSelection(baseOffset: 0, extentOffset: 1);
