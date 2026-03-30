@@ -16,7 +16,8 @@ class BuildItemCard extends StatefulWidget {
   final String cate;
   final String cost;
   final String des;
-  
+  final VoidCallback? onTap;
+
   const BuildItemCard({
     super.key,
     required this.title,
@@ -28,6 +29,7 @@ class BuildItemCard extends StatefulWidget {
     required this.cate,
     required this.cost,
     required this.des,
+    this.onTap,
   });
 
   @override
@@ -35,42 +37,58 @@ class BuildItemCard extends StatefulWidget {
 }
 
 class _BuildItemCardState extends State<BuildItemCard> {
-  int _qty = 0; 
+  int _qty = 0;
   double _discount = 0.0;
   late TextEditingController _qtyController;
+  late FocusNode _qtyFocusNode;
+
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    _qty = 1;
-    _qtyController = TextEditingController(text: '1')
+    _qty = 0;
+    _qtyController = TextEditingController(text: '0')
       ..selection = const TextSelection(baseOffset: 0, extentOffset: 1);
+    _qtyFocusNode = FocusNode();
+    if (widget.isSelect) {
+      _qtyFocusNode.requestFocus();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant BuildItemCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isSelect && !oldWidget.isSelect) {
+      _qtyFocusNode.requestFocus();
+    }
   }
 
   @override
   void dispose() {
     _qtyController.dispose();
+    _qtyFocusNode.dispose();
     super.dispose();
   }
 
-  void _addOrUpdateItem(ReceiptProvider provider, int qtyDelta) {
-    if (qtyDelta == 0) return;
-    
-    double basePrice = double.tryParse(widget.price) ?? 0.0;
-    double finalPrice = basePrice * (1 - (_discount / 100));
+  void _addOrUpdateItem(ReceiptProvider provider) {
+    if (_qty < 0) return;
 
-    provider.addOrIncrementItem(
+    double basePrice = double.tryParse(widget.price) ?? 0.0;
+    double perItemDiscount = _discount;
+
+    provider.addOrUpdateItem(
       widget.receiptId,
       ReceiptItemsModel(
         id: widget.itemId,
         category: widget.cate,
         itemName: widget.title,
         description: widget.des,
-        price: finalPrice.toStringAsFixed(2),
+        price: basePrice.toStringAsFixed(2),
         cost: widget.cost,
         imagePath: widget.image,
-        qty: qtyDelta.toString(),
-        netAmount: finalPrice.toStringAsFixed(2),
+        qty: _qty.toString(),
+        discount: perItemDiscount.toStringAsFixed(2),
       ),
     );
   }
@@ -80,7 +98,7 @@ class _BuildItemCardState extends State<BuildItemCard> {
       _qty++;
       _qtyController.text = _qty.toString();
     });
-    _addOrUpdateItem(provider, 1);
+    _addOrUpdateItem(provider);
   }
 
   void _decrement(ReceiptProvider provider) {
@@ -89,37 +107,46 @@ class _BuildItemCardState extends State<BuildItemCard> {
         _qty--;
         _qtyController.text = _qty.toString();
       });
-      _addOrUpdateItem(provider, -1);
+      _addOrUpdateItem(provider);
     }
   }
 
   void _onQtyChanged(String value, ReceiptProvider provider) {
-    final int newQty = int.tryParse(value) ?? 1;
+    final int newQty = int.tryParse(value) ?? 0;
     if (newQty != _qty) {
-      final int delta = newQty - _qty;
       setState(() {
         _qty = newQty;
       });
-      _addOrUpdateItem(provider, delta);
+      _addOrUpdateItem(provider);
     }
   }
 
-  Future<void> _showDiscountDialog() async {
+  Future<void> _showDiscountDialog(ReceiptProvider provider) async {
     double? updatedDiscount = await showDialog<double>(
       context: context,
       builder: (ctx) {
-        TextEditingController ctrl = TextEditingController(text: _discount.toStringAsFixed(0));
-        ctrl.selection = TextSelection(baseOffset: 0, extentOffset: ctrl.text.length);
-        
+        TextEditingController ctrl = TextEditingController(
+          text: _discount.toStringAsFixed(0),
+        );
+        ctrl.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: ctrl.text.length,
+        );
+
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Apply Discount (%)', style: TextStyle(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Apply Discount (LKR)',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: TextField(
             controller: ctrl,
             autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
-              suffixText: '%',
+              suffixText: 'LKR',
               filled: true,
               fillColor: AppColors.background,
               border: OutlineInputBorder(
@@ -131,13 +158,18 @@ class _BuildItemCardState extends State<BuildItemCard> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.textHint)),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.textHint),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () => Navigator.pop(ctx, double.tryParse(ctrl.text)),
               child: const Text('Apply'),
@@ -147,8 +179,10 @@ class _BuildItemCardState extends State<BuildItemCard> {
       },
     );
 
-    if (updatedDiscount != null && updatedDiscount >= 0 && updatedDiscount <= 100) {
+    if (updatedDiscount != null &&
+        updatedDiscount >= 0) {
       setState(() => _discount = updatedDiscount);
+      _addOrUpdateItem(provider);
     }
   }
 
@@ -156,10 +190,31 @@ class _BuildItemCardState extends State<BuildItemCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final basePrice = double.tryParse(widget.price) ?? 0.0;
-    final finalPrice = basePrice * (1 - (_discount / 100));
 
     return Consumer<ReceiptProvider>(
-      builder: (context, value, child) => Container(
+      builder: (context, value, child) {
+        if (!_initialized) {
+           final cached = value.getCachedReceipt(widget.receiptId);
+           if (cached != null) {
+             final existing = cached.items.where((i) => i.id == widget.itemId).toList();
+             if (existing.isNotEmpty) {
+               _qty = int.tryParse(existing.first.qty) ?? 0;
+               double absoluteDiscount = double.tryParse(existing.first.discount) ?? 0.0;
+               _discount = absoluteDiscount;
+               
+               if (_qtyController.text == '0' && _qty != 0) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) _qtyController.text = _qty.toString();
+                  });
+               }
+             }
+           }
+           _initialized = true;
+        }
+
+        final finalPrice = basePrice - _discount;
+
+        return Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           border: widget.isSelect
@@ -177,24 +232,24 @@ class _BuildItemCardState extends State<BuildItemCard> {
           borderRadius: BorderRadius.circular(16),
           child: Material(
             color: theme.colorScheme.surface,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            child: InkWell(
+              onTap: widget.onTap,
+              onDoubleTap: () {
+                widget.onTap?.call();
+                _increment(value);
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 /// IMAGE
                 Expanded(
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
                       widget.image.startsWith("assets/")
-                          ? Image.asset(
-                              widget.image,
-                              fit: BoxFit.cover,
-                            )
-                          : Image.file(
-                              File(widget.image),
-                              fit: BoxFit.cover,
-                            ),
-                      
+                          ? Image.asset(widget.image, fit: BoxFit.cover)
+                          : Image.file(File(widget.image), fit: BoxFit.cover),
+
                       /// Subtle gradient for text readability if needed
                       Positioned.fill(
                         child: Container(
@@ -211,20 +266,23 @@ class _BuildItemCardState extends State<BuildItemCard> {
                           ),
                         ),
                       ),
-                      
+
                       /// Discount Badge
                       if (_discount > 0)
                         Positioned(
                           top: 8,
                           right: 8,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.redAccent,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              '-${_discount.toStringAsFixed(0)}%',
+                              '-${AppNumberFormat.formatNumber(_discount)} LKR',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,
@@ -254,9 +312,9 @@ class _BuildItemCardState extends State<BuildItemCard> {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      
+
                       const SizedBox(height: 4),
-                      
+
                       /// PRICE
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -277,19 +335,19 @@ class _BuildItemCardState extends State<BuildItemCard> {
                                 decoration: TextDecoration.lineThrough,
                               ),
                             ),
-                          ]
+                          ],
                         ],
                       ),
-                      
+
                       const SizedBox(height: 12),
-                      
+
                       /// CONTROLS (Discount & Qty)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           /// Discount Option Button
                           InkWell(
-                            onTap: _showDiscountDialog,
+                            onTap: () => _showDiscountDialog(value),
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
                               padding: const EdgeInsets.all(6),
@@ -304,7 +362,7 @@ class _BuildItemCardState extends State<BuildItemCard> {
                               ),
                             ),
                           ),
-                          
+
                           /// Qty Control
                           Container(
                             decoration: BoxDecoration(
@@ -314,20 +372,29 @@ class _BuildItemCardState extends State<BuildItemCard> {
                             child: Row(
                               children: [
                                 InkWell(
-                                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(10)),
+                                  borderRadius: const BorderRadius.horizontal(
+                                    left: Radius.circular(10),
+                                  ),
                                   onTap: () => _decrement(value),
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
-                                    child: const Icon(Icons.remove, size: 16, color: AppColors.textSecondary),
+                                    child: const Icon(
+                                      Icons.remove,
+                                      size: 16,
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
                                 ),
                                 Container(
-                                  constraints: const BoxConstraints(minWidth: 40),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 40,
+                                  ),
                                   width: 40,
                                   alignment: Alignment.center,
                                   child: TextField(
                                     controller: _qtyController,
-                                    autofocus: true,
+                                    focusNode: _qtyFocusNode,
+                                    autofocus: widget.isSelect,
                                     textAlign: TextAlign.center,
                                     keyboardType: TextInputType.number,
                                     style: theme.textTheme.labelLarge!.copyWith(
@@ -341,18 +408,25 @@ class _BuildItemCardState extends State<BuildItemCard> {
                                       enabledBorder: InputBorder.none,
                                       focusedBorder: InputBorder.none,
                                     ),
-                                    onSubmitted: (val) => _onQtyChanged(val, value),
+                                    onSubmitted: (val) =>
+                                        _onQtyChanged(val, value),
                                     onChanged: (val) {
                                       // Optional: Live update on typing
                                     },
                                   ),
                                 ),
                                 InkWell(
-                                  borderRadius: const BorderRadius.horizontal(right: Radius.circular(10)),
+                                  borderRadius: const BorderRadius.horizontal(
+                                    right: Radius.circular(10),
+                                  ),
                                   onTap: () => _increment(value),
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
-                                    child: const Icon(Icons.add, size: 16, color: AppColors.primary),
+                                    child: const Icon(
+                                      Icons.add,
+                                      size: 16,
+                                      color: AppColors.primary,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -365,9 +439,11 @@ class _BuildItemCardState extends State<BuildItemCard> {
                 ),
               ],
             ),
+            ),
           ),
         ),
-      ),
+      );
+      },
     );
   }
 }

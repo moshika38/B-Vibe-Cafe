@@ -17,6 +17,13 @@ class ReceiptProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  ReceiptModel? _cachedReceipt;
+
+  ReceiptModel? getCachedReceipt(String id) {
+    if (_cachedReceipt?.receiptId == id) return _cachedReceipt;
+    return null;
+  }
+
   // Get
   Future<ReceiptModel?> getReceipt(String id) async {
     final db = await DatabaseHelper.instance.database;
@@ -27,7 +34,8 @@ class ReceiptProvider extends ChangeNotifier {
     );
 
     if (maps.isEmpty) return null;
-    return ReceiptModel.fromMap(maps.first);
+    _cachedReceipt = ReceiptModel.fromMap(maps.first);
+    return _cachedReceipt;
   }
 
   // Get All
@@ -41,6 +49,7 @@ class ReceiptProvider extends ChangeNotifier {
   Future<void> deleteReceipt(String id) async {
     final db = await DatabaseHelper.instance.database;
     await db.delete('receipts', where: 'receipt_id = ?', whereArgs: [id]);
+    if (_cachedReceipt?.receiptId == id) _cachedReceipt = null;
     notifyListeners();
   }
 
@@ -62,7 +71,7 @@ class ReceiptProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addOrIncrementItem(
+  Future<void> addOrUpdateItem(
     String receiptId,
     ReceiptItemsModel newItem,
   ) async {
@@ -74,29 +83,20 @@ class ReceiptProvider extends ChangeNotifier {
     );
 
     List<ReceiptItemsModel> updatedItems;
+    final newQty = int.tryParse(newItem.qty) ?? 0;
 
     if (existingIndex != -1) {
-      final existingItem = receipt.items[existingIndex];
-      final newQty = (int.parse(existingItem.qty) + int.parse(newItem.qty))
-          .toString();
-      final newNetAmount =
-          (int.parse(newQty) * double.parse(existingItem.price)).toString();
-
       updatedItems = [...receipt.items];
-      updatedItems[existingIndex] = ReceiptItemsModel(
-        id: existingItem.id,
-
-        itemName: existingItem.itemName,
-        description: existingItem.description,
-        price: existingItem.price,
-        cost: existingItem.cost,
-        imagePath: existingItem.imagePath,
-        qty: newQty,
-        netAmount: newNetAmount,
-        category: existingItem.category,
-      );
+      if (newQty <= 0) {
+        updatedItems.removeAt(existingIndex);
+      } else {
+        updatedItems[existingIndex] = newItem;
+      }
     } else {
-      updatedItems = [...receipt.items, newItem];
+      updatedItems = [...receipt.items];
+      if (newQty > 0) {
+        updatedItems.add(newItem);
+      }
     }
 
     await updateReceiptItems(receiptId, updatedItems);
@@ -106,15 +106,21 @@ class ReceiptProvider extends ChangeNotifier {
     final receipt = await getReceipt(receiptId);
     if (receipt == null) return;
 
-    double total = 0;
+    double netTotal = 0;
     for (int i = 0; i < receipt.items.length; i++) {
-      total += double.parse(receipt.items[i].netAmount);
+      double price = double.tryParse(receipt.items[i].price) ?? 0;
+      double discount = double.tryParse(receipt.items[i].discount) ?? 0;
+      int qty = int.tryParse(receipt.items[i].qty) ?? 0;
+      netTotal += (price - discount) * qty;
     }
+
+    double serviceCharge = netTotal * 0.10;
+    double grandTotal = netTotal + serviceCharge;
 
     final db = await DatabaseHelper.instance.database;
     await db.update(
       'receipts',
-      {'total_amount': total.toStringAsFixed(3)},
+      {'total_amount': grandTotal.toStringAsFixed(3)},
       where: 'receipt_id = ?',
       whereArgs: [receiptId],
     );
@@ -122,33 +128,32 @@ class ReceiptProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-
   // Update payment details by receipt id
-Future<void> updatePayment(
-  String receiptId, {
-  required bool paymentStatus,
-  required String paymentDate,
-  required String paymentTime,
-  required String paymentMethod,
-  required String paidAmount,
-  required String balanceAmount,
-}) async {
-  final db = await DatabaseHelper.instance.database;
+  Future<void> updatePayment(
+    String receiptId, {
+    required bool paymentStatus,
+    required String paymentDate,
+    required String paymentTime,
+    required String paymentMethod,
+    required String paidAmount,
+    required String balanceAmount,
+  }) async {
+    final db = await DatabaseHelper.instance.database;
 
-  await db.update(
-    'receipts',
-    {
-      'payment_status': paymentStatus ? 1 : 0,
-      'payment_date': paymentDate,
-      'payment_time': paymentTime,
-      'payment_method': paymentMethod,
-      'paid_amount': paidAmount,
-      'balance_amount': balanceAmount,
-    },
-    where: 'receipt_id = ?',
-    whereArgs: [receiptId],
-  );
+    await db.update(
+      'receipts',
+      {
+        'payment_status': paymentStatus ? 1 : 0,
+        'payment_date': paymentDate,
+        'payment_time': paymentTime,
+        'payment_method': paymentMethod,
+        'paid_amount': paidAmount,
+        'balance_amount': balanceAmount,
+      },
+      where: 'receipt_id = ?',
+      whereArgs: [receiptId],
+    );
 
-  notifyListeners();
-}
+    notifyListeners();
+  }
 }

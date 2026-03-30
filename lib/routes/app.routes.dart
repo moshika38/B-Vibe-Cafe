@@ -4,8 +4,9 @@ import 'package:bvibe/features/dashboard/presentation/dashboard.dart';
 import 'package:bvibe/features/menu/presentation/menu.dart';
 import 'package:bvibe/features/orders/presentation/checkOut.dart';
 import 'package:bvibe/features/orders/presentation/create.order.dart';
-import 'package:bvibe/features/orders/presentation/orders.dart';
+import 'package:bvibe/features/orders/presentation/recent.orders.dart';
 import 'package:bvibe/features/history/presentation/history.dart';
+import 'package:bvibe/features/orders/presentation/view.order.dart';
 import 'package:bvibe/features/settings/presentation/settings.dart';
 import 'package:bvibe/features/shell/presentation/main.shell.dart';
 import 'package:go_router/go_router.dart';
@@ -28,7 +29,7 @@ class AppRoutes {
           GoRoute(path: '/menu', builder: (context, state) => AppMenu()),
           GoRoute(
             path: '/orders',
-            builder: (context, state) => Orders(),
+            builder: (context, state) => RecentOrders(),
             routes: [
               GoRoute(
                 path: '/checkout',
@@ -39,6 +40,11 @@ class AppRoutes {
                 path: '/newOrder',
                 builder: (context, state) =>
                     CreateOrders(invoiceId: state.extra as String),
+              ),
+              GoRoute(
+                path: '/viewOrder',
+                builder: (context, state) =>
+                    ViewOrder(invoiceId: state.extra as String),
               ),
             ],
           ),

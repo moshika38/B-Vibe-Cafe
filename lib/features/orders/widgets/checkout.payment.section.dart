@@ -1,7 +1,10 @@
 import 'package:bvibe/const/theme.dart';
 import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:bvibe/features/orders/widgets/checkout.widgets.dart';
+import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class CheckoutPaymentSection extends StatefulWidget {
   final ReceiptModel receipt;
@@ -14,15 +17,58 @@ class CheckoutPaymentSection extends StatefulWidget {
 class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
   String selectedPayment = "Cash";
   final TextEditingController _amountReceivedController = TextEditingController(
-    text: "5000.00",
+    text: "0.00",
   );
+  late final FocusNode _amountFocusNode;
 
   bool isConform = false;
+  double balance = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _amountFocusNode = FocusNode();
+    _amountFocusNode.addListener(() {
+      if (_amountFocusNode.hasFocus) {
+        _amountReceivedController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: _amountReceivedController.text.length,
+        );
+      }
+    });
+  }
+
+  double get _totalAmount => double.tryParse(widget.receipt.totalAmount) ?? 0.0;
+
+  bool get _isInsufficient => balance < 0;
 
   @override
   void dispose() {
     _amountReceivedController.dispose();
+    _amountFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _confirmPayment() async {
+    if (_isInsufficient) return;
+
+    final now = DateTime.now();
+    final dateStr =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final timeStr =
+        "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
+
+    await Provider.of<ReceiptProvider>(context, listen: false).updatePayment(
+      widget.receipt.receiptId,
+      paymentStatus: true,
+      paymentDate: dateStr,
+      paymentTime: timeStr,
+      paymentMethod: selectedPayment,
+      paidAmount: _amountReceivedController.text,
+      balanceAmount: balance.toStringAsFixed(2),
+    );
+
+    setState(() => isConform = true);
   }
 
   @override
@@ -72,39 +118,36 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
               ],
             ),
 
-            const SizedBox(height: 20),
-
-            // CheckoutWidgets().buildCheckOutInputBars(
-            //   context,
-            //   _discountController,
-            //   "DISCOUNT AMOUNT",
-            // ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 50),
             CheckoutWidgets().buildCheckOutInputBars(
               context,
               _amountReceivedController,
               "RECEIVED AMOUNT",
+              (value) {
+                setState(() {
+                  final received = double.tryParse(value) ?? 0.0;
+                  balance = received - _totalAmount;
+                });
+              },
+              focusNode: _amountFocusNode,
             ),
 
             const SizedBox(height: 20),
 
-            // Change Return Box
-            CheckoutWidgets().buildReturnChangeCard(context),
+            // Change Return Box (red if insufficient, green otherwise)
+            CheckoutWidgets().buildReturnChangeCard(
+              context,
+              balance.toString(),
+              isInsufficient: _isInsufficient,
+            ),
 
             const SizedBox(height: 40),
 
-            // Action Buttons
+            // Action Buttons — confirm disabled when underpaid
             CheckoutWidgets().buildConformActionBtn(
               context,
               isConform,
-              !isConform
-                  ? () {
-                      setState(() {
-                        isConform = true;
-                      });
-                      print("Order confirmed");
-                    }
-                  : () {},
+              (isConform || _isInsufficient) ? () {} : _confirmPayment,
             ),
             const SizedBox(height: 15),
             CheckoutWidgets().buildPrintReceiptBtn(
@@ -112,7 +155,8 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
               isConform,
               isConform
                   ? () {
-                      print("print receipt");
+                      print("Print recipt");
+                      context.go('/orders');
                     }
                   : () {},
             ),

@@ -10,14 +10,14 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-class Orders extends StatefulWidget {
-  const Orders({super.key});
+class RecentOrders extends StatefulWidget {
+  const RecentOrders({super.key});
 
   @override
-  State<Orders> createState() => _OrdersState();
+  State<RecentOrders> createState() => _RecentOrdersState();
 }
 
-class _OrdersState extends State<Orders> {
+class _RecentOrdersState extends State<RecentOrders> {
   int selectIndex = 0;
   int _totalItems = 0;
   String selectInvoiceId = "";
@@ -28,7 +28,7 @@ class _OrdersState extends State<Orders> {
   static const double _rowHeight = 58.0;
 
   void _createNewReceipt() {
-    context.go("/orders/newOrder/");
+    context.push("/orders/newOrder", extra: "");
   }
 
   void _updateSelection(int newIndex) {
@@ -253,38 +253,35 @@ class _OrdersState extends State<Orders> {
                                         ),
                                         itemCount: receipt.length,
                                         itemBuilder: (context, index) {
-                                          return GestureDetector(
-                                            onTap: () {
-                                              context.push(
-                                                '/orders/newOrder',
-                                                extra: receipt[index].receiptId,
-                                              );
+                                          return OrderRowItem(
+                                            index: index,
+                                            isSelect: selectIndex == index,
+                                            onTap: () => setState(() {
+                                              _updateSelection(index);
+                                              _focusNode.requestFocus();
+                                            }),
+                                            navigateTap: () {
+                                              receipt[index].paymentStatus
+                                                  ? context.push(
+                                                      '/orders/viewOrder',
+                                                      extra: receipt[index]
+                                                          .receiptId,
+                                                    )
+                                                  : context.push(
+                                                      '/orders/newOrder',
+                                                      extra: receipt[index]
+                                                          .receiptId,
+                                                    );
                                             },
-                                            child: OrderRowItem(
-                                              index: index,
-                                              isSelect: selectIndex == index,
-                                              onTap: () => setState(() {
-                                                _updateSelection(index);
-                                                _focusNode.requestFocus();
-                                              }),
-                                              navigateTap: () {
-                                                context.push(
-                                                  '/orders/newOrder',
-                                                  extra:
-                                                      receipt[index].receiptId,
-                                                );
-                                              },
-                                              invoiceNumber:
-                                                  receipt[index].receiptId,
-                                              items: receipt[index].items.length
-                                                  .toString(),
-                                              time: receipt[index]
-                                                  .receiptDateTime,
-                                              amount:
-                                                  receipt[index].totalAmount,
-                                              status:
-                                                  receipt[index].paymentStatus,
-                                            ),
+                                            invoiceNumber:
+                                                receipt[index].receiptId,
+                                            items: receipt[index].items.length
+                                                .toString(),
+                                            time:
+                                                receipt[index].receiptDateTime,
+                                            amount: receipt[index].totalAmount,
+                                            status:
+                                                receipt[index].paymentStatus,
                                           );
                                         },
                                       );

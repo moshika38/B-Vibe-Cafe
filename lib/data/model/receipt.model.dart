@@ -67,7 +67,7 @@ class ReceiptItemsModel {
   final String cost;
   final String imagePath;
   final String qty;
-  final String netAmount;
+  final String discount;
 
   ReceiptItemsModel({
     this.id,
@@ -78,7 +78,7 @@ class ReceiptItemsModel {
     required this.cost,
     required this.imagePath,
     required this.qty,
-    required this.netAmount,
+    required this.discount,
   });
 
   Map<String, dynamic> toMap() {
@@ -91,7 +91,7 @@ class ReceiptItemsModel {
       'cost': cost,
       'image_path': imagePath,
       'qty': qty,
-      'net_amount': netAmount,
+      'discount': discount,
     };
   }
 
@@ -105,7 +105,7 @@ class ReceiptItemsModel {
       cost: map['cost'],
       imagePath: map['image_path'],
       qty: map['qty'],
-      netAmount: map['net_amount'],
+      discount: map['discount'] ?? '0.00',
     );
   }
 }

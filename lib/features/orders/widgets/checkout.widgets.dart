@@ -1,4 +1,5 @@
 import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/data/workspace/number.format.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
@@ -7,7 +8,9 @@ class CheckoutWidgets {
     BuildContext context,
     TextEditingController amountReceivedController,
     String title,
-  ) {
+    ValueChanged<String> onChange, {
+    FocusNode? focusNode,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -41,6 +44,9 @@ class CheckoutWidgets {
               const SizedBox(width: 10),
               Expanded(
                 child: TextField(
+                  autofocus: focusNode == null,
+                  focusNode: focusNode,
+                  onChanged: onChange,
                   controller: amountReceivedController,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
@@ -67,11 +73,15 @@ class CheckoutWidgets {
     );
   }
 
-  Widget buildReturnChangeCard(BuildContext context) {
+  Widget buildReturnChangeCard(BuildContext context, String text, {bool isInsufficient = false}) {
+    final Color cardColor = isInsufficient ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9);
+    final Color accentColor = isInsufficient ? const Color(0xFFD32F2F) : const Color(0xFF00C853);
+    final String label = isInsufficient ? "AMOUNT DUE" : "CHANGE RETURN";
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9), // Light green
+        color: cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -79,44 +89,48 @@ class CheckoutWidgets {
         children: [
           Row(
             children: [
-              const CircleAvatar(
-                backgroundColor: Color(0xFF00C853), // Green
+              CircleAvatar(
+                backgroundColor: accentColor,
                 radius: 20,
-                child: Icon(Icons.change_circle, color: Colors.white, size: 24),
+                child: Icon(
+                  isInsufficient ? Icons.warning_amber_rounded : Icons.change_circle,
+                  color: Colors.white,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "CHANGE RETURN",
+                    label,
                     style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                      color: const Color(0xFF00C853),
+                      color: accentColor,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    "\$13.06",
+                  Text(
+                    "LKR ${AppNumberFormat.formatNumber(num.parse(text).abs())}",
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF00C853),
+                      color: accentColor,
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          const Opacity(
+          Opacity(
             opacity: 0.3,
             child: CircleAvatar(
-              backgroundColor: Color(0xFF00C853),
+              backgroundColor: accentColor,
               radius: 16,
               child: Text(
-                "\$",
-                style: TextStyle(
+                isInsufficient ? "!" : "\$",
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),

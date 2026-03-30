@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:bvibe/components/conform.window.dart';
 import 'package:bvibe/const/theme.dart';
-import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:bvibe/data/workspace/number.format.dart';
-import 'package:bvibe/features/orders/widgets/empty.card.dart';
+import 'package:bvibe/features/orders/widgets/current.order.widget.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
@@ -26,118 +23,126 @@ class _CurrentOrderState extends State<CurrentOrder> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(10),
       ),
-      padding: const EdgeInsets.all(16),
-      child: Consumer<ReceiptProvider>(
-        builder: (context, value, child) {
-          return FutureBuilder(
-            future: value.getReceipt(widget.receiptId),
-            builder: (context, asyncSnapshot) {
-              if (asyncSnapshot.hasData) {
-                final data = asyncSnapshot.data;
-                if (data!.items.isEmpty) {
-                  return EmptyCard(receiptId: widget.receiptId);
-                }
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        children: [
+          CurrentOrderWidget.tableHeader(context),
+          Divider(),
+          Expanded(
+            child: Consumer<ReceiptProvider>(
+              builder: (context, value, child) => FutureBuilder(
+                future: value.getReceipt(widget.receiptId),
+                builder: (context, asyncSnapshot) {
+                  if (asyncSnapshot.hasError) {
+                    return Center(child: EmptyItem());
+                  }
+                  if (asyncSnapshot.hasData) {
+                    final receipt = asyncSnapshot.data;
+                    if (receipt == null) return Center(child: EmptyItem());
 
-                tot = double.parse(data.totalAmount);
-
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ... header
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: data.items.length,
-                        itemBuilder: (context, index) {
-                          final item = data.items[index];
-                          return _buildItemCard(
-                            context,
-                            item.itemName,
-                            item.price,
-                            item.imagePath,
-                            int.parse(item.qty),
-                            (int.parse(item.qty) * double.parse(item.price))
-                                .toString(),
-                            () async {
-                              // + button
-                              await value.addOrIncrementItem(
-                                widget.receiptId,
-                                ReceiptItemsModel(
-                                  id: item.id,
-                                  category: item.category,
-                                  itemName: item.itemName,
-                                  description: item.description,
-                                  price: item.price,
-                                  cost: item.cost,
-                                  imagePath: item.imagePath,
-                                  qty: "1",
-                                  netAmount: item.price,
-                                ),
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: receipt.items.length,
+                            itemBuilder: (context, index) {
+                              return _buildRowCard(
+                                context,
+                                index,
+                                receipt.items[index].itemName,
+                                receipt.items[index].price,
+                                receipt.items[index].qty,
+                                receipt.items[index].discount,
+                                ((double.parse(receipt.items[index].price) -
+                                            double.parse(
+                                              receipt.items[index].discount,
+                                            )) *
+                                        int.parse(receipt.items[index].qty))
+                                    .toString(),
                               );
                             },
-                            () async {
-                              // - button
-                              final receipt = await value.getReceipt(
-                                widget.receiptId,
-                              );
-                              if (receipt == null) return;
+                          ),
+                        ),
+                        Divider(),
+                        SizedBox(height: 10),
+                        _buildCheckOutSection(context, receipt.totalAmount),
+                      ],
+                    );
+                  }
+                  return Center(child: EmptyItem());
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                              final currentQty = int.parse(item.qty);
-                              List<ReceiptItemsModel> updatedItems;
-
-                              if (currentQty <= 1) {
-                                updatedItems = receipt.items
-                                    .where((e) => e.id != item.id)
-                                    .toList();
-                              } else {
-                                updatedItems = receipt.items.map((e) {
-                                  if (e.id == item.id) {
-                                    final newQty = (currentQty - 1).toString();
-                                    return ReceiptItemsModel(
-                                      id: e.id,
-                                      category: e.category,
-                                      itemName: e.itemName,
-                                      description: e.description,
-                                      price: e.price,
-                                      cost: e.cost,
-                                      imagePath: e.imagePath,
-                                      qty: newQty,
-                                      netAmount:
-                                          ((currentQty - 1) *
-                                                  double.parse(e.price))
-                                              .toString(),
-                                    );
-                                  }
-                                  return e;
-                                }).toList();
-                              }
-
-                              await value.updateReceiptItems(
-                                widget.receiptId,
-                                updatedItems,
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    Divider(),
-                    SizedBox(height: 20),
-                    _buildCheckOutSection(context, tot.toString()),
-                  ],
-                );
-              }
-              return EmptyItem();
-            },
-          );
-        },
+  Widget _buildRowCard(
+    BuildContext context,
+    int index,
+    String item,
+    String price,
+    String qty,
+    String discount,
+    String total,
+  ) {
+    final theme = Theme.of(context).textTheme.labelSmall;
+    return Container(
+      color: index % 2 == 1 ? AppColors.divider : Colors.transparent,
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              item,
+              style: theme,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              "${AppNumberFormat.formatNumber(double.tryParse(price) ?? 0)} LKR",
+              textAlign: TextAlign.right,
+              style: theme,
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(qty, textAlign: TextAlign.center, style: theme),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              "${AppNumberFormat.formatNumber(double.tryParse(discount) ?? 0)} LKR",
+              textAlign: TextAlign.right,
+              style: theme,
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              "${AppNumberFormat.formatNumber(double.tryParse(total) ?? 0)} LKR",
+              textAlign: TextAlign.right,
+              style: theme,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildCheckOutSection(BuildContext context, String total) {
+    final double grandTotal = double.tryParse(total) ?? 0.0;
+    final double subTotal =
+        grandTotal / 1.10; // strip out the 10% service charge
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -145,25 +150,41 @@ class _CurrentOrderState extends State<CurrentOrder> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "Amount".toUpperCase(),
+              "Total".toUpperCase(),
               style: Theme.of(context).textTheme.titleSmall!.copyWith(
                 color: AppColors.textSecondary,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+            Text(
+              "${AppNumberFormat.formatNumber(subTotal)} LKR",
+              style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Net Amount".toUpperCase(),
+              style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                color: AppColors.primary,
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
               ),
             ),
-            SizedBox(
-              width: 220,
-              child: Text(
-                "${AppNumberFormat.formatNumber(double.parse(total))} LKR",
-                textAlign: TextAlign.end,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
+            Text(
+              "${AppNumberFormat.formatNumber(grandTotal)} LKR",
+              style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
               ),
             ),
           ],
@@ -174,9 +195,14 @@ class _CurrentOrderState extends State<CurrentOrder> {
         Row(
           children: [
             Consumer<ReceiptProvider>(
-              builder: (context, value, child) => Card(
-                color: AppColors.background,
-                child: IconButton(
+              builder: (context, value, child) => Container(
+                height: 43,
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.primary, width: 1),
+                  borderRadius: BorderRadius.circular(10),
+                  color: AppColors.background,
+                ),
+                child: TextButton(
                   onPressed: () async {
                     final isValid = await showPinDialog(context);
                     if (isValid) {
@@ -184,7 +210,14 @@ class _CurrentOrderState extends State<CurrentOrder> {
                       value.deleteReceipt(widget.receiptId);
                     }
                   },
-                  icon: Icon(Icons.delete, size: 25),
+                  child: Text(
+                    "Delete",
+                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -210,107 +243,4 @@ class _CurrentOrderState extends State<CurrentOrder> {
       ],
     );
   }
-}
-
-Widget _buildItemCard(
-  BuildContext context,
-  String name,
-  String price,
-  String image,
-  int quantity,
-  String total,
-  VoidCallback onAdd,
-  VoidCallback onRemove,
-) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2),
-    child: Card(
-      color: AppColors.background,
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: image.startsWith("assets/")
-                  ? Image.asset(image, width: 60, height: 60, fit: BoxFit.cover)
-                  : Image.file(
-                      File(image),
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                    ),
-            ),
-            SizedBox(width: 10),
-
-            // ← fix
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  "${AppNumberFormat.formatNumber(double.parse(price))} LKR",
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-              ],
-            ),
-
-            Spacer(),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Row(
-                  children: [
-                    _buildIconBtn(false, onRemove),
-                    SizedBox(width: 10),
-                    Text(
-                      quantity.toString(),
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    SizedBox(width: 10),
-                    _buildIconBtn(true, onAdd),
-                  ],
-                ),
-                SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.only(right: 3),
-                  child: Text(
-                    "${AppNumberFormat.formatNumber(double.parse(total))} LKR",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-Widget _buildIconBtn(bool isAdd, VoidCallback onTap) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Icon(
-      isAdd ? Icons.add : Icons.remove,
-      color: AppColors.textPrimary,
-      size: 20,
-    ),
-  );
 }

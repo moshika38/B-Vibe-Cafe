@@ -3,6 +3,7 @@ import 'package:bvibe/data/workspace/number.format.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
 import 'package:bvibe/const/theme.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class OrderRowItem extends StatelessWidget {
@@ -155,17 +156,47 @@ class OrderRowItem extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(width: 15),
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(7),
-                        color: AppColors.primaryLight,
-                      ),
-                      child: const Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        size: 12,
-                        color: AppColors.background,
+                    InkWell(
+                      onTap: () {
+                        status
+                            ? context.go(
+                                '/orders/viewOrder',
+                                extra: invoiceNumber,
+                              )
+                            : context.go(
+                                "/orders/checkout",
+                                extra: invoiceNumber,
+                              );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(7),
+                          color: AppColors.primaryLight,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              status
+                                  ? Icons.visibility
+                                  : Icons.payments_rounded,
+                              size: 12,
+                              color: AppColors.background,
+                            ),
+                            SizedBox(width: 5),
+                            Text(
+                              status ? "View" : "Pay Now",
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: AppColors.background,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     SizedBox(width: 15),

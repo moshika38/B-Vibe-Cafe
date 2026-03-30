@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class NavigationTitle extends StatelessWidget {
   final String title;
   final String subtitle;
+  final String? btnText;
   final bool? isBackIcon;
   final VoidCallback? onTap;
   final bool? isBtn;
@@ -13,7 +14,7 @@ class NavigationTitle extends StatelessWidget {
     required this.subtitle,
     this.isBackIcon,
     this.onTap,
-    this.isBtn,
+    this.isBtn,   this.btnText,
   });
 
   @override
@@ -71,7 +72,7 @@ class NavigationTitle extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: onTap,
                     child: Text(
-                      "New Order (Ctrl + N)",
+                   btnText!=null?btnText!:   "New Order (Ctrl + N)",
                       style: theme.labelSmall!.copyWith(color: Colors.white),
                     ),
                   ),

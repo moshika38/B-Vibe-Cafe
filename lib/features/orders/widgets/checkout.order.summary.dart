@@ -24,6 +24,20 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
 
   @override
   Widget build(BuildContext context) {
+    double netTotal = 0;
+    
+    double totalDiscount = 0;
+    for (var item in widget.receipt.items) {
+      double price = double.tryParse(item.price) ?? 0;
+      double discount = double.tryParse(item.discount) ?? 0;
+      int qty = int.tryParse(item.qty) ?? 0;
+      netTotal += (price - discount) * qty;
+      totalDiscount += discount * qty;
+    }
+
+    double serviceCharge = netTotal * 0.10;
+    double grandTotal = netTotal + serviceCharge;
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -60,7 +74,7 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                       _buildSubtleRow(
                         context,
                         "Subtotal",
-                        "${AppNumberFormat.formatNumber(double.parse(widget.receipt.totalAmount))} LKR",
+                        "${AppNumberFormat.formatNumber(netTotal)} LKR",
                       ),
                       const SizedBox(height: 15),
 
@@ -78,7 +92,7 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                           ),
 
                           Text(
-                            "-\$8.40",
+                            "-${AppNumberFormat.formatNumber(totalDiscount)} LKR",
                             style: Theme.of(context).textTheme.bodyMedium!
                                 .copyWith(
                                   color: AppColors.primary,
@@ -93,7 +107,7 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                       _buildSubtleRow(
                         context,
                         "Service Charge (10%)",
-                        "LKR 1000",
+                        "${AppNumberFormat.formatNumber(serviceCharge)} LKR",
                       ),
                     ],
                   ),
@@ -117,7 +131,7 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                   ),
                 ),
                 Text(
-                  "${AppNumberFormat.formatNumber(double.parse(widget.receipt.totalAmount))} LKR",
+                  "${AppNumberFormat.formatNumber(grandTotal)} LKR",
                   style: Theme.of(context).textTheme.headlineLarge!.copyWith(
                     fontWeight: FontWeight.w900,
                     color: AppColors.primary,
@@ -250,7 +264,7 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
           child: Text(
             overflow: TextOverflow.ellipsis,
             maxLines: 2,
-            "RS ${price.toStringAsFixed(2)}",
+            "${AppNumberFormat.formatNumber(price)} LKR",
             textAlign: TextAlign.right,
             style: Theme.of(context).textTheme.bodyMedium!.copyWith(
               color: AppColors.textSecondary,
@@ -261,7 +275,7 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
         Expanded(
           flex: 2,
           child: Text(
-            "RS ${total.toStringAsFixed(2)}",
+            "${AppNumberFormat.formatNumber(total)} LKR",
             overflow: TextOverflow.ellipsis,
             maxLines: 2,
             textAlign: TextAlign.right,
