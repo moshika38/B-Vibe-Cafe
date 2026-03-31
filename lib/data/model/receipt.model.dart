@@ -10,6 +10,7 @@ class ReceiptModel {
   final String totalAmount;
   final String paidAmount;
   final String balanceAmount;
+  final String orderType;
   final List<ReceiptItemsModel> items;
 
   ReceiptModel({
@@ -22,6 +23,7 @@ class ReceiptModel {
     required this.totalAmount,
     required this.paidAmount,
     required this.balanceAmount,
+    required this.orderType,
     required this.items,
   });
 
@@ -36,6 +38,7 @@ class ReceiptModel {
       'total_amount': totalAmount,
       'paid_amount': paidAmount,
       'balance_amount': balanceAmount,
+      'order_type': orderType,
       'items': jsonEncode(items.map((e) => e.toMap()).toList()),
     };
   }
@@ -51,6 +54,7 @@ class ReceiptModel {
       totalAmount: map['total_amount'],
       paidAmount: map['paid_amount'],
       balanceAmount: map['balance_amount'],
+      orderType: map['order_type'] ?? 'Dine-In',
       items: (jsonDecode(map['items']) as List)
           .map((e) => ReceiptItemsModel.fromMap(e))
           .toList(),

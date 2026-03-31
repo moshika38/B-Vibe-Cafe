@@ -10,6 +10,7 @@ class CheckoutWidgets {
     String title,
     ValueChanged<String> onChange, {
     FocusNode? focusNode,
+    bool autofocus = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,7 +45,7 @@ class CheckoutWidgets {
               const SizedBox(width: 10),
               Expanded(
                 child: TextField(
-                  autofocus: focusNode == null,
+                  autofocus: autofocus,
                   focusNode: focusNode,
                   onChanged: onChange,
                   controller: amountReceivedController,

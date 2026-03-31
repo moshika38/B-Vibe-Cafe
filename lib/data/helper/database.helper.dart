@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 8,
+      version: 9,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -102,6 +102,12 @@ CREATE TABLE IF NOT EXISTS invoice_settings (
 )
 ''');
         }
+
+        if (oldVersion < 9) {
+          await db.execute(
+            'ALTER TABLE receipts ADD COLUMN order_type TEXT NOT NULL DEFAULT "Dine-In"',
+          );
+        }
       },
     );
   }
@@ -156,7 +162,8 @@ CREATE TABLE IF NOT EXISTS receipts (
   total_amount $textType,
   paid_amount $textType,
   balance_amount $textType,
-  items $textType
+  items $textType,
+  order_type $textType
 )
 ''');
 

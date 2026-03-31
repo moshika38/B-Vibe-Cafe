@@ -37,7 +37,10 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
 
     bool isRetail = widget.receipt.items.isNotEmpty &&
         widget.receipt.items.every((item) => item.isRetail);
-    double serviceCharge = isRetail ? 0 : netTotal * 0.10;
+    bool isTakeaway = widget.receipt.orderType == 'Takeaway';
+    bool shouldExcludeServiceCharge = isRetail || isTakeaway;
+
+    double serviceCharge = shouldExcludeServiceCharge ? 0 : netTotal * 0.10;
     double grandTotal = netTotal + serviceCharge;
 
     return Container(
@@ -105,7 +108,7 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                         ],
                       ),
 
-                      if (!isRetail) ...[
+                      if (!shouldExcludeServiceCharge) ...[
                         const SizedBox(height: 15),
                         _buildSubtleRow(
                           context,

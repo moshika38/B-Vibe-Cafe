@@ -114,8 +114,9 @@ class ReceiptProvider extends ChangeNotifier {
       netTotal += (price - discount) * qty;
     }
 
+    bool isTakeaway = receipt.orderType == 'Takeaway';
     bool isRetail = receipt.items.isNotEmpty && receipt.items.every((item) => item.isRetail);
-    double serviceCharge = isRetail ? 0 : netTotal * 0.10;
+    double serviceCharge = (isRetail || isTakeaway) ? 0 : netTotal * 0.10;
     double grandTotal = netTotal + serviceCharge;
 
     final db = await DatabaseHelper.instance.database;
@@ -163,5 +164,23 @@ class ReceiptProvider extends ChangeNotifier {
     );
 
     notifyListeners();
+  }
+
+  // Update order type by receipt id
+  Future<void> updateOrderType(String receiptId, String type) async {
+    final db = await DatabaseHelper.instance.database;
+
+    await db.update(
+      'receipts',
+      {'order_type': type},
+      where: 'receipt_id = ?',
+      whereArgs: [receiptId],
+    );
+
+    if (_cachedReceipt?.receiptId == receiptId) {
+      _cachedReceipt = null;
+    }
+
+    await updateTotalAmount(receiptId);
   }
 }

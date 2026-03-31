@@ -4,6 +4,7 @@ import 'package:bvibe/data/workspace/number.format.dart';
 import 'package:bvibe/features/orders/widgets/current.order.widget.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
+import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -17,25 +18,6 @@ class CurrentOrder extends StatefulWidget {
 }
 
 class _CurrentOrderState extends State<CurrentOrder> {
-  double tot = 0;
-
-  bool isRetailBill = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkRetail();
-  }
-
-  Future<void> _checkRetail() async {
-    final result = await context.read<ReceiptProvider>().isAllItemsRetail(
-      widget.receiptId,
-    );
-    setState(() {
-      isRetailBill = result;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -44,53 +26,112 @@ class _CurrentOrderState extends State<CurrentOrder> {
         borderRadius: BorderRadius.circular(10),
       ),
       padding: const EdgeInsets.all(10),
-      child: Column(
-        children: [
-          CurrentOrderWidget.tableHeader(context),
-          Divider(),
-          Expanded(
-            child: Consumer<ReceiptProvider>(
-              builder: (context, value, child) => FutureBuilder(
-                future: value.getReceipt(widget.receiptId),
-                builder: (context, asyncSnapshot) {
-                  if (asyncSnapshot.hasError) {
-                    return Center(child: EmptyItem());
-                  }
-                  if (asyncSnapshot.hasData) {
-                    final receipt = asyncSnapshot.data;
-                    if (receipt == null) return Center(child: EmptyItem());
+      child: Consumer<ReceiptProvider>(
+        builder: (context, value, child) => FutureBuilder(
+          future: value.getReceipt(widget.receiptId),
+          builder: (context, asyncSnapshot) {
+            if (asyncSnapshot.connectionState == ConnectionState.waiting &&
+                !asyncSnapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-                    return Column(
-                      children: [
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: receipt.items.length,
-                            itemBuilder: (context, index) {
-                              return _buildRowCard(
-                                context,
-                                index,
-                                receipt.items[index].itemName,
-                                receipt.items[index].price,
-                                receipt.items[index].qty,
-                                receipt.items[index].discount,
-                                ((double.parse(receipt.items[index].price) -
-                                            double.parse(
-                                              receipt.items[index].discount,
-                                            )) *
-                                        int.parse(receipt.items[index].qty))
-                                    .toString(),
-                              );
-                            },
-                          ),
-                        ),
-                        Divider(),
-                        SizedBox(height: 10),
-                        _buildCheckOutSection(context, receipt.totalAmount),
-                      ],
-                    );
-                  }
-                  return Center(child: EmptyItem());
-                },
+            final receipt = asyncSnapshot.data;
+            if (receipt == null) return const Center(child: EmptyItem());
+
+            return Column(
+              children: [
+                _buildOrderTypeToggle(receipt, value),
+                const SizedBox(height: 10),
+                CurrentOrderWidget.tableHeader(context),
+                const Divider(),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: receipt.items.length,
+                    itemBuilder: (context, index) {
+                      return _buildRowCard(
+                        context,
+                        index,
+                        receipt.items[index].itemName,
+                        receipt.items[index].price,
+                        receipt.items[index].qty,
+                        receipt.items[index].discount,
+                        ((double.parse(receipt.items[index].price) -
+                                    double.parse(
+                                      receipt.items[index].discount,
+                                    )) *
+                                int.parse(receipt.items[index].qty))
+                            .toString(),
+                      );
+                    },
+                  ),
+                ),
+                const Divider(),
+                const SizedBox(height: 10),
+                _buildCheckOutSection(context, receipt),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOrderTypeToggle(ReceiptModel receipt, ReceiptProvider provider) {
+    bool isTakeaway = receipt.orderType == 'Takeaway';
+
+    return Container(
+      width: double.infinity,
+      height: 48,
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () =>
+                  provider.updateOrderType(receipt.receiptId, 'Dine-In'),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: !isTakeaway ? AppColors.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text(
+                    "Dine-In",
+                    style: TextStyle(
+                      color: !isTakeaway
+                          ? AppColors.surface
+                          : AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () =>
+                  provider.updateOrderType(receipt.receiptId, 'Takeaway'),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isTakeaway ? AppColors.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text(
+                    "Takeaway",
+                    style: TextStyle(
+                      color: isTakeaway
+                          ? AppColors.surface
+                          : AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -156,9 +197,17 @@ class _CurrentOrderState extends State<CurrentOrder> {
     );
   }
 
-  Widget _buildCheckOutSection(BuildContext context, String total) {
-    final double grandTotal = double.tryParse(total) ?? 0.0;
-    final double subTotal = isRetailBill ? grandTotal : grandTotal / 1.10;
+  Widget _buildCheckOutSection(BuildContext context, ReceiptModel receipt) {
+    bool isTakeaway = receipt.orderType == 'Takeaway';
+    bool isRetailBill =
+        receipt.items.isNotEmpty &&
+        receipt.items.every((item) => item.isRetail);
+    bool shouldExcludeServiceCharge = isRetailBill || isTakeaway;
+
+    final double grandTotal = double.tryParse(receipt.totalAmount) ?? 0.0;
+    final double subTotal = shouldExcludeServiceCharge
+        ? grandTotal
+        : grandTotal / 1.10;
     final double serviceCharge = grandTotal - subTotal;
 
     return Column(
@@ -168,7 +217,9 @@ class _CurrentOrderState extends State<CurrentOrder> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              isRetailBill ? "Subtotal".toUpperCase() : "Total".toUpperCase(),
+              shouldExcludeServiceCharge
+                  ? "Subtotal".toUpperCase()
+                  : "Total".toUpperCase(),
               style: Theme.of(context).textTheme.titleSmall!.copyWith(
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.bold,
@@ -185,7 +236,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
             ),
           ],
         ),
-        if (!isRetailBill) ...[
+        if (!shouldExcludeServiceCharge) ...[
           const SizedBox(height: 6),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -267,6 +318,18 @@ class _CurrentOrderState extends State<CurrentOrder> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
+                  if (receipt.items.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Please add items to securely place the order!',
+                        ),
+                        duration: Duration(seconds: 2),
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    );
+                    return;
+                  }
                   // go to checkout page
                   context.push('/orders/checkout', extra: widget.receiptId);
                 },

@@ -294,7 +294,9 @@ class _InvoiceLayout extends StatelessWidget {
     final double total = double.tryParse(invoice.totalAmount.toString()) ?? 0;
     final double discount = invoice.totalDiscount;
 
-    final double netTotal = invoice.isRetail ? total : total / 1.10;
+    final bool isTakeaway = invoice.orderType == 'Takeaway';
+    final bool shouldExcludeServiceCharge = invoice.isRetail || isTakeaway;
+    final double netTotal = shouldExcludeServiceCharge ? total : total / 1.10;
     final double serviceCharge = total - netTotal;
     final double subtotal = netTotal + discount;
     final double grandTotal = total;

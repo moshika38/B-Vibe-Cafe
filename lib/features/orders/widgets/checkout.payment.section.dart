@@ -22,7 +22,6 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
   late final FocusNode _amountFocusNode;
 
   bool isConform = false;
-  double balance = 0;
 
   @override
   void initState() {
@@ -40,6 +39,8 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
 
   double get _totalAmount => double.tryParse(widget.receipt.totalAmount) ?? 0.0;
 
+  double get _receivedAmount => double.tryParse(_amountReceivedController.text) ?? 0.0;
+  double get balance => _receivedAmount - _totalAmount;
   bool get _isInsufficient => balance < 0;
 
   @override
@@ -124,12 +125,10 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
               _amountReceivedController,
               "RECEIVED AMOUNT",
               (value) {
-                setState(() {
-                  final received = double.tryParse(value) ?? 0.0;
-                  balance = received - _totalAmount;
-                });
+                setState(() {});
               },
               focusNode: _amountFocusNode,
+              autofocus: true,
             ),
 
             const SizedBox(height: 20),

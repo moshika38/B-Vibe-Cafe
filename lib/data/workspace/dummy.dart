@@ -13,6 +13,7 @@ class DummyData {
       totalAmount: "0",
       paidAmount: "0",
       balanceAmount: "0",
+      orderType: "Dine-In",
       items: [],
     );
   }
