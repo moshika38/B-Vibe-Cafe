@@ -18,6 +18,24 @@ class CurrentOrder extends StatefulWidget {
 
 class _CurrentOrderState extends State<CurrentOrder> {
   double tot = 0;
+
+  bool isRetailBill = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkRetail();
+  }
+
+  Future<void> _checkRetail() async {
+    final result = await context.read<ReceiptProvider>().isAllItemsRetail(
+      widget.receiptId,
+    );
+    setState(() {
+      isRetailBill = result;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -140,8 +158,8 @@ class _CurrentOrderState extends State<CurrentOrder> {
 
   Widget _buildCheckOutSection(BuildContext context, String total) {
     final double grandTotal = double.tryParse(total) ?? 0.0;
-    final double subTotal =
-        grandTotal / 1.10; // strip out the 10% service charge
+    final double subTotal = isRetailBill ? grandTotal : grandTotal / 1.10;
+    final double serviceCharge = grandTotal - subTotal;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -150,7 +168,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "Total".toUpperCase(),
+              isRetailBill ? "Subtotal".toUpperCase() : "Total".toUpperCase(),
               style: Theme.of(context).textTheme.titleSmall!.copyWith(
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.bold,
@@ -167,6 +185,30 @@ class _CurrentOrderState extends State<CurrentOrder> {
             ),
           ],
         ),
+        if (!isRetailBill) ...[
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Service Charge (10%)".toUpperCase(),
+                style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              Text(
+                "${AppNumberFormat.formatNumber(serviceCharge)} LKR",
+                style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ],
         const SizedBox(height: 6),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

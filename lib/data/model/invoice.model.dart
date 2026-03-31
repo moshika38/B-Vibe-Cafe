@@ -9,6 +9,7 @@ class InvoiceDisplayModel {
   final String paidAmount;
   final String balanceAmount;
   final List<InvoiceDisplayItem> items;
+  final bool isRetail;
 
   const InvoiceDisplayModel({
     required this.invoiceId,
@@ -19,6 +20,7 @@ class InvoiceDisplayModel {
     required this.paidAmount,
     required this.balanceAmount,
     required this.items,
+    required this.isRetail,
   });
 
   double get totalDiscount =>
@@ -35,6 +37,7 @@ class InvoiceDisplayModel {
       paidAmount: r.paidAmount,
       balanceAmount: r.balanceAmount,
       items: r.items.map(InvoiceDisplayItem.fromReceiptItem).toList(),
+      isRetail: r.items.isNotEmpty && r.items.every((item) => item.isRetail),
     );
   }
 }

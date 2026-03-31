@@ -114,7 +114,8 @@ class ReceiptProvider extends ChangeNotifier {
       netTotal += (price - discount) * qty;
     }
 
-    double serviceCharge = netTotal * 0.10;
+    bool isRetail = receipt.items.isNotEmpty && receipt.items.every((item) => item.isRetail);
+    double serviceCharge = isRetail ? 0 : netTotal * 0.10;
     double grandTotal = netTotal + serviceCharge;
 
     final db = await DatabaseHelper.instance.database;
@@ -127,6 +128,13 @@ class ReceiptProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  // check AllItemsRetail
+  Future<bool> isAllItemsRetail(String receiptId) async {
+  final receipt = await getReceipt(receiptId);
+  if (receipt == null || receipt.items.isEmpty) return false;
+  return receipt.items.every((item) => item.isRetail);
+}
 
   // Update payment details by receipt id
   Future<void> updatePayment(

@@ -292,14 +292,12 @@ class _InvoiceLayout extends StatelessWidget {
 
   Widget _buildSummary() {
     final double total = double.tryParse(invoice.totalAmount.toString()) ?? 0;
-
     final double discount = invoice.totalDiscount;
 
-    final double subtotal = total / 1.10;
-
-    final double serviceCharge = subtotal * 0.10;
-
-    final double grandTotal = subtotal + serviceCharge - discount;
+    final double netTotal = invoice.isRetail ? total : total / 1.10;
+    final double serviceCharge = total - netTotal;
+    final double subtotal = netTotal + discount;
+    final double grandTotal = total;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -314,10 +312,11 @@ class _InvoiceLayout extends StatelessWidget {
               italic: true,
             ),
 
-          _sumRow(
-            'Service Charge (10%)',
-            'LKR ${serviceCharge.toStringAsFixed(2)}',
-          ),
+          if (serviceCharge > 0)
+            _sumRow(
+              'Service Charge (10%)',
+              'LKR ${serviceCharge.toStringAsFixed(2)}',
+            ),
 
           const SizedBox(height: 8),
 

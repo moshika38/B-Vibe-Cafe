@@ -35,7 +35,9 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
       totalDiscount += discount * qty;
     }
 
-    double serviceCharge = netTotal * 0.10;
+    bool isRetail = widget.receipt.items.isNotEmpty &&
+        widget.receipt.items.every((item) => item.isRetail);
+    double serviceCharge = isRetail ? 0 : netTotal * 0.10;
     double grandTotal = netTotal + serviceCharge;
 
     return Container(
@@ -103,12 +105,14 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                         ],
                       ),
 
-                      const SizedBox(height: 15),
-                      _buildSubtleRow(
-                        context,
-                        "Service Charge (10%)",
-                        "${AppNumberFormat.formatNumber(serviceCharge)} LKR",
-                      ),
+                      if (!isRetail) ...[
+                        const SizedBox(height: 15),
+                        _buildSubtleRow(
+                          context,
+                          "Service Charge (10%)",
+                          "${AppNumberFormat.formatNumber(serviceCharge)} LKR",
+                        ),
+                      ],
                     ],
                   ),
                 ),
