@@ -68,6 +68,7 @@ class ReceiptItemsModel {
   final String imagePath;
   final String qty;
   final String discount;
+  final bool isRetail;
 
   ReceiptItemsModel({
     this.id,
@@ -79,6 +80,8 @@ class ReceiptItemsModel {
     required this.imagePath,
     required this.qty,
     required this.discount,
+    required this.isRetail,
+    
   });
 
   Map<String, dynamic> toMap() {
@@ -92,6 +95,7 @@ class ReceiptItemsModel {
       'image_path': imagePath,
       'qty': qty,
       'discount': discount,
+      'isRetail': isRetail ? 1 : 0,
     };
   }
 
@@ -106,6 +110,7 @@ class ReceiptItemsModel {
       imagePath: map['image_path'],
       qty: map['qty'],
       discount: map['discount'] ?? '0.00',
+      isRetail: map['isRetail'] == 1 || map['isRetail'] == '1' || map['isRetail'] == true,
     );
   }
 }

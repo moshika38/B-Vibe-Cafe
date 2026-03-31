@@ -23,10 +23,9 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 7,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
-
         if (oldVersion < 2) {
           await db.execute('''
 CREATE TABLE IF NOT EXISTS categories (
@@ -53,7 +52,8 @@ CREATE TABLE IF NOT EXISTS items (
 
         if (oldVersion < 5) {
           await db.execute(
-              'ALTER TABLE items ADD COLUMN categoryId TEXT NOT NULL DEFAULT ""');
+            'ALTER TABLE items ADD COLUMN categoryId TEXT NOT NULL DEFAULT ""',
+          );
         }
 
         if (oldVersion < 6) {
@@ -86,6 +86,19 @@ CREATE TABLE IF NOT EXISTS receipts (
   paid_amount TEXT NOT NULL,
   balance_amount TEXT NOT NULL,
   items TEXT NOT NULL
+)
+''');
+        }
+
+        if (oldVersion < 8) {
+          await db.execute('''
+CREATE TABLE IF NOT EXISTS invoice_settings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  businessName TEXT NOT NULL,
+  businessAddress TEXT NOT NULL,
+  businessNumber TEXT NOT NULL,
+  businessLogo TEXT NOT NULL,
+  thankYouText TEXT NOT NULL
 )
 ''');
         }
@@ -126,7 +139,8 @@ CREATE TABLE IF NOT EXISTS items (
   description $textType,
   price $textType,
   cost $textType,
-  imagePath $textType
+  imagePath $textType,
+  isRetail $textType
 )
 ''');
 
@@ -145,6 +159,18 @@ CREATE TABLE IF NOT EXISTS receipts (
   items $textType
 )
 ''');
+
+    // ── Table: Invoice Settings ──
+    await db.execute('''
+CREATE TABLE IF NOT EXISTS invoice_settings (
+  id $idTypeInt,
+  businessName $textType,
+  businessAddress $textType,
+  businessNumber $textType,
+  businessLogo $textType,
+  thankYouText $textType
+)
+''');
   }
 
   Future<void> initializeAppDatabase() async {
@@ -152,10 +178,7 @@ CREATE TABLE IF NOT EXISTS receipts (
     final result = await db.query('users');
 
     if (result.isEmpty) {
-      await db.insert('users', {
-        'username': 'user',
-        'password': '1234',
-      });
+      await db.insert('users', {'username': 'user', 'password': '1234'});
     }
   }
 

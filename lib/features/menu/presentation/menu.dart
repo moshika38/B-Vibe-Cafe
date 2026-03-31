@@ -243,6 +243,7 @@ class _AppMenuState extends State<AppMenu> {
                                 name: selectedItem.itemName,
                                 price: selectedItem.price,
                                 des: selectedItem.description,
+                                isRetail: selectedItem.isRetail,
                               );
                       },
                     ),

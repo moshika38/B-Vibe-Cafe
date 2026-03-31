@@ -18,6 +18,7 @@ class EditItemCart extends StatefulWidget {
   final String categoryId;
   final String categoryName;
   final String des;
+  final bool isRetail;
 
   const EditItemCart({
     super.key,
@@ -29,6 +30,7 @@ class EditItemCart extends StatefulWidget {
     required this.categoryName,
     required this.id,
     required this.des,
+    required this.isRetail,
   });
 
   @override
@@ -44,10 +46,19 @@ class _EditItemCartState extends State<EditItemCart> {
 
   File? _newImage;
 
+  bool isRetail = false;
+
   @override
   void initState() {
     super.initState();
     _initControllers();
+    _checkIsRetail();
+  }
+
+  void _checkIsRetail() {
+    setState(() {
+      isRetail = widget.isRetail;
+    });
   }
 
   void _initControllers() {
@@ -140,12 +151,13 @@ class _EditItemCartState extends State<EditItemCart> {
 
     final updatedItem = ItemModel(
       id: widget.id,
-      categoryId: widget.categoryId, // Pass the category ID for db updating
+      categoryId: widget.categoryId,
       itemName: name,
       description: des,
       price: price,
       cost: cost,
       imagePath: finalImagePath,
+      isRetail: isRetail,
     );
 
     try {
@@ -294,6 +306,23 @@ class _EditItemCartState extends State<EditItemCart> {
                       readOnly: true,
                     ),
                     textInput(theme, "Description", _desController),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: isRetail,
+                          onChanged: (value) {
+                            setState(() {
+                              isRetail = value ?? false;
+                            });
+                          },
+                        ),
+                        Text(
+                          "Is Retail",
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

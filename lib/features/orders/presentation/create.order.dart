@@ -194,6 +194,7 @@ class _CreateOrdersState extends State<CreateOrders> {
                                           itemCount: data.length,
                                           itemBuilder: (context, index) {
                                             return BuildItemCard(
+                                              isRetail: data[index].isRetail,
                                               itemId: data[index].id.toString(),
                                               cate: data[index].categoryId,
                                               cost: data[index].cost,

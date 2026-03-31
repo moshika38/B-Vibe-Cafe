@@ -6,6 +6,7 @@ class ItemModel {
   final String price;
   final String cost;
   final String imagePath;
+  final bool isRetail;
 
   ItemModel({
     this.id,
@@ -15,6 +16,7 @@ class ItemModel {
     required this.price,
     required this.cost,
     required this.imagePath,
+    required this.isRetail,
   });
 
   factory ItemModel.fromMap(Map<String, dynamic> map) {
@@ -26,6 +28,7 @@ class ItemModel {
       price: map['price'],
       cost: map['cost'],
       imagePath: map['imagePath'],
+      isRetail: map['isRetail'] == 1 || map['isRetail'] == '1',
     );
   }
 
@@ -38,6 +41,7 @@ class ItemModel {
       'price': price,
       'cost': cost,
       'imagePath': imagePath,
+      'isRetail': isRetail ? 1 : 0,
     };
   }
 }

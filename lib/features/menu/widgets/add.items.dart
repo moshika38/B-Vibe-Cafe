@@ -59,6 +59,8 @@ class _AddItemsState extends State<AddItems> {
   final _costController = TextEditingController();
   File? _selectedImage;
 
+  bool isRetail = false;
+
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -208,6 +210,21 @@ class _AddItemsState extends State<AddItems> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: isRetail,
+                            onChanged: (value) {
+                              setState(() {
+                                isRetail = value ?? false;
+                              });
+                            },
+                          ),
+                          Text("Is Retail",style: Theme.of(context).textTheme.labelSmall,),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -299,10 +316,9 @@ class _AddItemsState extends State<AddItems> {
                           price: price,
                           cost: cost,
                           imagePath: savedImage.path,
+                          isRetail: isRetail,
                         );
 
-                        // Return the values
-                        // ignore: use_build_context_synchronously
                         Navigator.of(context).pop(itemModel);
                       },
                       style: ElevatedButton.styleFrom(

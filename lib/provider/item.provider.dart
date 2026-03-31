@@ -38,8 +38,9 @@ class ItemProvider extends ChangeNotifier {
       itemName: item.itemName,
       description: item.description,
       price: double.parse(item.price).toStringAsFixed(2),
-cost: double.parse(item.cost).toStringAsFixed(2),
+      cost: double.parse(item.cost).toStringAsFixed(2),
       imagePath: item.imagePath,
+      isRetail: item.isRetail,  
     );
 
     final res = await db.insert(

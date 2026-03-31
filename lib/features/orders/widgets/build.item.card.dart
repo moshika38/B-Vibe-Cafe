@@ -16,6 +16,7 @@ class BuildItemCard extends StatefulWidget {
   final String cate;
   final String cost;
   final String des;
+  final bool isRetail;
   final VoidCallback? onTap;
 
   const BuildItemCard({
@@ -29,6 +30,7 @@ class BuildItemCard extends StatefulWidget {
     required this.cate,
     required this.cost,
     required this.des,
+    required this.isRetail,
     this.onTap,
   });
 
@@ -89,6 +91,7 @@ class _BuildItemCardState extends State<BuildItemCard> {
         imagePath: widget.image,
         qty: _qty.toString(),
         discount: perItemDiscount.toStringAsFixed(2),
+        isRetail: widget.isRetail
       ),
     );
   }
