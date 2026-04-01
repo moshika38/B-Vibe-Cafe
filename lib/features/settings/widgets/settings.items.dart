@@ -8,7 +8,6 @@ class SettingsItems extends StatefulWidget {
   final VoidCallback onTap2;
   final VoidCallback onTap3;
   final VoidCallback onTap4;
-  final VoidCallback onTap5;
   final int selectedItem;
   const SettingsItems({
     super.key,
@@ -17,7 +16,6 @@ class SettingsItems extends StatefulWidget {
     required this.onTap2,
     required this.onTap3,
     required this.onTap4,
-    required this.onTap5,
     required this.selectedItem,
   });
 
@@ -30,7 +28,7 @@ class _SettingsItemsState extends State<SettingsItems> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(right: 20,),
+      padding: const EdgeInsets.only(right: 20),
       child: Row(
         children: [
           Expanded(
@@ -44,12 +42,12 @@ class _SettingsItemsState extends State<SettingsItems> {
                     fontSize: 12,
                   ),
                 ),
-            
+
                 SizedBox(height: 20),
-            
+
                 _buildItemsCard(
                   theme,
-                  "General",
+                  "Shortcut",
                   Symbols.app_badging,
                   widget.selectedItem == 0,
                   widget.onTap0,
@@ -68,26 +66,20 @@ class _SettingsItemsState extends State<SettingsItems> {
                   widget.selectedItem == 2,
                   widget.onTap2,
                 ),
+
                 _buildItemsCard(
                   theme,
-                  "Tax & Discount",
-                  Symbols.price_change,
+                  "Help & Supports",
+                  Symbols.help,
                   widget.selectedItem == 3,
                   widget.onTap3,
                 ),
                 _buildItemsCard(
                   theme,
-                  "Help & Supports",
-                  Symbols.help,
-                  widget.selectedItem == 4,
-                  widget.onTap4,
-                ),
-                _buildItemsCard(
-                  theme,
                   "Security",
                   Symbols.security,
-                  widget.selectedItem == 5,
-                  widget.onTap5,
+                  widget.selectedItem == 4,
+                  widget.onTap4,
                 ),
               ],
             ),

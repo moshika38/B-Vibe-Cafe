@@ -1,4 +1,5 @@
-import 'package:bvibe/provider/screen.provider.dart';
+import 'package:bvibe/provider/business.info.dart';
+ import 'package:bvibe/provider/screen.provider.dart';
 import 'package:bvibe/routes/app.routes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -38,6 +39,7 @@ void main() async {
         ChangeNotifierProvider.value(value: ItemProvider.instance),
         ChangeNotifierProvider(create: (_) => ReceiptProvider()),
         ChangeNotifierProvider(create: (_) => ScreenProvider()),
+        ChangeNotifierProvider(create: (_) => BusinessInfoProvider()),
       ],
       child: const MyApp(),
     ),

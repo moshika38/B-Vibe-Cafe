@@ -16,7 +16,10 @@ class _BusinessPageState extends State<BusinessPage> {
   final _nameController = TextEditingController(text: "My Business");
   final _emailController = TextEditingController(text: "info@mybusiness.com");
   final _phoneController = TextEditingController(text: "+94 11 234 5678");
-  final _addressController = TextEditingController(text: "123 Main Street, Colombo");
+  final _addressController = TextEditingController(
+    text: "123 Main Street, Colombo",
+  );
+  final _tagLineController = TextEditingController(text: "Come again!");
 
   File? _logoFile;
   final _picker = ImagePicker();
@@ -117,13 +120,12 @@ class _BusinessPageState extends State<BusinessPage> {
                               decoration: BoxDecoration(
                                 color: AppColors.surface,
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: AppColors.divider,
-                                ),
+                                border: Border.all(color: AppColors.divider),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.textSecondary
-                                        .withValues(alpha: 0.06),
+                                    color: AppColors.textSecondary.withValues(
+                                      alpha: 0.06,
+                                    ),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -142,10 +144,11 @@ class _BusinessPageState extends State<BusinessPage> {
                                     _logoFile == null
                                         ? "Upload Logo"
                                         : "Change Logo",
-                                    style: theme.textTheme.labelMedium?.copyWith(
-                                      color: AppColors.textPrimary,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: theme.textTheme.labelMedium
+                                        ?.copyWith(
+                                          color: AppColors.textPrimary,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -198,6 +201,14 @@ class _BusinessPageState extends State<BusinessPage> {
                     controller: _addressController,
                     icon: Symbols.location_on,
                     maxLines: 2,
+                  ),
+                  const SizedBox(height: 12),
+                  _field(
+                    theme,
+                    label: "Tag Line",
+                    controller: _tagLineController,
+                    icon: Symbols.tag_sharp,
+                    maxLines: 1,
                   ),
                 ],
               ),

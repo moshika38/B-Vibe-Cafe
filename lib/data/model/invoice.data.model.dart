@@ -1,11 +1,13 @@
-class InvoiceDataModel {
+class BusinessInfoModel {
+  final int? id;
   final String businessName;
   final String businessAddress;
   final String businessNumber;
   final String businessLogo;
   final String thankYouText;
 
-  InvoiceDataModel({
+  BusinessInfoModel({
+    this.id,
     required this.businessName,
     required this.businessAddress,
     required this.businessNumber,
@@ -13,8 +15,9 @@ class InvoiceDataModel {
     required this.thankYouText,
   });
 
-  factory InvoiceDataModel.fromJson(Map<String, dynamic> json) {
-    return InvoiceDataModel(
+  factory BusinessInfoModel.fromJson(Map<String, dynamic> json) {
+    return BusinessInfoModel(
+      id: json['id'] as int?,
       businessName: json['businessName'] as String,
       businessAddress: json['businessAddress'] as String,
       businessNumber: json['businessNumber'] as String,
@@ -24,6 +27,7 @@ class InvoiceDataModel {
   }
 
   Map<String, dynamic> toJson() => {
+    'id': id,
     'businessName': businessName,
     'businessAddress': businessAddress,
     'businessNumber': businessNumber,

@@ -1,6 +1,6 @@
 import 'package:bvibe/features/settings/pages/business.page.dart';
-import 'package:bvibe/features/settings/pages/discount.page.dart';
-import 'package:bvibe/features/settings/pages/general.page.dart';
+
+import 'package:bvibe/features/settings/pages/shortcut.keys.dart';
 import 'package:bvibe/features/settings/pages/printer.page.dart';
 import 'package:bvibe/features/settings/pages/security.page.dart';
 import 'package:bvibe/features/settings/pages/supports.page.dart';
@@ -25,10 +25,9 @@ class _SettingsState extends State<Settings> {
   }
 
   List<Widget> pages = [
-    GeneralPage(),
+    ShortcutKeys(),
     PrinterPage(),
     BusinessPage(),
-    DiscountPage(),
     SupportsPage(),
     SecurityPage(),
   ];
@@ -53,7 +52,6 @@ class _SettingsState extends State<Settings> {
                       onTap2: () => onItemTapped(2),
                       onTap3: () => onItemTapped(3),
                       onTap4: () => onItemTapped(4),
-                      onTap5: () => onItemTapped(5),
                       selectedItem: selectedItem,
                     ),
                   ),

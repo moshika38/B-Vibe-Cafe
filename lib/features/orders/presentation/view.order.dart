@@ -3,8 +3,8 @@ import 'package:bvibe/invoice/invoice.page.dart';
 import 'package:flutter/material.dart';
 
 class ViewOrder extends StatelessWidget {
-  final String invoiceId;
-  const ViewOrder({super.key, required this.invoiceId});
+  final String ReceiptId;
+  const ViewOrder({super.key, required this.ReceiptId});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class ViewOrder extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              child: InvoicePage.fromId(invoiceId),
+              child: InvoicePage.fromId(ReceiptId),
             ),
           ),
         ],

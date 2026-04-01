@@ -17,7 +17,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _staffIdController = TextEditingController();
   final _pinController = TextEditingController();
-  final bool _obscurePin = true;
+  bool obscurePin = true;
 
   @override
   void dispose() {
@@ -30,8 +30,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_staffIdController.text.isEmpty || _pinController.text.isEmpty) {
       AppSnack.errorSnack(context, "Please enter staff ID and PIN");
     } else {
-      final userMap = await AuthHelper.instance.getUser(_staffIdController.text);
-      
+      final userMap = await AuthHelper.instance.getUser(
+        _staffIdController.text,
+      );
+
       if (userMap != null && userMap['password'] == _pinController.text) {
         if (userMap['username'] == "user" && userMap['password'] == "1234") {
           PopupWindow.show(
@@ -84,14 +86,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: FormPanel(
                     staffIdController: _staffIdController,
                     pinController: _pinController,
-                    obscurePin: _obscurePin,
+                    obscurePin: obscurePin,
                     onLogin: () {
                       checkAuth();
-
-                      // context.go('/dashboard');
                     },
                     onForgotPassword: () {},
-                    onChangeStation: () {},
+                    onChangeStation: () {
+                      setState(() {
+                        obscurePin = !obscurePin;
+                      });
+                    },
                   ),
                 ),
               ],

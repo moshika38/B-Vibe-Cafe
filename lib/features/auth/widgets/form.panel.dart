@@ -66,6 +66,7 @@ class _FormPanelState extends State<FormPanel> {
           _buildLabel('Staff ID'),
           const SizedBox(height: 8),
           TextField(
+                autofocus: true,
                 controller: widget.staffIdController,
                 decoration: const InputDecoration(
                   hintText: 'Enter your ID number',
@@ -82,23 +83,11 @@ class _FormPanelState extends State<FormPanel> {
           const SizedBox(height: 22),
 
           // ── PIN / Password ──
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildLabel('PIN / Password'),
-              GestureDetector(
-                onTap: () {
-                  // TODO: Forgot PIN flow
-                },
-                child: Text(
-                  'Forgot PIN?',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-              ),
-            ],
-          ),
+          _buildLabel('PIN / Password'),
+
           const SizedBox(height: 8),
           TextField(
+                autofocus: true,
                 controller: widget.pinController,
                 obscureText: widget.obscurePin,
                 decoration: InputDecoration(
@@ -107,6 +96,7 @@ class _FormPanelState extends State<FormPanel> {
                     Icons.lock_outline,
                     color: AppColors.textHint,
                   ),
+
                   suffixIcon: IconButton(
                     icon: Icon(
                       widget.obscurePin
@@ -114,7 +104,7 @@ class _FormPanelState extends State<FormPanel> {
                           : Icons.visibility_off_outlined,
                       color: AppColors.textHint,
                     ),
-                    onPressed: widget.onForgotPassword,
+                    onPressed: widget.onChangeStation,
                   ),
                 ),
               )

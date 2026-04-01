@@ -44,7 +44,7 @@ class AppRoutes {
               GoRoute(
                 path: '/viewOrder',
                 builder: (context, state) =>
-                    ViewOrder(invoiceId: state.extra as String),
+                    ViewOrder(ReceiptId: state.extra as String),
               ),
             ],
           ),
