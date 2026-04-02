@@ -1,6 +1,6 @@
 import 'package:bvibe/data/helper/auth.helper.dart';
 import 'package:flutter/material.dart';
-import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/const/theme/theme.dart';
 
 class PinConfirmDialog extends StatefulWidget {
   final String title;

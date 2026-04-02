@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 9,
+      version: 10,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -108,6 +108,43 @@ CREATE TABLE IF NOT EXISTS invoice_settings (
             'ALTER TABLE receipts ADD COLUMN order_type TEXT NOT NULL DEFAULT "Dine-In"',
           );
         }
+
+        if (oldVersion < 10) {
+          // Rename or migrate to business_info
+          await db.execute('''
+CREATE TABLE IF NOT EXISTS business_info (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  businessName TEXT NOT NULL,
+  businessEmail TEXT NOT NULL,
+  businessAddress TEXT NOT NULL,
+  businessNumber TEXT NOT NULL,
+  businessLogo TEXT NOT NULL,
+  thankYouText TEXT NOT NULL
+)
+''');
+
+          // Migration logic from invoice_settings
+          try {
+            final List<Map<String, dynamic>> oldData =
+                await db.query('invoice_settings');
+            if (oldData.isNotEmpty) {
+              for (var row in oldData) {
+                await db.insert('business_info', {
+                  'businessName': row['businessName'],
+                  'businessEmail': '', // New column
+                  'businessAddress': row['businessAddress'],
+                  'businessNumber': row['businessNumber'],
+                  'businessLogo': row['businessLogo'],
+                  'thankYouText': row['thankYouText'],
+                });
+              }
+            }
+            await db.execute('DROP TABLE IF EXISTS invoice_settings');
+          } catch (e) {
+            // If table doesn't exist or migration fails, it's safe to continue
+            print("Database migration notice: $e");
+          }
+        }
       },
     );
   }
@@ -167,11 +204,12 @@ CREATE TABLE IF NOT EXISTS receipts (
 )
 ''');
 
-    // ── Table: Invoice Settings ──
+    // ── Table: Business Info ──
     await db.execute('''
-CREATE TABLE IF NOT EXISTS invoice_settings (
+CREATE TABLE IF NOT EXISTS business_info (
   id $idTypeInt,
   businessName $textType,
+  businessEmail $textType,
   businessAddress $textType,
   businessNumber $textType,
   businessLogo $textType,

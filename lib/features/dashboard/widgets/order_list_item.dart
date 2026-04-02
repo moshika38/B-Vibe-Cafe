@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/const/theme/theme.dart';
 
 class OrderListItem extends StatelessWidget {
   final int index;

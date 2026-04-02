@@ -4,7 +4,7 @@ import 'package:bvibe/data/helper/auth.helper.dart';
 import 'package:bvibe/features/auth/widgets/form.panel.dart';
 import 'package:bvibe/features/auth/widgets/img.panel.dart';
 import 'package:flutter/material.dart';
-import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {

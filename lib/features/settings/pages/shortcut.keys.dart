@@ -1,4 +1,4 @@
-import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:flutter/material.dart';
 
 class ShortcutKeys extends StatefulWidget {

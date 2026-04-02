@@ -1,4 +1,4 @@
-import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:bvibe/features/orders/widgets/checkout.widgets.dart';
 import 'package:bvibe/provider/receipt.provider.dart';

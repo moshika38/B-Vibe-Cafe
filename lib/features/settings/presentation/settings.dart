@@ -36,7 +36,9 @@ class _SettingsState extends State<Settings> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Header(),
+        Header(
+          
+        ),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/features/dashboard/widgets/stat_card.dart';
 import 'package:bvibe/features/dashboard/widgets/order_list_item.dart';
 import 'package:bvibe/features/dashboard/widgets/popular_item.dart';

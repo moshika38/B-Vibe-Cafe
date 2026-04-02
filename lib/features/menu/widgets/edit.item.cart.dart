@@ -1,6 +1,6 @@
 import 'package:bvibe/components/app.buttons.dart';
 import 'dart:io';
-import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/const/snack/app.snack.dart';
 import 'package:bvibe/data/model/item.model.dart';
 import 'package:bvibe/provider/item.provider.dart';

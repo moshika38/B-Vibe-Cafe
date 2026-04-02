@@ -1,5 +1,5 @@
 import 'package:bvibe/components/navigation.title.dart';
-import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/features/orders/widgets/checkout.order.summary.dart';
 import 'package:bvibe/features/orders/widgets/checkout.payment.section.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';

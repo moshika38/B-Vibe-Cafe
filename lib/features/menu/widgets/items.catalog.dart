@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/data/model/item.model.dart';
 import 'package:bvibe/provider/item.provider.dart';
 import 'package:flutter/material.dart';

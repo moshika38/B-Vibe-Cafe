@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/data/model/categories.model.dart';
 
 class CreateCategories extends StatefulWidget {

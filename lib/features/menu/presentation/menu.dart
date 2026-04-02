@@ -1,6 +1,6 @@
 import 'package:bvibe/components/app.title.dart';
 import 'package:bvibe/const/snack/app.snack.dart';
-import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/provider/categories.helper.dart';
 import 'package:bvibe/features/dashboard/widgets/cate.card.dart';

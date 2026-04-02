@@ -11,7 +11,7 @@ class BusinessInfoProvider extends ChangeNotifier {
     try {
       final db = await DatabaseHelper.instance.database;
       final List<Map<String, dynamic>> maps = await db.query(
-        'invoice_settings',
+        'business_info',
       );
 
       if (maps.isNotEmpty) {
@@ -20,7 +20,7 @@ class BusinessInfoProvider extends ChangeNotifier {
         return _invoiceData;
       }
     } catch (e) {
-      debugPrint("Error fetching invoice settings: $e");
+      debugPrint("Error fetching business info: $e");
     }
     return null;
   }
@@ -29,15 +29,15 @@ class BusinessInfoProvider extends ChangeNotifier {
   Future<void> saveSettings(BusinessInfoModel settings) async {
     try {
       final db = await DatabaseHelper.instance.database;
-      final existing = await db.query('invoice_settings');
+      final existing = await db.query('business_info');
 
       if (existing.isEmpty) {
         // Create new
-        await db.insert('invoice_settings', settings.toJson());
+        await db.insert('business_info', settings.toJson());
       } else {
         // Update existing (always update the first/only row for settings)
         await db.update(
-          'invoice_settings',
+          'business_info',
           settings.toJson(),
           where: 'id = ?',
           whereArgs: [existing.first['id']],
@@ -46,7 +46,7 @@ class BusinessInfoProvider extends ChangeNotifier {
       // Refresh local data
       await getSettings();
     } catch (e) {
-      debugPrint("Error saving invoice settings: $e");
+      debugPrint("Error saving business info: $e");
     }
   }
 }

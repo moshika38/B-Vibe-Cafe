@@ -1,9 +1,14 @@
 import 'dart:io';
 
-import 'package:bvibe/const/theme.dart';
+import 'package:bvibe/components/app.buttons.dart';
+import 'package:bvibe/const/snack/app.snack.dart';
+import 'package:bvibe/const/theme/theme.dart';
+import 'package:bvibe/data/model/invoice.data.model.dart';
+import 'package:bvibe/provider/business.info.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:provider/provider.dart';
 
 class BusinessPage extends StatefulWidget {
   const BusinessPage({super.key});
@@ -13,16 +18,45 @@ class BusinessPage extends StatefulWidget {
 }
 
 class _BusinessPageState extends State<BusinessPage> {
-  final _nameController = TextEditingController(text: "My Business");
-  final _emailController = TextEditingController(text: "info@mybusiness.com");
-  final _phoneController = TextEditingController(text: "+94 11 234 5678");
-  final _addressController = TextEditingController(
-    text: "123 Main Street, Colombo",
-  );
-  final _tagLineController = TextEditingController(text: "Come again!");
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _tagLineController = TextEditingController();
 
   File? _logoFile;
+  String? _existingLogoPath;
   final _picker = ImagePicker();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    try {
+      final provider = Provider.of<BusinessInfoProvider>(
+        context,
+        listen: false,
+      );
+      final settings = await provider.getSettings();
+
+      if (settings != null && mounted) {
+        _nameController.text = settings.businessName;
+        _emailController.text = settings.businessEmail;
+        _phoneController.text = settings.businessNumber;
+        _addressController.text = settings.businessAddress;
+        _tagLineController.text = settings.thankYouText;
+        _existingLogoPath = settings.businessLogo;
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -30,6 +64,7 @@ class _BusinessPageState extends State<BusinessPage> {
     _emailController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
+    _tagLineController.dispose();
     super.dispose();
   }
 
@@ -43,9 +78,33 @@ class _BusinessPageState extends State<BusinessPage> {
     }
   }
 
+  Future<void> _saveChanges() async {
+    final provider = Provider.of<BusinessInfoProvider>(context, listen: false);
+
+    final settings = BusinessInfoModel(
+      id: provider.invoiceData?.id,
+      businessName: _nameController.text,
+      businessEmail: _emailController.text,
+      businessAddress: _addressController.text,
+      businessNumber: _phoneController.text,
+      businessLogo: _logoFile?.path ?? _existingLogoPath ?? "",
+      thankYouText: _tagLineController.text,
+    );
+
+    await provider.saveSettings(settings);
+
+    if (mounted) {
+      AppSnack.successSnack(context, "Settings saved successfully!");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,9 +157,18 @@ class _BusinessPageState extends State<BusinessPage> {
                                     image: FileImage(_logoFile!),
                                     fit: BoxFit.cover,
                                   )
+                                : (_existingLogoPath != null &&
+                                      _existingLogoPath!.isNotEmpty)
+                                ? DecorationImage(
+                                    image: FileImage(File(_existingLogoPath!)),
+                                    fit: BoxFit.cover,
+                                  )
                                 : null,
                           ),
-                          child: _logoFile == null
+                          child:
+                              (_logoFile == null &&
+                                  (_existingLogoPath == null ||
+                                      _existingLogoPath!.isEmpty))
                               ? const Icon(
                                   Symbols.store,
                                   color: AppColors.primary,
@@ -210,6 +278,14 @@ class _BusinessPageState extends State<BusinessPage> {
                     icon: Symbols.tag_sharp,
                     maxLines: 1,
                   ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: 200,
+                    child: AppButtons(
+                      text: "Save Changes",
+                      onTap: _saveChanges,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -308,9 +384,18 @@ class _BusinessPageState extends State<BusinessPage> {
                           image: FileImage(_logoFile!),
                           fit: BoxFit.cover,
                         )
+                      : (_existingLogoPath != null &&
+                            _existingLogoPath!.isNotEmpty)
+                      ? DecorationImage(
+                          image: FileImage(File(_existingLogoPath!)),
+                          fit: BoxFit.cover,
+                        )
                       : null,
                 ),
-                child: _logoFile == null
+                child:
+                    (_logoFile == null &&
+                        (_existingLogoPath == null ||
+                            _existingLogoPath!.isEmpty))
                     ? const Icon(
                         Symbols.store,
                         color: AppColors.primary,

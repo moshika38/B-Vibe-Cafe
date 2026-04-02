@@ -1,5 +1,5 @@
-import 'package:bvibe/components/app.buttons.dart';
-import 'package:bvibe/const/theme.dart';
+ 
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:flutter/material.dart';
 
 class Header extends StatelessWidget {
@@ -35,15 +35,7 @@ class Header extends StatelessWidget {
                 ],
               ),
 
-              Padding(
-                padding: const EdgeInsets.only(right: 30),
-                child: AppButtons(
-                  text: "Save Changes",
-                  onTap: () {
-                    // save changes
-                  },
-                ),
-              ),
+              
             ],
           ),
         ),
