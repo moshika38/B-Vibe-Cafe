@@ -21,6 +21,7 @@ class _RecentOrdersState extends State<RecentOrders> {
   int selectIndex = 0;
   int _totalItems = 0;
   String selectInvoiceId = "";
+  DateTime _selectedDate = DateTime.now();
   List<ReceiptModel> _currentReceipts = [];
 
   final FocusNode _focusNode = FocusNode();
@@ -106,13 +107,67 @@ class _RecentOrdersState extends State<RecentOrders> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              NavigationTitle(
-                title: "Orders",
-                subtitle: "Recent orders",
-                isBtn: true,
-                onTap: () => _createNewReceipt(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: NavigationTitle(
+                      title: "Orders",
+                      subtitle: "Recent orders",
+                      isBtn: true,
+                      onTap: () => _createNewReceipt(),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: InkWell(
+                      onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: _selectedDate,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime.now(),
+                        );
+                        if (picked != null && picked != _selectedDate) {
+                          setState(() {
+                            _selectedDate = picked;
+                            selectIndex = 0;
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.divider),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_month,
+                              size: 18,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}",
+                              style: theme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
 
               Expanded(
                 child: Row(
@@ -222,7 +277,10 @@ class _RecentOrdersState extends State<RecentOrders> {
                             Consumer<ReceiptProvider>(
                               builder: (context, value, child) => Expanded(
                                 child: FutureBuilder(
-                                  future: value.getAllReceipts(),
+                                  future: value.getReceiptsByDateRange(
+                                    _selectedDate,
+                                    _selectedDate,
+                                  ),
                                   builder: (context, asyncSnapshot) {
                                     if (asyncSnapshot.hasData) {
                                       final receipt = asyncSnapshot.data!;

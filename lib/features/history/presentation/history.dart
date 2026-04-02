@@ -4,6 +4,7 @@ import 'package:bvibe/features/history/widgets/title.bar.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/invoice/invoice.page.dart';
 import 'package:bvibe/provider/bill.history.provider.dart';
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -117,7 +118,37 @@ class _HistoryState extends State<History> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            ItemsCards.header(context),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ItemsCards.header(context),
+                IconButton(
+                  onPressed: () async {
+                    final DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        selectedIndex = -1;
+                        _selectedReceiptId = null;
+                      });
+                      if (context.mounted) {
+                        context
+                            .read<BillHistoryProvider>()
+                            .fetchReceiptsByDateRange(picked, picked);
+                      }
+                    }
+                  },
+                  icon: const Icon(
+                    Icons.calendar_month,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
             TitleBar(
               onTap: (id) {
                 setState(() {

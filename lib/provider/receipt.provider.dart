@@ -41,8 +41,29 @@ class ReceiptProvider extends ChangeNotifier {
   // Get All
   Future<List<ReceiptModel>> getAllReceipts() async {
     final db = await DatabaseHelper.instance.database;
-    final maps = await db.query('receipts');
-    return maps.map((e) => ReceiptModel.fromMap(e)).toList().reversed.toList();
+    final maps = await db.query(
+      'receipts',
+      orderBy: 'receipt_create_date DESC, receipt_create_time DESC',
+    );
+    return maps.map((e) => ReceiptModel.fromMap(e)).toList();
+  }
+
+  // Get by Date Range
+  Future<List<ReceiptModel>> getReceiptsByDateRange(
+    DateTime start,
+    DateTime end,
+  ) async {
+    final db = await DatabaseHelper.instance.database;
+    final startDate = DateTime(start.year, start.month, start.day, 0, 0, 0);
+    final endDate = DateTime(end.year, end.month, end.day, 23, 59, 59);
+
+    final maps = await db.query(
+      'receipts',
+      where: 'receipt_create_date BETWEEN ? AND ?',
+      whereArgs: [startDate.toIso8601String(), endDate.toIso8601String()],
+      orderBy: 'receipt_create_date DESC, receipt_create_time DESC',
+    );
+    return maps.map((e) => ReceiptModel.fromMap(e)).toList();
   }
 
   // delete receipt
