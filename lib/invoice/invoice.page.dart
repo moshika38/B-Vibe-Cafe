@@ -1,11 +1,13 @@
+import 'dart:io';
 import 'package:bvibe/data/model/invoice.model.dart';
+import 'package:bvibe/provider/business.info.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
 
-class InvoicePage extends StatelessWidget {
+class InvoicePage extends StatefulWidget {
   final InvoiceDisplayModel? invoice;
   const InvoicePage({super.key, this.invoice});
 
@@ -51,15 +53,55 @@ class InvoicePage extends StatelessWidget {
   }
 
   @override
+  State<InvoicePage> createState() => _InvoicePageState();
+}
+
+class _InvoicePageState extends State<InvoicePage> {
+  String bName = "";
+  String bAddress = "";
+  String bNumber = "";
+  String bLogo = "";
+  String bTagLine = "";
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<BusinessInfoProvider>().getSettings().then((_) {
+          final businessInfo = context.read<BusinessInfoProvider>();
+
+          if (businessInfo.invoiceData != null) {
+            setState(() {
+              bName = businessInfo.invoiceData?.businessName ?? "";
+              bAddress = businessInfo.invoiceData?.businessAddress ?? "";
+              bNumber = businessInfo.invoiceData?.businessNumber ?? "";
+              bLogo = businessInfo.invoiceData?.businessLogo ?? "";
+              bTagLine = businessInfo.invoiceData?.tagLine ?? "";
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (invoice == null) return const SizedBox.shrink();
+    if (widget.invoice == null) return const SizedBox.shrink();
     return Center(
       child: Container(
         width: 360,
         margin: const EdgeInsets.symmetric(vertical: 24),
         color: const Color(0xFFFAFAFA),
         padding: const EdgeInsets.all(28),
-        child: _InvoiceLayout(invoice: invoice!),
+        child: _InvoiceLayout(
+          invoice: widget.invoice!,
+          bName: bName,
+          bAddress: bAddress,
+          bNumber: bNumber,
+          bLogo: bLogo,
+          bTagLine: bTagLine,
+        ),
       ),
     );
   }
@@ -67,7 +109,20 @@ class InvoicePage extends StatelessWidget {
 
 class _InvoiceLayout extends StatelessWidget {
   final InvoiceDisplayModel invoice;
-  const _InvoiceLayout({required this.invoice});
+  final String bName;
+  final String bAddress;
+  final String bNumber;
+  final String bLogo;
+  final String bTagLine;
+
+  const _InvoiceLayout({
+    required this.invoice,
+    required this.bName,
+    required this.bAddress,
+    required this.bNumber,
+    required this.bLogo,
+    required this.bTagLine,
+  });
 
   static const String _fontFamily = 'monospace';
   static const Color _ink = Color(0xFF111111);
@@ -83,7 +138,7 @@ class _InvoiceLayout extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildHeader(),
+        _buildHeader(bName, bAddress, bNumber, bLogo),
         _divider(),
         _buildMeta(),
         _divider(),
@@ -93,10 +148,9 @@ class _InvoiceLayout extends StatelessWidget {
         _divider(marginBottom: 0),
         _buildSummary(),
         _divider(marginTop: 0),
-
         _buildPayment(),
         _divider(),
-        _buildFooter(),
+        _buildFooter(bTagLine),
       ],
     );
   }
@@ -123,18 +177,24 @@ class _InvoiceLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(
+    String name,
+    String address,
+    String number,
+    String imagePath,
+  ) {
     return Column(
       children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: const BoxDecoration(color: _ink, shape: BoxShape.circle),
-          child: const Center(child: Text('☕', style: TextStyle(fontSize: 20))),
-        ),
+        if (imagePath.isNotEmpty)
+          Image.file(
+            File(imagePath),
+            width: 48,
+            height: 48,
+            fit: BoxFit.contain,
+          ),
         const SizedBox(height: 10),
         Text(
-          'B-VIBE CAFE',
+          name,
           style: _mono.copyWith(
             fontSize: 17,
             fontWeight: FontWeight.w500,
@@ -144,13 +204,13 @@ class _InvoiceLayout extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'No. 12, Main Street, Colombo, Sri Lanka  ',
+          address,
           textAlign: TextAlign.center,
           style: _mono.copyWith(fontSize: 9.5, color: _muted, height: 1.7),
         ),
         const SizedBox(height: 4),
         Text(
-          '+94 11 234 5678',
+          number,
           textAlign: TextAlign.center,
           style: _mono.copyWith(fontSize: 9.5, color: _muted, height: 1.7),
         ),
@@ -454,7 +514,7 @@ class _InvoiceLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildFooter() {
+  Widget _buildFooter(String tagLine) {
     return Column(
       children: [
         Text(
@@ -468,7 +528,7 @@ class _InvoiceLayout extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Please visit us again soon.',
+          tagLine,
           style: _mono.copyWith(
             fontSize: 9.5,
             color: _muted,

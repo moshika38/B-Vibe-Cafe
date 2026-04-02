@@ -48,7 +48,7 @@ class _BusinessPageState extends State<BusinessPage> {
         _emailController.text = settings.businessEmail;
         _phoneController.text = settings.businessNumber;
         _addressController.text = settings.businessAddress;
-        _tagLineController.text = settings.thankYouText;
+        _tagLineController.text = settings.tagLine;
         _existingLogoPath = settings.businessLogo;
       }
     } finally {
@@ -88,7 +88,7 @@ class _BusinessPageState extends State<BusinessPage> {
       businessAddress: _addressController.text,
       businessNumber: _phoneController.text,
       businessLogo: _logoFile?.path ?? _existingLogoPath ?? "",
-      thankYouText: _tagLineController.text,
+      tagLine: _tagLineController.text,
     );
 
     await provider.saveSettings(settings);
@@ -366,89 +366,183 @@ class _BusinessPageState extends State<BusinessPage> {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Logo + name
-          Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  image: _logoFile != null
-                      ? DecorationImage(
-                          image: FileImage(_logoFile!),
-                          fit: BoxFit.cover,
-                        )
-                      : (_existingLogoPath != null &&
-                            _existingLogoPath!.isNotEmpty)
-                      ? DecorationImage(
-                          image: FileImage(File(_existingLogoPath!)),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child:
-                    (_logoFile == null &&
-                        (_existingLogoPath == null ||
-                            _existingLogoPath!.isEmpty))
-                    ? const Icon(
-                        Symbols.store,
-                        color: AppColors.primary,
-                        size: 24,
+          // Receipt Header
+          if (_logoFile != null ||
+              (_existingLogoPath != null && _existingLogoPath!.isNotEmpty))
+            Container(
+              width: 52,
+              height: 52,
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                image: _logoFile != null
+                    ? DecorationImage(
+                        image: FileImage(_logoFile!),
+                        fit: BoxFit.cover,
                       )
-                    : null,
+                    : DecorationImage(
+                        image: FileImage(File(_existingLogoPath!)),
+                        fit: BoxFit.cover,
+                      ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  _nameController.text.isEmpty
-                      ? "Business Name"
-                      : _nameController.text,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+            )
+          else
+            Container(
+              width: 52,
+              height: 52,
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
+              child: const Icon(
+                Symbols.store,
+                color: AppColors.primary,
+                size: 24,
+              ),
+            ),
+
+          Text(
+            _nameController.text.isEmpty ? "BUSINESS NAME" : _nameController.text.toUpperCase(),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 2,
+            ),
+          ),
+          const SizedBox(height: 6),
+          if (_addressController.text.isNotEmpty)
+            Text(
+              _addressController.text,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 10,
+              ),
+            ),
+          if (_phoneController.text.isNotEmpty)
+            Text(
+              _phoneController.text,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 10,
+              ),
+            ),
+
+          const SizedBox(height: 20),
+          _receiptDivider(),
+          const SizedBox(height: 16),
+
+          // Mini placeholder for items to give receipt feel
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("ITEM", style: _receiptHeaderStyle(theme)),
+              Text("QTY", style: _receiptHeaderStyle(theme)),
+              Text("TOTAL", style: _receiptHeaderStyle(theme)),
             ],
           ),
+          const SizedBox(height: 8),
+          _receiptLineItem(theme, "Sample Coffee", "1", "LKR 450.00"),
+          const SizedBox(height: 4),
+          _receiptLineItem(theme, "Butter Croissant", "2", "LKR 700.00"),
 
           const SizedBox(height: 16),
-          Divider(color: AppColors.divider, height: 1),
-          const SizedBox(height: 14),
+          _receiptDivider(),
+          const SizedBox(height: 16),
 
-          _previewRow(theme, Symbols.mail, _emailController.text),
-          _previewRow(theme, Symbols.phone, _phoneController.text),
-          _previewRow(theme, Symbols.location_on, _addressController.text),
+          // Tagline / Footer
+          Text(
+            "THANK YOU!",
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 3,
+            ),
+          ),
+          const SizedBox(height: 4),
+          if (_tagLineController.text.isNotEmpty)
+            Text(
+              _tagLineController.text,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+                fontSize: 10,
+              ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _previewRow(ThemeData theme, IconData icon, String value) {
-    if (value.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 14, color: AppColors.textSecondary),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              value,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+  Widget _receiptDivider() {
+    return Row(
+      children: List.generate(
+        30,
+        (index) => Expanded(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 1),
+            height: 1,
+            color: AppColors.divider,
+          ),
+        ),
+      ),
+    );
+  }
+
+  TextStyle? _receiptHeaderStyle(ThemeData theme) {
+    return theme.textTheme.labelSmall?.copyWith(
+      color: AppColors.textSecondary.withValues(alpha: 0.6),
+      fontSize: 9,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 1,
+    );
+  }
+
+  Widget _receiptLineItem(ThemeData theme, String name, String qty, String price) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            name,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: AppColors.textPrimary,
+              fontSize: 10,
             ),
           ),
-        ],
-      ),
+        ),
+        SizedBox(
+          width: 30,
+          child: Text(
+            qty,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: AppColors.textSecondary,
+              fontSize: 10,
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 70,
+          child: Text(
+            price,
+            textAlign: TextAlign.right,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: AppColors.textPrimary,
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

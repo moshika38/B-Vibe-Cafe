@@ -5,7 +5,7 @@ class BusinessInfoModel {
   final String businessAddress;
   final String businessNumber;
   final String businessLogo;
-  final String thankYouText;
+  final String tagLine;
 
   BusinessInfoModel({
     this.id,
@@ -14,7 +14,7 @@ class BusinessInfoModel {
     required this.businessAddress,
     required this.businessNumber,
     required this.businessLogo,
-    required this.thankYouText,
+    required this.tagLine,
   });
 
   factory BusinessInfoModel.fromJson(Map<String, dynamic> json) {
@@ -25,7 +25,7 @@ class BusinessInfoModel {
       businessAddress: json['businessAddress'] as String,
       businessNumber: json['businessNumber'] as String,
       businessLogo: json['businessLogo'] as String,
-      thankYouText: json['thankYouText'] as String,
+      tagLine: json['thankYouText'] as String,
     );
   }
 
@@ -36,6 +36,6 @@ class BusinessInfoModel {
     'businessAddress': businessAddress,
     'businessNumber': businessNumber,
     'businessLogo': businessLogo,
-    'thankYouText': thankYouText,
+    'thankYouText': tagLine,
   };
 }
