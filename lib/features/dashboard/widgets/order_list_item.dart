@@ -1,17 +1,21 @@
+import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:bvibe/const/theme/theme.dart';
+import 'package:intl/intl.dart';
 
 class OrderListItem extends StatelessWidget {
-  final int index;
+  final ReceiptModel receipt;
 
-  const OrderListItem({super.key, required this.index});
+  const OrderListItem({super.key, required this.receipt});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final statusColor = index % 2 == 0 ? Colors.green : Colors.orange;
-    final statusText = index % 2 == 0 ? 'Completed' : 'Preparing';
+    final statusColor = receipt.paymentStatus ? Colors.green : Colors.orange;
+    final statusText = receipt.paymentStatus ? 'Completed' : 'Pending';
+    final itemsCount = receipt.items.length;
+    final timeStr = DateFormat('HH:mm').format(receipt.receiptCreateTime);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -30,12 +34,12 @@ class OrderListItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Order #${1042 - index}', style: theme.textTheme.labelLarge?.copyWith(
+                Text('Order #${receipt.receiptId.substring(receipt.receiptId.length - 4).toUpperCase()}', style: theme.textTheme.labelLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 )),
                 const SizedBox(height: 4),
-                Text('2 items • Table ${index + 1}', style: theme.textTheme.bodyMedium?.copyWith(
+                Text('$itemsCount items • $timeStr', style: theme.textTheme.bodyMedium?.copyWith(
                   fontSize: 13,
                 )),
               ],
@@ -59,7 +63,7 @@ class OrderListItem extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           Text(
-            '\$${(24.50 - index * 2).toStringAsFixed(2)}',
+            'LKR ${double.tryParse(receipt.totalAmount)?.toStringAsFixed(2) ?? '0.00'}',
             style: theme.textTheme.labelLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),

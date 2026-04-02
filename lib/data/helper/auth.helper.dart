@@ -34,10 +34,10 @@ class AuthHelper {
     });
   }
 
-  Future<AuthModel?> readAllUsers() async {
+  Future<AuthModel?> readCurrentUserData() async {
     final db = await DatabaseHelper.instance.database;
     final result = await db.query('users', orderBy: 'id ASC', limit: 1);
-    
+
     if (result.isNotEmpty) {
       final map = result.first;
       return AuthModel(
@@ -54,10 +54,7 @@ class AuthHelper {
     final db = await DatabaseHelper.instance.database;
     return db.update(
       'users',
-      {
-        'username': user.userName,
-        'password': user.passCode,
-      },
+      {'username': user.userName, 'password': user.passCode},
       where: 'id = ?',
       whereArgs: [int.parse(user.id!)],
     );
@@ -65,6 +62,10 @@ class AuthHelper {
 
   Future<int> deleteUser(String id) async {
     final db = await DatabaseHelper.instance.database;
-    return await db.delete('users', where: 'id = ?', whereArgs: [int.parse(id)]);
+    return await db.delete(
+      'users',
+      where: 'id = ?',
+      whereArgs: [int.parse(id)],
+    );
   }
 }

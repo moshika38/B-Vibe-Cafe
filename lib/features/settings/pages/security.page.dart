@@ -77,7 +77,7 @@ class _SecurityPageState extends State<SecurityPage> {
   String cPin = "";
 
   Future<void> _loadAuthData() async {
-    final currentUser = await AuthHelper.instance.readAllUsers();
+    final currentUser = await AuthHelper.instance.readCurrentUserData();
     if (currentUser != null) {
       setState(() => cPin = currentUser.passCode);
       setState(() => cUser = currentUser.userName);

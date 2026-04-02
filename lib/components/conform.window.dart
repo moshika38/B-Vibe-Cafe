@@ -22,7 +22,7 @@ class _PinConfirmDialogState extends State<PinConfirmDialog> {
   }
 
   Future<void> validatePin() async {
-    final user = await AuthHelper.instance.readAllUsers();
+    final user = await AuthHelper.instance.readCurrentUserData();
 
     if (user?.passCode == _pinController.text) {
       Navigator.pop(context, true);

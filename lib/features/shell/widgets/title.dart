@@ -11,7 +11,7 @@ class AppTitle extends StatelessWidget {
     return !isOrder
         ? Row(
             children: [
-              // Image.asset('assets/img/logo.png', width: 60),
+               
               Container(
                 width: 35,
                 height: 35,
@@ -21,7 +21,7 @@ class AppTitle extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    "L",
+                    "B",
                     style: theme.textTheme.bodyLarge!.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.surface,

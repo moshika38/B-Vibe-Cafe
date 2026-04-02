@@ -3,16 +3,20 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:bvibe/const/theme/theme.dart';
 
 class PopularItem extends StatelessWidget {
-  final int index;
+  final String name;
+  final String count;
+  final String price;
 
-  const PopularItem({super.key, required this.index});
+  const PopularItem({
+    super.key,
+    required this.name,
+    required this.count,
+    required this.price,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final items = ['Cappuccino', 'Croissant', 'Espresso', 'Avocado Toast'];
-    final sales = ['142', '98', '85', '64'];
-    final prices = ['\$4.50', '\$3.50', '\$2.50', '\$8.50'];
 
     return Row(
       children: [
@@ -32,19 +36,19 @@ class PopularItem extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(items[index], style: theme.textTheme.labelLarge?.copyWith(
+              Text(name, style: theme.textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               )),
               const SizedBox(height: 4),
-              Text('${sales[index]} orders', style: theme.textTheme.bodyMedium?.copyWith(
+              Text('$count orders', style: theme.textTheme.bodyMedium?.copyWith(
                 fontSize: 12,
               )),
             ],
           ),
         ),
         Text(
-          prices[index],
+          'LKR $price',
           style: theme.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.textSecondary,
