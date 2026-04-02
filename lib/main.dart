@@ -1,4 +1,5 @@
 import 'package:bvibe/provider/analytics.provider.dart';
+import 'package:bvibe/provider/printer.provider.dart';
 import 'package:bvibe/provider/bill.history.provider.dart';
 import 'package:bvibe/provider/business.info.dart';
  import 'package:bvibe/provider/screen.provider.dart';
@@ -43,6 +44,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ScreenProvider()),
         ChangeNotifierProvider(create: (_) => BusinessInfoProvider()),
         ChangeNotifierProvider(create: (_) => BillHistoryProvider()),
+        ChangeNotifierProvider(create: (_) => PrinterProvider()),
         ChangeNotifierProvider(create: (_) => AnalyticsProvider()),
       ],
       child: const MyApp(),

@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 13,
+      version: 14,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -196,13 +196,22 @@ CREATE TABLE IF NOT EXISTS receipts (
 )
 ''');
         }
-        if (oldVersion < 13) {
+        if (oldVersion < 14) {
           try {
-            await db.execute(
-              'ALTER TABLE categories ADD COLUMN orderIndex INTEGER NOT NULL DEFAULT 0',
-            );
+            await db.execute('''
+CREATE TABLE IF NOT EXISTS printers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  address TEXT,
+  type TEXT,
+  isBle INTEGER,
+  vendorId TEXT,
+  productId TEXT,
+  role TEXT UNIQUE
+)
+''');
           } catch (e) {
-            print("Database migration version 13 error: $e");
+            print("Database migration version 14 error: $e");
           }
         }
       },
@@ -263,6 +272,20 @@ CREATE TABLE IF NOT EXISTS receipts (
   balance_amount $textType,
   items $textType,
   order_type $textType
+)
+''');
+
+    // ── Table: Printers ──
+    await db.execute('''
+CREATE TABLE IF NOT EXISTS printers (
+  id $idTypeInt,
+  name $textType,
+  address $textType,
+  type $textType,
+  isBle $intType,
+  vendorId $textType,
+  productId $textType,
+  role $textType UNIQUE
 )
 ''');
 
