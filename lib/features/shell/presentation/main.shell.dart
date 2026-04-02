@@ -86,6 +86,17 @@ class MainShell extends StatelessWidget {
                     ),
 
                     MenuItem(
+                      isActive: isActive('/analyze'),
+                      icon: Symbols.analytics,
+                      isOrder: screenProvider.isOrder,
+                      label: "Analyze",
+                      onTap: () {
+                        screenProvider.updateScreenStatus(false);
+                        context.go('/analyze');
+                      },
+                    ),
+
+                    MenuItem(
                       isOrder: screenProvider.isOrder,
                       isActive: isActive('/settings'),
                       icon: Symbols.settings,
