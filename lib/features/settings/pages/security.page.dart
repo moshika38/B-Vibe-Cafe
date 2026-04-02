@@ -1,4 +1,7 @@
+import 'package:bvibe/const/snack/app.snack.dart';
 import 'package:bvibe/const/theme/theme.dart';
+import 'package:bvibe/data/helper/auth.helper.dart';
+import 'package:bvibe/data/model/auth.model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -51,11 +54,45 @@ class _SecurityPageState extends State<SecurityPage> {
       setState(() => _pinError = "PINs do not match.");
       return;
     }
+    if (_currentPinCtrl.text != cPin) {
+      setState(() => _pinError = "Current PIN is incorrect.");
+      return;
+    }
+
+    // update password
+    _updateNewUser();
 
     _currentPinCtrl.clear();
     _newPinCtrl.clear();
     _confirmPinCtrl.clear();
     setState(() => _success = true);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAuthData();
+  }
+
+  String cUser = "";
+  String cPin = "";
+
+  Future<void> _loadAuthData() async {
+    final currentUser = await AuthHelper.instance.readAllUsers();
+    if (currentUser != null) {
+      setState(() => cPin = currentUser.passCode);
+      setState(() => cUser = currentUser.userName);
+    }
+  }
+
+  Future<void> _updateNewUser() async {
+    final user = AuthModel(userName: cUser, passCode: _newPinCtrl.text);
+    final result = await AuthHelper.instance.insertUser(user);
+    if (result > 0) {
+      if (mounted) {
+        AppSnack.successSnack(context, "Successfully created account");
+      }
+    }
   }
 
   @override
@@ -85,17 +122,12 @@ class _SecurityPageState extends State<SecurityPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Form
-            Expanded(
-              flex: 2,
-              child: _buildPinCard(theme),
-            ),
+            Expanded(flex: 2, child: _buildPinCard(theme)),
 
             const SizedBox(width: 30),
 
             // Tips
-            Expanded(
-              child: _buildTipsCard(theme),
-            ),
+            Expanded(child: _buildTipsCard(theme)),
           ],
         ),
       ],
@@ -285,11 +317,7 @@ class _SecurityPageState extends State<SecurityPage> {
         TextField(
           controller: controller,
           obscureText: obscure,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(8),
-          ],
+
           onChanged: (_) => setState(() {
             _pinError = null;
             _success = false;
@@ -323,9 +351,7 @@ class _SecurityPageState extends State<SecurityPage> {
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.12),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
