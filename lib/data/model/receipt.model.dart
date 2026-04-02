@@ -2,7 +2,8 @@ import 'dart:convert';
 
 class ReceiptModel {
   final String receiptId;
-  final DateTime receiptDateTime;
+  final DateTime receiptCreateDate;
+  final DateTime receiptCreateTime;
   final bool paymentStatus;
   final String paymentDate;
   final String paymentTime;
@@ -15,7 +16,8 @@ class ReceiptModel {
 
   ReceiptModel({
     required this.receiptId,
-    required this.receiptDateTime,
+    required this.receiptCreateDate,
+    required this.receiptCreateTime,
     required this.paymentStatus,
     required this.paymentDate,
     required this.paymentTime,
@@ -30,7 +32,8 @@ class ReceiptModel {
   Map<String, dynamic> toMap() {
     return {
       'receipt_id': receiptId,
-      'receipt_date_time': receiptDateTime.toIso8601String(),
+      'receipt_create_date': receiptCreateDate.toIso8601String(),
+      'receipt_create_time': receiptCreateTime.toIso8601String(),
       'payment_status': paymentStatus ? 1 : 0,
       'payment_date': paymentDate,
       'payment_time': paymentTime,
@@ -46,7 +49,8 @@ class ReceiptModel {
   factory ReceiptModel.fromMap(Map<String, dynamic> map) {
     return ReceiptModel(
       receiptId: map['receipt_id'],
-      receiptDateTime: DateTime.parse(map['receipt_date_time']),
+      receiptCreateDate: DateTime.parse(map['receipt_create_date']),
+      receiptCreateTime: DateTime.parse(map['receipt_create_time']),
       paymentStatus: map['payment_status'] == 1,
       paymentDate: map['payment_date'],
       paymentTime: map['payment_time'],

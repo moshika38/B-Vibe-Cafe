@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 10,
+      version: 12,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -145,6 +145,57 @@ CREATE TABLE IF NOT EXISTS business_info (
             print("Database migration notice: $e");
           }
         }
+
+        if (oldVersion < 11) {
+          try {
+            await db.execute(
+              'ALTER TABLE receipts ADD COLUMN receipt_create_date TEXT NOT NULL DEFAULT ""',
+            );
+            await db.execute(
+              'ALTER TABLE receipts ADD COLUMN receipt_create_time TEXT NOT NULL DEFAULT ""',
+            );
+
+            // Migrate data from receipt_date_time
+            final List<Map<String, dynamic>> receipts =
+                await db.query('receipts');
+            for (var row in receipts) {
+              final oldDateTime = row['receipt_date_time'];
+              if (oldDateTime != null) {
+                await db.update(
+                  'receipts',
+                  {
+                    'receipt_create_date': oldDateTime,
+                    'receipt_create_time': oldDateTime,
+                  },
+                  where: 'receipt_id = ?',
+                  whereArgs: [row['receipt_id']],
+                );
+              }
+            }
+          } catch (e) {
+            print("Database migration version 11 error: $e");
+          }
+        }
+
+        if (oldVersion < 12) {
+          // Recovery: Recreate receipts table if it was manually deleted
+          await db.execute('''
+CREATE TABLE IF NOT EXISTS receipts (
+  receipt_id TEXT PRIMARY KEY,
+  receipt_create_date TEXT NOT NULL,
+  receipt_create_time TEXT NOT NULL,
+  payment_status INTEGER NOT NULL,
+  payment_date TEXT NOT NULL,
+  payment_time TEXT NOT NULL,
+  payment_method TEXT NOT NULL,
+  total_amount TEXT NOT NULL,
+  paid_amount TEXT NOT NULL,
+  balance_amount TEXT NOT NULL,
+  items TEXT NOT NULL,
+  order_type TEXT NOT NULL DEFAULT "Dine-In"
+)
+''');
+        }
       },
     );
   }
@@ -191,7 +242,8 @@ CREATE TABLE IF NOT EXISTS items (
     await db.execute('''
 CREATE TABLE IF NOT EXISTS receipts (
   receipt_id $idTypeText,
-  receipt_date_time $textType,
+  receipt_create_date $textType,
+  receipt_create_time $textType,
   payment_status $intType,
   payment_date $textType,
   payment_time $textType,

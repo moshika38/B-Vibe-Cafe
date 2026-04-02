@@ -32,7 +32,7 @@ class InvoiceDisplayModel {
   factory InvoiceDisplayModel.fromReceipt(ReceiptModel r) {
     return InvoiceDisplayModel(
       invoiceId: r.receiptId,
-      dateTime: r.receiptDateTime,
+      dateTime: r.receiptCreateDate,
       paymentMethod: r.paymentMethod,
       isPaid: r.paymentStatus,
       totalAmount: r.totalAmount,

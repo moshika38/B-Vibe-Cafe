@@ -18,7 +18,29 @@ class InvoicePage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (!snap.hasData || snap.data == null) {
-            return const Center(child: Text('Invoice not found'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(Icons.receipt, color: Colors.black54, size: 50),
+                  SizedBox(height: 10),
+                  Text(
+                    'No Invoice',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall!.copyWith(color: Colors.black54),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Invoice not found',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall!.copyWith(color: Colors.black54),
+                  ),
+                ],
+              ),
+            );
           }
           return InvoicePage(
             invoice: InvoiceDisplayModel.fromReceipt(snap.data!),

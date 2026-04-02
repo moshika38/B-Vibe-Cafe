@@ -5,10 +5,11 @@ class DummyData {
   static ReceiptModel get dummyReceipt {
     return ReceiptModel(
       receiptId: _generateInvoiceNumber(),
-      receiptDateTime: DateTime.now(),
+      receiptCreateDate: DateTime.now(),
+      receiptCreateTime: DateTime.now(),
       paymentStatus: false,
-      paymentDate: DatetimeFormat.date().toString(),
-      paymentTime: DatetimeFormat.time().toString(),
+      paymentDate: DatetimeFormat.date(),
+      paymentTime: DatetimeFormat.time(),
       paymentMethod: "Cash",
       totalAmount: "0",
       paidAmount: "0",

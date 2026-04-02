@@ -3,24 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 class TitleBar extends StatefulWidget {
-  const TitleBar({super.key});
+  final Function(int id) onTap;
+  final  int selectedIndex;
+  final  List<String> tab;
+  const TitleBar({super.key, required this.onTap, required this.selectedIndex, required this.tab});
 
   @override
   State<TitleBar> createState() => _TitleBarState();
 }
 
 class _TitleBarState extends State<TitleBar> {
-  int _selectedIndex = 0;
+   
   final _searchCtrl = TextEditingController();
 
-  static const _tabs = [
-    "All Orders",
-    "Today",
-    "Yesterday",
-    "Last 7 Days",
-    "Last Month",
-  ];
-
+  
   @override
   void dispose() {
     _searchCtrl.dispose();
@@ -57,10 +53,10 @@ class _TitleBarState extends State<TitleBar> {
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: List.generate(_tabs.length, (i) {
-                  final isSelected = i == _selectedIndex;
+                children: List.generate(widget.tab.length, (i) {
+                  final isSelected = i == widget.selectedIndex;
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedIndex = i),
+                    onTap: () => widget.onTap(i),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 5),
                       child: Container(
@@ -75,7 +71,7 @@ class _TitleBarState extends State<TitleBar> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          _tabs[i],
+                          widget.tab[i],
                           style: theme.textTheme.labelMedium?.copyWith(
                             color: isSelected
                                 ? Colors.white

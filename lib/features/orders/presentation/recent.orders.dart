@@ -278,7 +278,7 @@ class _RecentOrdersState extends State<RecentOrders> {
                                             items: receipt[index].items.length
                                                 .toString(),
                                             time:
-                                                receipt[index].receiptDateTime,
+                                                receipt[index].receiptCreateDate,
                                             amount: receipt[index].totalAmount,
                                             status:
                                                 receipt[index].paymentStatus,

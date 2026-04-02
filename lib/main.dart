@@ -1,3 +1,4 @@
+import 'package:bvibe/provider/bill.history.provider.dart';
 import 'package:bvibe/provider/business.info.dart';
  import 'package:bvibe/provider/screen.provider.dart';
 import 'package:bvibe/routes/app.routes.dart';
@@ -40,6 +41,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ReceiptProvider()),
         ChangeNotifierProvider(create: (_) => ScreenProvider()),
         ChangeNotifierProvider(create: (_) => BusinessInfoProvider()),
+        ChangeNotifierProvider(create: (_) => BillHistoryProvider()),
       ],
       child: const MyApp(),
     ),
