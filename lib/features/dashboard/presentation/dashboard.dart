@@ -456,7 +456,6 @@ class _DashboardState extends State<Dashboard> {
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
         maxY: _weeklyRevenue.fold(0.0, (max, r) => r > max ? r : max) * 1.2,
-        barTouchData: BarTouchData(enabled: true),
         titlesData: FlTitlesData(
           show: true,
           bottomTitles: AxisTitles(
@@ -480,8 +479,32 @@ class _DashboardState extends State<Dashboard> {
           leftTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
+          topTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                final index = value.toInt();
+                if (index < 0 || index >= _weeklyRevenue.length) {
+                  return const SizedBox.shrink();
+                }
+                final total = _weeklyRevenue.fold(0.0, (a, b) => a + b);
+                if (total == 0) return const SizedBox.shrink();
+                final percent =
+                    ((_weeklyRevenue[index] / total) * 100).toStringAsFixed(1);
+                return SideTitleWidget(
+                  meta: meta,
+                  child: Text(
+                    '$percent%',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                );
+              },
+              reservedSize: 24,
+            ),
           ),
           rightTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
@@ -489,6 +512,22 @@ class _DashboardState extends State<Dashboard> {
         ),
         gridData: const FlGridData(show: false),
         borderData: FlBorderData(show: false),
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              final total = _weeklyRevenue.fold(0.0, (a, b) => a + b);
+              final percent = ((rod.toY / total) * 100).toStringAsFixed(1);
+              return BarTooltipItem(
+                'LKR ${rod.toY.toStringAsFixed(2)}\n($percent%)',
+                theme.textTheme.bodySmall!.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            },
+          ),
+        ),
         barGroups: List.generate(7, (index) {
           return BarChartGroupData(
             x: index,
@@ -533,7 +572,7 @@ class _DashboardState extends State<Dashboard> {
           PieChartSectionData(
             value: _orderTypeMap['Dine-In'] ?? 0,
             title:
-                '${((_orderTypeMap['Dine-In'] ?? 0) / total * 100).toStringAsFixed(0)}%',
+                '${((_orderTypeMap['Dine-In'] ?? 0) / total * 100).toStringAsFixed(1)}%',
             color: Colors.blue,
             radius: 20,
             titleStyle: theme.textTheme.labelSmall?.copyWith(
@@ -546,7 +585,7 @@ class _DashboardState extends State<Dashboard> {
           PieChartSectionData(
             value: _orderTypeMap['Takeaway'] ?? 0,
             title:
-                '${((_orderTypeMap['Takeaway'] ?? 0) / total * 100).toStringAsFixed(0)}%',
+                '${((_orderTypeMap['Takeaway'] ?? 0) / total * 100).toStringAsFixed(1)}%',
             color: Colors.orange,
             radius: 20,
             titleStyle: theme.textTheme.labelSmall?.copyWith(
@@ -560,7 +599,7 @@ class _DashboardState extends State<Dashboard> {
             PieChartSectionData(
               value: _orderTypeMap['Retail'] ?? 0,
               title:
-                  '${((_orderTypeMap['Retail'] ?? 0) / total * 100).toStringAsFixed(0)}%',
+                  '${((_orderTypeMap['Retail'] ?? 0) / total * 100).toStringAsFixed(1)}%',
               color: Colors.green,
               radius: 20,
               titleStyle: theme.textTheme.labelSmall?.copyWith(
@@ -576,68 +615,93 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget _buildCategoryRevenuePie(ThemeData theme) {
-    if (_categoryRevenue.isEmpty) {
-      return const Center(
-        child: Text('Category breakdown will appear here after sales'),
-      );
+    final catProvider = context.read<CategoriesProvider>();
+    final allCategories = catProvider.categories;
+
+    if (allCategories.isEmpty) {
+      return const Center(child: Text('No categories defined'));
     }
 
     final total = _categoryRevenue.values.fold(0.0, (sum, v) => sum + v);
-    final sortedCategories = _categoryRevenue.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
 
-    // Only show top 4 categories in pie, group others
-    final topCategories = sortedCategories.take(4).toList();
-    final othersRevenue = sortedCategories
-        .skip(4)
-        .fold(0.0, (sum, e) => sum + e.value);
-
+    // Prepare sections for categories with revenue
     final List<PieChartSectionData> sections = [];
+    final List<Widget> legendItems = [];
+
+    // Colors for consistency (we can map these to categories for stability)
     final colors = [
       Colors.purple,
       Colors.teal,
       Colors.indigo,
       Colors.pink,
-      Colors.grey,
+      Colors.orange,
+      Colors.blue,
+      Colors.green,
+      Colors.amber,
+      Colors.cyan,
+      Colors.deepOrange,
     ];
 
-    for (int i = 0; i < topCategories.length; i++) {
-      final entry = topCategories[i];
-      sections.add(
-        PieChartSectionData(
-          value: entry.value,
-          title: '${(entry.value / total * 100).toStringAsFixed(0)}%',
-          color: colors[i],
-          radius: 20,
-          titleStyle: theme.textTheme.labelSmall?.copyWith(
-            color: Colors.white,
-            fontSize: 10,
+    for (int i = 0; i < allCategories.length; i++) {
+      final category = allCategories[i];
+      final revenue = _categoryRevenue[category.itemName] ?? 0.0;
+      final color = colors[i % colors.length];
+
+      // Add to legend (all categories)
+      legendItems.add(_buildPieLabel(category.itemName, color));
+
+      // Add to pie (only if has revenue > 0)
+      if (revenue > 0 && total > 0) {
+        sections.add(
+          PieChartSectionData(
+            value: revenue,
+            title: '${(revenue / total * 100).toStringAsFixed(1)}%',
+            color: color,
+            radius: 20,
+            titleStyle: theme.textTheme.labelSmall?.copyWith(
+              color: Colors.white,
+              fontSize: 10,
+            ),
+            badgeWidget: null, // We'll show labels in a legend column instead if needed
           ),
-          badgeWidget: _buildPieLabel(entry.key, colors[i]),
-          badgePositionPercentageOffset: 2.2,
-        ),
+        );
+      }
+    }
+
+    if (total == 0 || sections.isEmpty) {
+      return Column(
+        children: [
+          const Expanded(
+            child: Center(child: Text('No sales by category today')),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: legendItems,
+          ),
+        ],
       );
     }
 
-    if (othersRevenue > 0) {
-      sections.add(
-        PieChartSectionData(
-          value: othersRevenue,
-          title: '${(othersRevenue / total * 100).toStringAsFixed(0)}%',
-          color: colors.last,
-          radius: 20,
-          titleStyle: theme.textTheme.labelSmall?.copyWith(
-            color: Colors.white,
-            fontSize: 10,
+    return Column(
+      children: [
+        Expanded(
+          child: PieChart(
+            PieChartData(
+              sectionsSpace: 4,
+              centerSpaceRadius: 50,
+              sections: sections,
+            ),
           ),
-          badgeWidget: _buildPieLabel('Others', colors.last),
-          badgePositionPercentageOffset: 2.2,
         ),
-      );
-    }
-
-    return PieChart(
-      PieChartData(sectionsSpace: 4, centerSpaceRadius: 50, sections: sections),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          children: legendItems,
+        ),
+      ],
     );
   }
 

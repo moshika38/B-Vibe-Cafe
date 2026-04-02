@@ -130,21 +130,54 @@ class _AppMenuState extends State<AppMenu> {
                               }
 
                               final listOfCate = cate.categories;
-
-                              return ListView.builder(
-                                controller: _scrollController,
+                              return ReorderableListView.builder(
+                                scrollController: _scrollController,
                                 itemCount: listOfCate.length,
+                                buildDefaultDragHandles: false, // Use custom handle
+                                onReorder: (oldIndex, newIndex) {
+                                  if (newIndex > oldIndex) {
+                                    newIndex -= 1;
+                                  }
+                                  final itemId = listOfCate[oldIndex].id;
+                                  if (itemId != null) {
+                                    // Prevent index out of bounds and unnecessary updates
+                                    if (oldIndex == newIndex) return;
+
+                                    // Update local activeIndex before reorder to keep UI selection stable
+                                    if (activeIndex == oldIndex) {
+                                      setState(() => activeIndex = newIndex);
+                                    } else if (activeIndex > oldIndex &&
+                                        activeIndex <= newIndex) {
+                                      setState(() => activeIndex -= 1);
+                                    } else if (activeIndex < oldIndex &&
+                                        activeIndex >= newIndex) {
+                                      setState(() => activeIndex += 1);
+                                    }
+
+                                    cate.reorderCategory(itemId, newIndex);
+                                  }
+                                },
                                 itemBuilder: (context, index) {
-                                  final categoryId = listOfCate[index].id;
+                                  final category = listOfCate[index];
+                                  final categoryId = category.id;
                                   final itemCount = itemProv.items
                                       .where((i) => i.categoryId == categoryId)
                                       .length;
 
                                   return CateCard(
+                                    key: ValueKey(categoryId ?? index),
                                     isActive: index == activeIndex,
-                                    imageNumber: listOfCate[index].iconNumber,
+                                    imageNumber: category.iconNumber,
                                     count: itemCount.toString(),
-                                    title: listOfCate[index].itemName,
+                                    title: category.itemName,
+                                    dragHandle: ReorderableDragStartListener(
+                                      index: index,
+                                      child: const Icon(
+                                        Icons.drag_handle,
+                                        size: 20,
+                                        color: AppColors.textHint,
+                                      ),
+                                    ),
                                     onTap: () {
                                       setState(() {
                                         activeIndex = index;
@@ -152,6 +185,24 @@ class _AppMenuState extends State<AppMenu> {
                                       context.read<ItemProvider>().selectItem(
                                         null,
                                       );
+                                    },
+                                    onEdit: () async {
+                                      final updatedCategory =
+                                          await CreateCategories.show(
+                                            context,
+                                            category: category,
+                                          );
+                                      if (updatedCategory != null) {
+                                        final res = await cate.insertCategory(
+                                          updatedCategory,
+                                        );
+                                        if (res > 0) {
+                                          AppSnack.successSnack(
+                                            context,
+                                            "Category updated successfully",
+                                          );
+                                        }
+                                      }
                                     },
                                   );
                                 },

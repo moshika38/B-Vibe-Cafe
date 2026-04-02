@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 12,
+      version: 13,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -196,6 +196,15 @@ CREATE TABLE IF NOT EXISTS receipts (
 )
 ''');
         }
+        if (oldVersion < 13) {
+          try {
+            await db.execute(
+              'ALTER TABLE categories ADD COLUMN orderIndex INTEGER NOT NULL DEFAULT 0',
+            );
+          } catch (e) {
+            print("Database migration version 13 error: $e");
+          }
+        }
       },
     );
   }
@@ -220,7 +229,8 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS categories (
   id $idTypeText,
   itemName $textType,
-  iconNumber $intType
+  iconNumber $intType,
+  orderIndex $intType DEFAULT 0
 )
 ''');
 

@@ -3,10 +3,14 @@ import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/data/model/categories.model.dart';
 
 class CreateCategories extends StatefulWidget {
-  const CreateCategories({super.key});
+  final CategoriesModel? category;
+  const CreateCategories({super.key, this.category});
 
   /// Shows the Create Categories popup window
-  static Future<CategoriesModel?> show(BuildContext context) {
+  static Future<CategoriesModel?> show(
+    BuildContext context, {
+    CategoriesModel? category,
+  }) {
     return showGeneralDialog<CategoriesModel>(
       context: context,
       barrierDismissible: true,
@@ -24,7 +28,7 @@ class CreateCategories extends StatefulWidget {
           scale: curvedAnimation,
           child: FadeTransition(
             opacity: animation,
-            child: const CreateCategories(),
+            child: CreateCategories(category: category),
           ),
         );
       },
@@ -36,8 +40,15 @@ class CreateCategories extends StatefulWidget {
 }
 
 class _CreateCategoriesState extends State<CreateCategories> {
-  final _nameController = TextEditingController();
-  int _selectedIcon = 0; // 0 to 15 based on assets/cate/
+  late final TextEditingController _nameController;
+  late int _selectedIcon;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.category?.itemName);
+    _selectedIcon = widget.category?.iconNumber ?? 0;
+  }
 
   @override
   void dispose() {
@@ -68,9 +79,9 @@ class _CreateCategoriesState extends State<CreateCategories> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Add New Category',
-              style: TextStyle(
+            Text(
+              widget.category == null ? 'Add New Category' : 'Edit Category',
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
@@ -202,9 +213,12 @@ class _CreateCategoriesState extends State<CreateCategories> {
                         if (name.isEmpty) return;
 
                         final newCategory = CategoriesModel(
-                          id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          id:
+                              widget.category?.id ??
+                              DateTime.now().millisecondsSinceEpoch.toString(),
                           itemName: name,
                           iconNumber: _selectedIcon,
+                          orderIndex: widget.category?.orderIndex ?? 0,
                         );
                         Navigator.of(context).pop(newCategory);
                       },
