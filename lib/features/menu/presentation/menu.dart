@@ -29,7 +29,8 @@ class _AppMenuState extends State<AppMenu> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      CategoriesProvider.instance.fetchCategories();
+      context.read<CategoriesProvider>().fetchCategories();
+      context.read<ItemProvider>().fetchItems();
     });
   }
 
@@ -73,8 +74,8 @@ class _AppMenuState extends State<AppMenu> {
         ),
 
         // category section
-        Consumer<CategoriesProvider>(
-          builder: (context, cate, child) => Expanded(
+        Consumer2<CategoriesProvider, ItemProvider>(
+          builder: (context, cate, itemProv, child) => Expanded(
             child: Row(
               children: [
                 Container(
@@ -134,10 +135,15 @@ class _AppMenuState extends State<AppMenu> {
                                 controller: _scrollController,
                                 itemCount: listOfCate.length,
                                 itemBuilder: (context, index) {
+                                  final categoryId = listOfCate[index].id;
+                                  final itemCount = itemProv.items
+                                      .where((i) => i.categoryId == categoryId)
+                                      .length;
+
                                   return CateCard(
                                     isActive: index == activeIndex,
                                     imageNumber: listOfCate[index].iconNumber,
-                                    count: "25",
+                                    count: itemCount.toString(),
                                     title: listOfCate[index].itemName,
                                     onTap: () {
                                       setState(() {

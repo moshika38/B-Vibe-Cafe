@@ -9,7 +9,7 @@ class CategoriesModel {
 
   factory CategoriesModel.fromMap(Map<String, dynamic> map) {
     return CategoriesModel(
-      id: map['id'] as String,
+      id: map['id']?.toString(),
       itemName: map['itemName'] as String,
       iconNumber: map['iconNumber'] as int,
     );

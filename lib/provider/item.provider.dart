@@ -17,13 +17,20 @@ class ItemProvider extends ChangeNotifier {
   }
 
   Future<void> fetchItems() async {
-    isLoadingItems = true;
-    notifyListeners();
-    final db = await DatabaseHelper.instance.database;
-    final result = await db.query('items', orderBy: 'name ASC');
-    items = result.map((map) => ItemModel.fromMap(map)).toList();
-    isLoadingItems = false;
-    notifyListeners();
+    try {
+      isLoadingItems = true;
+      notifyListeners();
+      final db = await DatabaseHelper.instance.database;
+      final result = await db.query('items', orderBy: 'name ASC');
+      items = result.map((map) => ItemModel.fromMap(map)).toList();
+      debugPrint("Fetched ${items.length} items from database");
+      isLoadingItems = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error fetching items: $e");
+      isLoadingItems = false;
+      notifyListeners();
+    }
   }
 
   // ── CREATE ──

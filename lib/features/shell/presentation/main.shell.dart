@@ -76,7 +76,7 @@ class MainShell extends StatelessWidget {
 
                     MenuItem(
                       isActive: isActive('/history'),
-                      icon: Symbols.analytics,
+                      icon: Symbols.history,
                       isOrder: screenProvider.isOrder,
                       label: "Bill History",
                       onTap: () {

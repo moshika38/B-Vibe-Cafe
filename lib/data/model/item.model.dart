@@ -21,13 +21,13 @@ class ItemModel {
 
   factory ItemModel.fromMap(Map<String, dynamic> map) {
     return ItemModel(
-      id: map['id'],
-      categoryId: map['categoryId'],
-      itemName: map['name'],
-      description: map['description'],
-      price: map['price'],
-      cost: map['cost'],
-      imagePath: map['imagePath'],
+      id: map['id']?.toString(),
+      categoryId: map['categoryId']?.toString() ?? '',
+      itemName: map['name'] as String,
+      description: map['description'] as String,
+      price: map['price'] as String,
+      cost: map['cost'] as String,
+      imagePath: map['imagePath'] as String,
       isRetail: map['isRetail'] == 1 || map['isRetail'] == '1',
     );
   }
