@@ -2,12 +2,15 @@ import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/features/analyze/widgets/analytics_card.dart';
 import 'package:bvibe/features/analyze/widgets/charts.dart';
 import 'package:bvibe/features/analyze/widgets/kpi_card.dart';
+import 'package:bvibe/features/analyze/helper/export_service.dart';
 import 'package:bvibe/provider/analytics.provider.dart';
 import 'package:bvibe/provider/categories.helper.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class AnalyzeScreen extends StatefulWidget {
   const AnalyzeScreen({super.key});
@@ -17,6 +20,8 @@ class AnalyzeScreen extends StatefulWidget {
 }
 
 class _AnalyzeScreenState extends State<AnalyzeScreen> {
+  bool _isExporting = false;
+
   @override
   void initState() {
     super.initState();
@@ -258,10 +263,87 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
             ),
             const SizedBox(width: 10),
             _buildPeriodSelector(analytics),
+            const SizedBox(width: 16),
+            _buildExportButton(analytics),
           ],
         ),
       ],
     );
+  }
+
+  Widget _buildExportButton(AnalyticsProvider analytics) {
+    return _isExporting
+        ? const SizedBox(
+            width: 40,
+            height: 40,
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          )
+        : Container(
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () async {
+                  setState(() => _isExporting = true);
+                  final path = await ExportService.exportAnalyticsToExcel(analytics);
+                  setState(() => _isExporting = false);
+
+                  if (path != null) {
+                    if (mounted) {
+                      showTopSnackBar(
+                        Overlay.of(context),
+                        CustomSnackBar.success(
+                          message: "Report exported successfully to Downloads!",
+                        ),
+                      );
+                      // Optional: Open file
+                      await ExportService.openExportedFile(path);
+                    }
+                  } else {
+                    if (mounted) {
+                      showTopSnackBar(
+                        Overlay.of(context),
+                        CustomSnackBar.error(
+                          message: "Failed to export report. Please try again.",
+                        ),
+                      );
+                    }
+                  }
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Row(
+                    children: [
+                      Icon(Symbols.download, color: Colors.white, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Export Report',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
   }
 
   Widget _buildPeriodSelector(AnalyticsProvider analytics) {
