@@ -157,6 +157,13 @@ class _HistoryState extends State<History> {
                 });
                 _fetchReceiptsByFilter(id);
               },
+              onSearch: (query) {
+                setState(() {
+                  selectedIndex = -1;
+                  _selectedReceiptId = null;
+                });
+                context.read<BillHistoryProvider>().searchReceipts(query);
+              },
               selectedIndex: selectedIndex,
               tab: [
                 "All Orders",

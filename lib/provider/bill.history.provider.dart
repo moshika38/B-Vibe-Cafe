@@ -99,4 +99,32 @@ class BillHistoryProvider extends ChangeNotifier {
       debugPrint("Error deleting receipt: $e");
     }
   }
+
+  // Search receipts by ID
+  Future<void> searchReceipts(String query) async {
+    if (query.isEmpty) {
+      await fetchAllReceipts();
+      return;
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final db = await DatabaseHelper.instance.database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'receipts',
+        where: 'receipt_id LIKE ?',
+        whereArgs: ['%$query%'],
+        orderBy: 'receipt_create_date DESC, receipt_create_time DESC',
+      );
+
+      _receipts = maps.map((e) => ReceiptModel.fromMap(e)).toList();
+    } catch (e) {
+      debugPrint("Error searching receipts: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

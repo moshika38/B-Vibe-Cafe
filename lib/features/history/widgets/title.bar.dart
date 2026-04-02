@@ -4,9 +4,16 @@ import 'package:material_symbols_icons/symbols.dart';
 
 class TitleBar extends StatefulWidget {
   final Function(int id) onTap;
-  final  int selectedIndex;
-  final  List<String> tab;
-  const TitleBar({super.key, required this.onTap, required this.selectedIndex, required this.tab});
+  final Function(String query)? onSearch;
+  final int selectedIndex;
+  final List<String> tab;
+  const TitleBar({
+    super.key,
+    required this.onTap,
+    this.onSearch,
+    required this.selectedIndex,
+    required this.tab,
+  });
 
   @override
   State<TitleBar> createState() => _TitleBarState();
@@ -94,6 +101,7 @@ class _TitleBarState extends State<TitleBar> {
             Expanded(
               child: TextField(
                 controller: _searchCtrl,
+                onChanged: widget.onSearch,
                 decoration: InputDecoration(
                   hintText: "Search by order #, table, or customer...",
                   prefixIcon: Icon(
