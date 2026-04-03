@@ -26,6 +26,7 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CategoriesProvider>().fetchCategories();
       context.read<AnalyticsProvider>().loadAnalytics();
     });
   }
@@ -62,128 +63,133 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
         s.totalOrders.toDouble(), analytics.prevPeriodOrders.toDouble());
 
     // Build category revenue with names from provider
-    final catProvider = context.read<CategoriesProvider>();
-    final catNameMap = {for (var c in catProvider.categories) c.id: c.itemName};
-    final namedCatRevenue = <String, double>{};
-    analytics.categoryRevenue.forEach((id, rev) {
-      final name = catNameMap[id] ?? id;
-      namedCatRevenue[name] = (namedCatRevenue[name] ?? 0) + rev;
-    });
+    return Consumer<CategoriesProvider>(
+      builder: (context, catProvider, _) {
+        final catNameMap = {
+          for (var c in catProvider.categories) c.id: c.itemName
+        };
+        final namedCatRevenue = <String, double>{};
+        analytics.categoryRevenue.forEach((id, rev) {
+          final name = catNameMap[id] ?? id;
+          namedCatRevenue[name] = (namedCatRevenue[name] ?? 0) + rev;
+        });
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Header ──
-          _buildHeader(theme, analytics, now),
-          const SizedBox(height: 28),
-
-          // ── KPI Cards ──
-          _buildKpiRow(analytics, s, revenueChange, ordersChange,
-              isRevenueUp, isOrdersUp),
-          const SizedBox(height: 24),
-
-          // ── Alert Banner (if unpaid orders) ──
-          if (analytics.unpaidOrders > 0) ...[
-            _buildUnpaidBanner(analytics),
-            const SizedBox(height: 24),
-          ],
-
-          // ── Revenue Trend + Order Type ──
-          Row(
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                flex: 3,
-                child: AnalyticsCard(
-                  title: 'Revenue Trend',
-                  subTitle: 'Sales performance over time',
-                  height: 280,
-                  child: RevenueTrendChart(
-                    revenueByDay: analytics.revenueByDay,
-                    period: analytics.selectedPeriod,
+              // ── Header ──
+              _buildHeader(theme, analytics, now),
+              const SizedBox(height: 28),
+
+              // ── KPI Cards ──
+              _buildKpiRow(analytics, s, revenueChange, ordersChange,
+                  isRevenueUp, isOrdersUp),
+              const SizedBox(height: 24),
+
+              // ── Alert Banner (if unpaid orders) ──
+              if (analytics.unpaidOrders > 0) ...[
+                _buildUnpaidBanner(analytics),
+                const SizedBox(height: 24),
+              ],
+
+              // ── Revenue Trend + Order Type ──
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: AnalyticsCard(
+                      title: 'Revenue Trend',
+                      subTitle: 'Sales performance over time',
+                      height: 280,
+                      child: RevenueTrendChart(
+                        revenueByDay: analytics.revenueByDay,
+                        period: analytics.selectedPeriod,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 2,
-                child: AnalyticsCard(
-                  title: 'Service Type',
-                  subTitle: 'Order distribution',
-                  height: 280,
-                  child: OrderTypePieChart(
-                    data: analytics.orderTypeBreakdown,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: AnalyticsCard(
+                      title: 'Service Type',
+                      subTitle: 'Order distribution',
+                      height: 280,
+                      child: OrderTypePieChart(
+                        data: analytics.orderTypeBreakdown,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
+              const SizedBox(height: 16),
+
+              // ── Peak Hours + Payment Methods ──
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: AnalyticsCard(
+                      title: 'Peak Hours',
+                      subTitle: 'Orders by hour of day',
+                      height: 240,
+                      child: OrdersHeatmapChart(
+                        ordersByHour: analytics.ordersByHour,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: AnalyticsCard(
+                      title: 'Payment Methods',
+                      subTitle: 'How customers pay',
+                      height: 240,
+                      child: PaymentMethodChart(
+                        data: analytics.paymentMethodBreakdown,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // ── Top Items + Profit Breakdown ──
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: _buildTopItemsCard(analytics),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: AnalyticsCard(
+                      title: 'Profit Breakdown',
+                      subTitle: 'Revenue vs Cost vs Profit',
+                      height: 340,
+                      child: ProfitBreakdownChart(
+                        revenue: s.totalRevenue,
+                        cost: s.totalCost,
+                        profit: s.grossProfit,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // ── Category Revenue ──
+              _buildCategoryRevenueCard(namedCatRevenue, analytics),
+              const SizedBox(height: 24),
             ],
           ),
-          const SizedBox(height: 16),
-
-          // ── Peak Hours + Payment Methods ──
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 3,
-                child: AnalyticsCard(
-                  title: 'Peak Hours',
-                  subTitle: 'Orders by hour of day',
-                  height: 240,
-                  child: OrdersHeatmapChart(
-                    ordersByHour: analytics.ordersByHour,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 2,
-                child: AnalyticsCard(
-                  title: 'Payment Methods',
-                  subTitle: 'How customers pay',
-                  height: 240,
-                  child: PaymentMethodChart(
-                    data: analytics.paymentMethodBreakdown,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // ── Top Items + Profit Breakdown ──
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 3,
-                child: _buildTopItemsCard(analytics),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 2,
-                child: AnalyticsCard(
-                  title: 'Profit Breakdown',
-                  subTitle: 'Revenue vs Cost vs Profit',
-                  height: 340,
-                  child: ProfitBreakdownChart(
-                    revenue: s.totalRevenue,
-                    cost: s.totalCost,
-                    profit: s.grossProfit,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // ── Category Revenue ──
-          _buildCategoryRevenueCard(namedCatRevenue, analytics),
-          const SizedBox(height: 24),
-        ],
-      ),
+        );
+      },
     );
   }
 

@@ -39,6 +39,7 @@ class _DashboardState extends State<Dashboard> {
     _loadDashboardData();
     // Add listener to refresh data when receipts change
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CategoriesProvider>().fetchCategories();
       context.read<AnalyticsProvider>().loadAnalytics(period: 'Today');
       context.read<ReceiptProvider>().addListener(_onReceiptsChanged);
     });
@@ -597,83 +598,86 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget _buildCategoryRevenuePie(ThemeData theme, AnalyticsProvider analytics) {
-    final catProvider = context.read<CategoriesProvider>();
-    final allCategories = catProvider.categories;
-    final catRevenue = analytics.categoryRevenue;
+    return Consumer<CategoriesProvider>(
+      builder: (context, catProvider, _) {
+        final allCategories = catProvider.categories;
+        final catRevenue = analytics.categoryRevenue;
 
-    if (allCategories.isEmpty) {
-      return const Center(child: Text('No categories defined'));
-    }
+        if (allCategories.isEmpty) {
+          return const Center(child: Text('No categories defined'));
+        }
 
-    final total = catRevenue.values.fold(0.0, (sum, v) => sum + v);
+        final total = catRevenue.values.fold(0.0, (sum, v) => sum + v);
 
-    // Map ID to Name and revenue
-    final namedRevenue = <String, double>{};
-    final catNameMap = {for (var c in allCategories) c.id: c.itemName};
-    catRevenue.forEach((id, rev) {
-      final name = catNameMap[id] ?? id;
-      namedRevenue[name] = (namedRevenue[name] ?? 0) + rev;
-    });
+        // Map ID to Name and revenue
+        final namedRevenue = <String, double>{};
+        final catNameMap = {for (var c in allCategories) c.id: c.itemName};
+        catRevenue.forEach((id, rev) {
+          final name = catNameMap[id] ?? id;
+          namedRevenue[name] = (namedRevenue[name] ?? 0) + rev;
+        });
 
-    final List<PieChartSectionData> sections = [];
-    final List<Widget> legendItems = [];
+        final List<PieChartSectionData> sections = [];
+        final List<Widget> legendItems = [];
 
-    final colors = [
-      Colors.purple,
-      Colors.teal,
-      Colors.indigo,
-      Colors.pink,
-      Colors.orange,
-      Colors.blue,
-      Colors.green,
-      Colors.amber,
-      Colors.cyan,
-      Colors.deepOrange,
-    ];
+        final colors = [
+          Colors.purple,
+          Colors.teal,
+          Colors.indigo,
+          Colors.pink,
+          Colors.orange,
+          Colors.blue,
+          Colors.green,
+          Colors.amber,
+          Colors.cyan,
+          Colors.deepOrange,
+        ];
 
-    int colorIndex = 0;
-    namedRevenue.forEach((name, rev) {
-      if (rev > 0) {
-        final color = colors[colorIndex % colors.length];
-        sections.add(
-          PieChartSectionData(
-            value: rev,
-            title: '${(rev / total * 100).toStringAsFixed(1)}%',
-            color: color,
-            radius: 20,
-            titleStyle: theme.textTheme.labelSmall?.copyWith(
-              color: Colors.white,
-              fontSize: 10,
+        int colorIndex = 0;
+        namedRevenue.forEach((name, rev) {
+          if (rev > 0) {
+            final color = colors[colorIndex % colors.length];
+            sections.add(
+              PieChartSectionData(
+                value: rev,
+                title: '${(rev / total * 100).toStringAsFixed(1)}%',
+                color: color,
+                radius: 20,
+                titleStyle: theme.textTheme.labelSmall?.copyWith(
+                  color: Colors.white,
+                  fontSize: 10,
+                ),
+              ),
+            );
+            legendItems.add(_buildPieLabel(name, color));
+            colorIndex++;
+          }
+        });
+
+        if (total == 0 || sections.isEmpty) {
+          return const Center(child: Text('No sales by category today'));
+        }
+
+        return Column(
+          children: [
+            Expanded(
+              child: PieChart(
+                PieChartData(
+                  sectionsSpace: 4,
+                  centerSpaceRadius: 50,
+                  sections: sections,
+                ),
+              ),
             ),
-          ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: legendItems,
+            ),
+          ],
         );
-        legendItems.add(_buildPieLabel(name, color));
-        colorIndex++;
-      }
-    });
-
-    if (total == 0 || sections.isEmpty) {
-      return const Center(child: Text('No sales by category today'));
-    }
-
-    return Column(
-      children: [
-        Expanded(
-          child: PieChart(
-            PieChartData(
-              sectionsSpace: 4,
-              centerSpaceRadius: 50,
-              sections: sections,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 12,
-          runSpacing: 8,
-          children: legendItems,
-        ),
-      ],
+      },
     );
   }
 
