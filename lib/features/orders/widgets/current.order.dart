@@ -334,7 +334,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
                   context.push('/orders/checkout', extra: widget.receiptId);
                 },
                 child: Text(
-                  "Place Order ( Num+Enter )",
+                  "Place Order ( Ctrl+Enter )",
                   style: Theme.of(context).textTheme.titleMedium!.copyWith(
                     color: AppColors.surface,
                     fontWeight: FontWeight.bold,

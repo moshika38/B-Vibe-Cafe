@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:bvibe/const/theme/theme.dart';
-import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:bvibe/data/workspace/number.format.dart';
+import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
+import 'package:bvibe/components/conform.window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class BuildItemCard extends StatefulWidget {
@@ -49,10 +52,31 @@ class _BuildItemCardState extends State<BuildItemCard> {
   @override
   void initState() {
     super.initState();
-    _qty = 0;
-    _qtyController = TextEditingController(text: '0')
-      ..selection = const TextSelection(baseOffset: 0, extentOffset: 1);
-    _qtyFocusNode = FocusNode();
+    _qty = 1;
+    _qtyController = TextEditingController(text: '1');
+    _qtyFocusNode = FocusNode(
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          if (event.logicalKey == LogicalKeyboardKey.backspace) {
+            if (_qtyController.text.isEmpty) {
+              showExitConfirmDialog(context).then((confirmed) {
+                if (confirmed && mounted) {
+                  context.pop();
+                }
+              });
+              return KeyEventResult.handled;
+            }
+          } else if (event.logicalKey == LogicalKeyboardKey.enter ||
+              event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+            if (HardwareKeyboard.instance.isShiftPressed) {
+              _showDiscountDialog(context.read<ReceiptProvider>());
+              return KeyEventResult.handled;
+            }
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+    );
     if (widget.isSelect) {
       _qtyFocusNode.requestFocus();
     }
@@ -91,7 +115,7 @@ class _BuildItemCardState extends State<BuildItemCard> {
         imagePath: widget.image,
         qty: _qty.toString(),
         discount: perItemDiscount.toStringAsFixed(2),
-        isRetail: widget.isRetail
+        isRetail: widget.isRetail,
       ),
     );
   }
@@ -105,7 +129,7 @@ class _BuildItemCardState extends State<BuildItemCard> {
   }
 
   void _decrement(ReceiptProvider provider) {
-    if (_qty > 0) {
+    if (_qty > 1) {
       setState(() {
         _qty--;
         _qtyController.text = _qty.toString();
@@ -115,10 +139,14 @@ class _BuildItemCardState extends State<BuildItemCard> {
   }
 
   void _onQtyChanged(String value, ReceiptProvider provider) {
-    final int newQty = int.tryParse(value) ?? 0;
-    if (newQty != _qty) {
+    if (value.isEmpty) return; // Keep empty for backspace-to-pop logic
+    final int newQty = int.tryParse(value) ?? 1;
+    final int clampedQty = newQty < 1 ? 1 : newQty;
+
+    if (clampedQty != _qty || value == "") {
       setState(() {
-        _qty = newQty;
+        _qty = clampedQty;
+        if (value != "") _qtyController.text = _qty.toString();
       });
       _addOrUpdateItem(provider);
     }
@@ -144,17 +172,33 @@ class _BuildItemCardState extends State<BuildItemCard> {
             'Apply Discount (LKR)',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          content: TextField(
-            controller: ctrl,
-            autofocus: true,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              suffixText: 'LKR',
-              filled: true,
-              fillColor: AppColors.background,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
+          content: Focus(
+            onKeyEvent: (node, event) {
+              if (event is KeyDownEvent &&
+                  event.logicalKey == LogicalKeyboardKey.backspace) {
+                if (ctrl.text.isEmpty) {
+                  Navigator.pop(ctx);
+                  return KeyEventResult.handled;
+                }
+              }
+              return KeyEventResult.ignored;
+            },
+            child: TextField(
+              controller: ctrl,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              onSubmitted: (_) =>
+                  Navigator.pop(ctx, double.tryParse(ctrl.text)),
+              decoration: InputDecoration(
+                suffixText: 'LKR',
+                filled: true,
+                fillColor: AppColors.background,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
           ),
@@ -182,8 +226,7 @@ class _BuildItemCardState extends State<BuildItemCard> {
       },
     );
 
-    if (updatedDiscount != null &&
-        updatedDiscount >= 0) {
+    if (updatedDiscount != null && updatedDiscount >= 0) {
       setState(() => _discount = updatedDiscount);
       _addOrUpdateItem(provider);
     }
@@ -197,255 +240,264 @@ class _BuildItemCardState extends State<BuildItemCard> {
     return Consumer<ReceiptProvider>(
       builder: (context, value, child) {
         if (!_initialized) {
-           final cached = value.getCachedReceipt(widget.receiptId);
-           if (cached != null) {
-             final existing = cached.items.where((i) => i.id == widget.itemId).toList();
-             if (existing.isNotEmpty) {
-               _qty = int.tryParse(existing.first.qty) ?? 0;
-               double absoluteDiscount = double.tryParse(existing.first.discount) ?? 0.0;
-               _discount = absoluteDiscount;
-               
-               if (_qtyController.text == '0' && _qty != 0) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) _qtyController.text = _qty.toString();
-                  });
-               }
-             }
-           }
-           _initialized = true;
+          final cached = value.getCachedReceipt(widget.receiptId);
+          if (cached != null) {
+            final existing = cached.items
+                .where((i) => i.id == widget.itemId)
+                .toList();
+            if (existing.isNotEmpty) {
+              _qty = int.tryParse(existing.first.qty) ?? 0;
+              double absoluteDiscount =
+                  double.tryParse(existing.first.discount) ?? 0.0;
+              _discount = absoluteDiscount;
+
+              if (_qtyController.text == '1' && _qty != 1) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) _qtyController.text = _qty.toString();
+                });
+              }
+            }
+          }
+          _initialized = true;
         }
 
         final finalPrice = basePrice - _discount;
 
         return Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          border: widget.isSelect
-              ? Border.all(color: AppColors.primary, width: 2)
-              : Border.all(color: Colors.transparent, width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Material(
-            color: theme.colorScheme.surface,
-            child: InkWell(
-              onTap: widget.onTap,
-              onDoubleTap: () {
-                widget.onTap?.call();
-                _increment(value);
-              },
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                /// IMAGE
-                Expanded(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      widget.image.startsWith("assets/")
-                          ? Image.asset(widget.image, fit: BoxFit.cover)
-                          : Image.file(File(widget.image), fit: BoxFit.cover),
-
-                      /// Subtle gradient for text readability if needed
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Colors.black.withOpacity(0.4),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.5],
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      /// Discount Badge
-                      if (_discount > 0)
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.redAccent,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '-${AppNumberFormat.formatNumber(_discount)} LKR',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-
-                /// DETAILS SECTION
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      /// TITLE
-                      Text(
-                        widget.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall!.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-
-                      const SizedBox(height: 4),
-
-                      /// PRICE
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: widget.isSelect
+                ? Border.all(color: AppColors.primary, width: 2)
+                : Border.all(color: Colors.transparent, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Material(
+              color: theme.colorScheme.surface,
+              child: InkWell(
+                onTap: widget.onTap,
+                onDoubleTap: () {
+                  widget.onTap?.call();
+                  _increment(value);
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// IMAGE
+                    Expanded(
+                      child: Stack(
+                        fit: StackFit.expand,
                         children: [
-                          Text(
-                            "${AppNumberFormat.formatNumber(finalPrice)} LKR",
-                            style: theme.textTheme.titleSmall!.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (_discount > 0) ...[
-                            const SizedBox(width: 6),
-                            Text(
-                              AppNumberFormat.formatNumber(basePrice),
-                              style: theme.textTheme.labelSmall!.copyWith(
-                                color: AppColors.textHint,
-                                decoration: TextDecoration.lineThrough,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
+                          widget.image.startsWith("assets/")
+                              ? Image.asset(widget.image, fit: BoxFit.cover)
+                              : Image.file(
+                                  File(widget.image),
+                                  fit: BoxFit.cover,
+                                ),
 
-                      const SizedBox(height: 12),
-
-                      /// CONTROLS (Discount & Qty)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          /// Discount Option Button
-                          InkWell(
-                            onTap: () => _showDiscountDialog(value),
-                            borderRadius: BorderRadius.circular(8),
+                          /// Subtle gradient for text readability if needed
+                          Positioned.fill(
                             child: Container(
-                              padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: AppColors.background,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.local_offer_outlined,
-                                size: 18,
-                                color: AppColors.textSecondary,
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [
+                                    Colors.black.withOpacity(0.4),
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0.0, 0.5],
+                                ),
                               ),
                             ),
                           ),
 
-                          /// Qty Control
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.divider),
-                              borderRadius: BorderRadius.circular(10),
+                          /// Discount Badge
+                          if (_discount > 0)
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.redAccent,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '-${AppNumberFormat.formatNumber(_discount)} LKR',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
-                            child: Row(
-                              children: [
-                                InkWell(
-                                  borderRadius: const BorderRadius.horizontal(
-                                    left: Radius.circular(10),
-                                  ),
-                                  onTap: () => _decrement(value),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    child: const Icon(
-                                      Icons.remove,
-                                      size: 16,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
+                        ],
+                      ),
+                    ),
+
+                    /// DETAILS SECTION
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          /// TITLE
+                          Text(
+                            widget.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall!.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+
+                          const SizedBox(height: 4),
+
+                          /// PRICE
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                "${AppNumberFormat.formatNumber(finalPrice)} LKR",
+                                style: theme.textTheme.titleSmall!.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                Container(
-                                  constraints: const BoxConstraints(
-                                    minWidth: 40,
-                                  ),
-                                  width: 40,
-                                  alignment: Alignment.center,
-                                  child: TextField(
-                                    controller: _qtyController,
-                                    focusNode: _qtyFocusNode,
-                                    autofocus: widget.isSelect,
-                                    textAlign: TextAlign.center,
-                                    keyboardType: TextInputType.number,
-                                    style: theme.textTheme.labelLarge!.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                    decoration: const InputDecoration(
-                                      isDense: true,
-                                      contentPadding: EdgeInsets.zero,
-                                      border: InputBorder.none,
-                                      enabledBorder: InputBorder.none,
-                                      focusedBorder: InputBorder.none,
-                                    ),
-                                    onSubmitted: (val) =>
-                                        _onQtyChanged(val, value),
-                                    onChanged: (val) {
-                                      // Optional: Live update on typing
-                                    },
-                                  ),
-                                ),
-                                InkWell(
-                                  borderRadius: const BorderRadius.horizontal(
-                                    right: Radius.circular(10),
-                                  ),
-                                  onTap: () => _increment(value),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    child: const Icon(
-                                      Icons.add,
-                                      size: 16,
-                                      color: AppColors.primary,
-                                    ),
+                              ),
+                              if (_discount > 0) ...[
+                                const SizedBox(width: 6),
+                                Text(
+                                  AppNumberFormat.formatNumber(basePrice),
+                                  style: theme.textTheme.labelSmall!.copyWith(
+                                    color: AppColors.textHint,
+                                    decoration: TextDecoration.lineThrough,
                                   ),
                                 ),
                               ],
-                            ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          /// CONTROLS (Discount & Qty)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              /// Discount Option Button
+                              InkWell(
+                                onTap: () => _showDiscountDialog(value),
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.background,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.local_offer_outlined,
+                                    size: 18,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+
+                              /// Qty Control
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: AppColors.divider),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    InkWell(
+                                      borderRadius:
+                                          const BorderRadius.horizontal(
+                                            left: Radius.circular(10),
+                                          ),
+                                      onTap: () => _decrement(value),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        child: const Icon(
+                                          Icons.remove,
+                                          size: 16,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      constraints: const BoxConstraints(
+                                        minWidth: 40,
+                                      ),
+                                      width: 40,
+                                      alignment: Alignment.center,
+                                      child: TextField(
+                                        controller: _qtyController,
+                                        focusNode: _qtyFocusNode,
+                                        autofocus: widget.isSelect,
+                                        textAlign: TextAlign.center,
+                                        keyboardType: TextInputType.number,
+                                        style: theme.textTheme.labelLarge!
+                                            .copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.textPrimary,
+                                            ),
+                                        decoration: const InputDecoration(
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                          border: InputBorder.none,
+                                          enabledBorder: InputBorder.none,
+                                          focusedBorder: InputBorder.none,
+                                        ),
+                                        onSubmitted: (val) =>
+                                            _onQtyChanged(val, value),
+                                        onChanged: (val) {
+                                          // Optional: Live update on typing
+                                        },
+                                      ),
+                                    ),
+                                    InkWell(
+                                      borderRadius:
+                                          const BorderRadius.horizontal(
+                                            right: Radius.circular(10),
+                                          ),
+                                      onTap: () => _increment(value),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        child: const Icon(
+                                          Icons.add,
+                                          size: 16,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
             ),
           ),
-        ),
-      );
+        );
       },
     );
   }

@@ -8,7 +8,10 @@ import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/provider/categories.helper.dart';
 import 'package:bvibe/provider/item.provider.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
+import 'package:bvibe/components/conform.window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class CreateOrders extends StatefulWidget {
@@ -27,8 +30,11 @@ class _CreateOrdersState extends State<CreateOrders> {
   Future? _categoriesFuture;
   Future? _itemsFuture;
   int? _lastActiveCate;
+  int _maxCategories = 0;
+  int _maxItems = 0;
 
-   
+  final FocusNode _focusNode = FocusNode();
+  int _currentCrossAxisCount = 4;
 
   void _create() {
     final id = DummyData.dummyReceipt;
@@ -38,10 +44,103 @@ class _CreateOrdersState extends State<CreateOrders> {
     Provider.of<ReceiptProvider>(context, listen: false).saveReceipt(id);
   }
 
+  bool _handleGlobalKey(KeyEvent event) {
+    if (!mounted || ModalRoute.of(context)?.isCurrent != true) return false;
+
+    if (event is KeyDownEvent) {
+      final bool isCtrlPressed =
+          HardwareKeyboard.instance.isControlPressed ||
+          HardwareKeyboard.instance.isLogicalKeyPressed(
+            LogicalKeyboardKey.controlLeft,
+          ) ||
+          HardwareKeyboard.instance.isLogicalKeyPressed(
+            LogicalKeyboardKey.controlRight,
+          );
+      final bool isShiftPressed = HardwareKeyboard.instance.isShiftPressed;
+
+      if (event.logicalKey == LogicalKeyboardKey.delete) {
+        showPinDialog(context).then((confirmed) {
+          if (confirmed && mounted) {
+            Provider.of<ReceiptProvider>(
+              context,
+              listen: false,
+            ).deleteReceipt(receiptId);
+            context.pop();
+          }
+        });
+        return true;
+      }
+
+      if (isCtrlPressed &&
+          (event.logicalKey == LogicalKeyboardKey.enter ||
+              event.logicalKey == LogicalKeyboardKey.numpadEnter)) {
+        context.push('/orders/checkout', extra: receiptId);
+        return true;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        if (isShiftPressed) {
+          Provider.of<ReceiptProvider>(
+            context,
+            listen: false,
+          ).updateOrderType(receiptId, 'Takeaway');
+        } else if (isCtrlPressed) {
+          final max = _maxCategories > 0 ? _maxCategories - 1 : 0;
+          setState(() => activeCate = (activeCate + 1).clamp(0, max));
+        } else {
+          final max = _maxItems > 0 ? _maxItems - 1 : 0;
+          setState(() => selectedItem = (selectedItem + 1).clamp(0, max));
+        }
+        return true;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        if (isShiftPressed) {
+          Provider.of<ReceiptProvider>(
+            context,
+            listen: false,
+          ).updateOrderType(receiptId, 'Dine-In');
+        } else if (isCtrlPressed) {
+          final max = _maxCategories > 0 ? _maxCategories - 1 : 0;
+          setState(() => activeCate = (activeCate - 1).clamp(0, max));
+        } else {
+          final max = _maxItems > 0 ? _maxItems - 1 : 0;
+          setState(() => selectedItem = (selectedItem - 1).clamp(0, max));
+        }
+        return true;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        final max = _maxItems > 0 ? _maxItems - 1 : 0;
+        setState(() => selectedItem =
+            (selectedItem + _currentCrossAxisCount).clamp(0, max));
+        return true;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        setState(() => selectedItem =
+            (selectedItem - _currentCrossAxisCount).clamp(0, selectedItem));
+        return true;
+      }
+    }
+    return false;
+  }
+
   @override
   void initState() {
     super.initState();
     widget.invoiceId.isEmpty ? _create() : receiptId = widget.invoiceId;
+    HardwareKeyboard.instance.addHandler(_handleGlobalKey);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _focusNode.requestFocus(),
+    );
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleGlobalKey);
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -52,25 +151,32 @@ class _CreateOrdersState extends State<CreateOrders> {
     final bool isTablet = width < 1100;
     final bool isMobile = width < 750;
 
-    return Container(
-      color: AppColors.background,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: isMobile
-            ? Column(
-                children: [
-                  Expanded(child: _menuSection()),
-                  const SizedBox(height: 20),
-                  SizedBox(height: 350, child: _cartSection()),
-                ],
-              )
-            : Row(
-                children: [
-                  Expanded(flex: isTablet ? 6 : 7, child: _menuSection()),
-                  const SizedBox(width: 20),
-                  Expanded(flex: 5, child: _cartSection()),
-                ],
-              ),
+    return Focus(
+      focusNode: _focusNode,
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        return KeyEventResult.ignored;
+      },
+      child: Container(
+        color: AppColors.background,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: isMobile
+              ? Column(
+                  children: [
+                    Expanded(child: _menuSection()),
+                    const SizedBox(height: 20),
+                    SizedBox(height: 350, child: _cartSection()),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(flex: isTablet ? 6 : 7, child: _menuSection()),
+                    const SizedBox(width: 20),
+                    Expanded(flex: 5, child: _cartSection()),
+                  ],
+                ),
+        ),
       ),
     );
   }
@@ -82,7 +188,7 @@ class _CreateOrdersState extends State<CreateOrders> {
       children: [
         const NavigationTitle(
           title: "Orders",
-          subtitle: "New Order",
+          subtitle: "Create Orders",
           isBackIcon: true,
         ),
 
@@ -113,6 +219,7 @@ class _CreateOrdersState extends State<CreateOrders> {
 
                   if (asyncSnapshot.hasData) {
                     final categories = asyncSnapshot.data!;
+                    _maxCategories = categories.length;
 
                     if (categories.isEmpty) {
                       return const Center(child: EmptyItem());
@@ -162,6 +269,16 @@ class _CreateOrdersState extends State<CreateOrders> {
                                 crossAxisCount = 2;
                               }
 
+                              if (_currentCrossAxisCount != crossAxisCount) {
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  if (mounted) {
+                                    setState(() =>
+                                        _currentCrossAxisCount = crossAxisCount);
+                                  }
+                                });
+                              }
+
                               return Consumer<ItemProvider>(
                                 builder: (context, itemProv, child) {
                                   if (_lastActiveCate != activeCate) {
@@ -182,6 +299,7 @@ class _CreateOrdersState extends State<CreateOrders> {
 
                                       if (itemSnapshot.hasData) {
                                         final data = itemSnapshot.data!;
+                                        _maxItems = data.length;
                                         if (data.isEmpty) {
                                           return const EmptyItem();
                                         }

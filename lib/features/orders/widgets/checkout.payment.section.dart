@@ -3,6 +3,7 @@ import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:bvibe/features/orders/widgets/checkout.widgets.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -15,6 +16,7 @@ class CheckoutPaymentSection extends StatefulWidget {
 }
 
 class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
+  final List<String> _paymentMethods = ["Cash", "Card", "Transfer"];
   String selectedPayment = "Cash";
   final TextEditingController _amountReceivedController = TextEditingController(
     text: "0.00",
@@ -23,10 +25,26 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
 
   bool isConform = false;
 
+  void _changePaymentMethodToNext() {
+    int index = _paymentMethods.indexOf(selectedPayment);
+    if (index != -1 && index < _paymentMethods.length - 1) {
+      setState(() => selectedPayment = _paymentMethods[index + 1]);
+    }
+  }
+
+  void _changePaymentMethodToPrev() {
+    int index = _paymentMethods.indexOf(selectedPayment);
+    if (index > 0) {
+      setState(() => selectedPayment = _paymentMethods[index - 1]);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _amountFocusNode = FocusNode();
+    _amountFocusNode = FocusNode(
+      onKeyEvent: _handleKeyEvent,
+    );
     _amountFocusNode.addListener(() {
       if (_amountFocusNode.hasFocus) {
         _amountReceivedController.selection = TextSelection(
@@ -48,6 +66,58 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
     _amountReceivedController.dispose();
     _amountFocusNode.dispose();
     super.dispose();
+  }
+
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyDownEvent || event is KeyRepeatEvent) {
+      final isCtrlPressed = HardwareKeyboard.instance.isControlPressed ||
+                            HardwareKeyboard.instance.isLogicalKeyPressed(LogicalKeyboardKey.controlLeft) || 
+                            HardwareKeyboard.instance.isLogicalKeyPressed(LogicalKeyboardKey.controlRight);
+      
+      if (isCtrlPressed) {
+        if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+          _changePaymentMethodToNext();
+          return KeyEventResult.handled;
+        } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+          _changePaymentMethodToPrev();
+          return KeyEventResult.handled;
+        } else if (event.logicalKey == LogicalKeyboardKey.digit1 || event.logicalKey == LogicalKeyboardKey.numpad1) {
+          setState(() => selectedPayment = "Cash");
+          return KeyEventResult.handled;
+        } else if (event.logicalKey == LogicalKeyboardKey.digit2 || event.logicalKey == LogicalKeyboardKey.numpad2) {
+          setState(() => selectedPayment = "Card");
+          return KeyEventResult.handled;
+        } else if (event.logicalKey == LogicalKeyboardKey.digit3 || event.logicalKey == LogicalKeyboardKey.numpad3) {
+          setState(() => selectedPayment = "Transfer");
+          return KeyEventResult.handled;
+        }
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.enter || event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+        if (isConform) {
+          print("Print recipt");
+          context.go('/orders');
+        } else {
+          if (!_isInsufficient) {
+            _confirmPayment();
+          }
+        }
+        return KeyEventResult.handled;
+      }
+      
+      if (event.logicalKey == LogicalKeyboardKey.backspace) {
+        if (isCtrlPressed) {
+          context.go('/orders');
+          return KeyEventResult.handled;
+        }
+        if (_amountReceivedController.text.isEmpty) {
+          context.pop();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      }
+    }
+    return KeyEventResult.ignored;
   }
 
   Future<void> _confirmPayment() async {

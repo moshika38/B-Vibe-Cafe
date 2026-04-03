@@ -13,81 +13,96 @@ class _ShortcutKeysState extends State<ShortcutKeys> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header
-        Text(
-          "Shortcut Keys",
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          "All shortcut keys are listed here",
-          style: theme.textTheme.labelSmall,
-        ),
-
-        const SizedBox(height: 24),
-
-        // Shortcuts List Container
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Column(
-              children: [
-                _buildShortcutRow(context, "Search Product", ["Ctrl", "F"]),
-                _buildShortcutRow(context, "Select Quantity", ["Shift", "Enter"]),
-                _buildShortcutRow(context, "Add Item/Confirm", ["Enter"]),
-                _buildShortcutRow(context, "Place Order", ["Numpad Enter"]),
-                _buildShortcutRow(context, "Open Payment", ["F2"]),
-                _buildShortcutRow(context, "Hold Order", ["F4"]),
-                _buildShortcutRow(context, "Cancel/Delete Item", ["Delete"]),
-                _buildShortcutRow(context, "Print Receipt", ["Ctrl", "P"], isLast: true),
-              ],
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Text(
+            "Shortcut Keys",
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
             ),
           ),
-        ),
+          const SizedBox(height: 4),
+          Text(
+            "All shortcut keys are listed here",
+            style: theme.textTheme.labelSmall,
+          ),
+          const SizedBox(height: 24),
 
-        const SizedBox(height: 30),
+          // Recent Orders Section
+          _buildSectionHeader(context, "Recent Orders"),
+          _buildShortcutsContainer([
+            _buildShortcutRow(context, "View Paid Bill", ["Enter"]),
+            _buildShortcutRow(context, "Checkout Unpaid Bill", ["Enter"]),
+            _buildShortcutRow(context, "Open Order Screen (Unpaid)", ["Ctrl", "Enter"], isLast: true),
+          ]),
+          const SizedBox(height: 24),
 
-        // Navigation Shortcuts Section
-        Text(
-          "Navigation",
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w700,
-          ),
+          // Order Create Screen Section
+          _buildSectionHeader(context, "Order Create Screen"),
+          _buildShortcutsContainer([
+            _buildShortcutRow(context, "Change Category", ["Ctrl", "← / →"]),
+            _buildShortcutRow(context, "Select Item", ["←", "→"]),
+            _buildShortcutRow(context, "Add Item Normally", ["Enter"]),
+            _buildShortcutRow(context, "Display/Add Discount", ["Ctrl", "Enter"]),
+            _buildShortcutRow(context, "Close Discount Pop-up", ["Backspace"]),
+            _buildShortcutRow(context, "Navigate Back (Recent Orders)", ["Backspace"]),
+            _buildShortcutRow(context, "Switch Takeaway/Dine-In", ["Ctrl", "1 / 2"]),
+            _buildShortcutRow(context, "Delete Item", ["Delete"]),
+            _buildShortcutRow(context, "Navigate to Checkout", ["Numpad Enter"], isLast: true),
+          ]),
+          const SizedBox(height: 24),
+
+          // Checkout Page Section
+          _buildSectionHeader(context, "Checkout Page"),
+          _buildShortcutsContainer([
+            _buildShortcutRow(context, "Change Payment Method", ["Ctrl", "1 / 2 / 3"]),
+            _buildShortcutRow(context, "Confirm Payment", ["Enter"]),
+            _buildShortcutRow(context, "Print Receipt (If Success)", ["Enter"]),
+            _buildShortcutRow(context, "Navigate Back (Order Screen)", ["Backspace"], isLast: true),
+          ]),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
         ),
-        const SizedBox(height: 16),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+      ),
+    );
+  }
+
+  Widget _buildShortcutsContainer(List<Widget> children) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          child: Column(
-            children: [
-              _buildShortcutRow(context, "Navigate Up", ["↑"]),
-              _buildShortcutRow(context, "Navigate Down", ["↓"], isLast: true),
-            ],
-          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          children: children,
         ),
-      ],
+      ),
     );
   }
 

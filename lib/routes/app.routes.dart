@@ -2,7 +2,7 @@ import 'package:bvibe/features/auth/presentation/create.screen.dart';
 import 'package:bvibe/features/auth/presentation/login_screen.dart';
 import 'package:bvibe/features/dashboard/presentation/dashboard.dart';
 import 'package:bvibe/features/menu/presentation/menu.dart';
-import 'package:bvibe/features/orders/presentation/checkOut.dart';
+import 'package:bvibe/features/orders/presentation/check.out.dart';
 import 'package:bvibe/features/orders/presentation/create.order.dart';
 import 'package:bvibe/features/orders/presentation/recent.orders.dart';
 import 'package:bvibe/features/history/presentation/history.dart';

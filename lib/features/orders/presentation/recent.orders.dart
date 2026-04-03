@@ -5,6 +5,7 @@ import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/features/orders/widgets/item.preview.dart';
 import 'package:bvibe/features/orders/widgets/order.row.item.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
+import 'package:bvibe/components/conform.window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -88,6 +89,33 @@ class _RecentOrdersState extends State<RecentOrders> {
       autofocus: true,
       onKeyEvent: (node, event) {
         if (event is KeyDownEvent || event is KeyRepeatEvent) {
+          final isCtrlPressed =
+              HardwareKeyboard.instance.isControlPressed ||
+              HardwareKeyboard.instance.isLogicalKeyPressed(
+                LogicalKeyboardKey.controlLeft,
+              ) ||
+              HardwareKeyboard.instance.isLogicalKeyPressed(
+                LogicalKeyboardKey.controlRight,
+              );
+
+          if (isCtrlPressed && event.logicalKey == LogicalKeyboardKey.keyN) {
+            _createNewReceipt();
+            return KeyEventResult.handled;
+          }
+
+          if (event.logicalKey == LogicalKeyboardKey.delete) {
+            if (_currentReceipts.isNotEmpty) {
+              showPinDialog(context).then((confirmed) {
+                if (confirmed) {
+                  Provider.of<ReceiptProvider>(context, listen: false)
+                      .deleteReceipt(selectInvoiceId);
+                  setState(() => selectIndex = 0); // Reset selection safely
+                }
+              });
+            }
+            return KeyEventResult.handled;
+          }
+
           if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
             setState(() => _updateSelection(selectIndex + 1));
             _scrollToSelected(selectIndex);
@@ -96,6 +124,28 @@ class _RecentOrdersState extends State<RecentOrders> {
             setState(() => _updateSelection(selectIndex - 1));
             _scrollToSelected(selectIndex);
             return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.enter ||
+              event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+            if (_currentReceipts.isEmpty) return KeyEventResult.ignored;
+
+            final isPaid = _currentReceipts[selectIndex].paymentStatus;
+            final invoiceId = _currentReceipts[selectIndex].receiptId;
+
+            if (isCtrlPressed) {
+              if (isPaid) {
+                context.push('/orders/viewOrder', extra: invoiceId);
+              } else {
+                context.push('/orders/newOrder', extra: invoiceId);
+              }
+              return KeyEventResult.handled;
+            } else {
+              if (isPaid) {
+                context.push('/orders/viewOrder', extra: invoiceId);
+              } else {
+                context.push('/orders/checkout', extra: invoiceId);
+              }
+              return KeyEventResult.handled;
+            }
           }
         }
         return KeyEventResult.ignored;
@@ -287,13 +337,37 @@ class _RecentOrdersState extends State<RecentOrders> {
 
                                       WidgetsBinding.instance
                                           .addPostFrameCallback((_) {
+                                            bool shouldUpdate = false;
                                             if (_totalItems != receipt.length) {
+                                              shouldUpdate = true;
+                                            } else if (_currentReceipts
+                                                    .isNotEmpty &&
+                                                receipt.isNotEmpty) {
+                                              // Check if the data content has changed (like payment status)
+                                              if (_currentReceipts[0]
+                                                          .paymentStatus !=
+                                                      receipt[0]
+                                                          .paymentStatus ||
+                                                  _currentReceipts[0]
+                                                          .receiptId !=
+                                                      receipt[0].receiptId) {
+                                                shouldUpdate = true;
+                                              }
+                                            }
+
+                                            if (shouldUpdate && mounted) {
                                               setState(() {
                                                 _totalItems = receipt.length;
                                                 _currentReceipts = receipt;
+                                                if (receipt.isNotEmpty &&
+                                                    selectIndex >=
+                                                        receipt.length) {
+                                                  selectIndex = 0;
+                                                }
                                                 if (receipt.isNotEmpty) {
                                                   selectInvoiceId =
-                                                      receipt[0].receiptId;
+                                                      receipt[selectIndex]
+                                                          .receiptId;
                                                 }
                                               });
                                             }
@@ -335,8 +409,8 @@ class _RecentOrdersState extends State<RecentOrders> {
                                                 receipt[index].receiptId,
                                             items: receipt[index].items.length
                                                 .toString(),
-                                            time:
-                                                receipt[index].receiptCreateDate,
+                                            time: receipt[index]
+                                                .receiptCreateDate,
                                             amount: receipt[index].totalAmount,
                                             status:
                                                 receipt[index].paymentStatus,

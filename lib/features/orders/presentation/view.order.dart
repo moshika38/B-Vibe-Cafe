@@ -1,6 +1,8 @@
 import 'package:bvibe/components/navigation.title.dart';
 import 'package:bvibe/invoice/invoice.page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 class ViewOrder extends StatelessWidget {
   final String ReceiptId;
@@ -8,8 +10,26 @@ class ViewOrder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          if (event.logicalKey == LogicalKeyboardKey.backspace || event.logicalKey == LogicalKeyboardKey.escape) {
+            context.pop();
+            return KeyEventResult.handled;
+          }
+          final isCtrlPressed = HardwareKeyboard.instance.isControlPressed ||
+                                HardwareKeyboard.instance.isLogicalKeyPressed(LogicalKeyboardKey.controlLeft) || 
+                                HardwareKeyboard.instance.isLogicalKeyPressed(LogicalKeyboardKey.controlRight);
+          if (isCtrlPressed && event.logicalKey == LogicalKeyboardKey.keyN) {
+            context.push("/orders/newOrder", extra: "");
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
       child: Column(
         children: [
           NavigationTitle(
@@ -32,6 +52,7 @@ class ViewOrder extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }
