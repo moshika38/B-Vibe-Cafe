@@ -76,6 +76,12 @@ class _BuildItemCardState extends State<BuildItemCard> {
               _showDiscountDialog(context.read<ReceiptProvider>());
               return KeyEventResult.handled;
             }
+            // Plain Enter: add/update item with current qty, then refocus search
+            if (!HardwareKeyboard.instance.isControlPressed) {
+              final provider = context.read<ReceiptProvider>();
+              _onQtyChanged(_qtyController.text, provider);
+              return KeyEventResult.handled;
+            }
           }
         }
         return KeyEventResult.ignored;
@@ -190,10 +196,6 @@ class _BuildItemCardState extends State<BuildItemCard> {
       _qtyController.text = _qty.toString();
     });
     _addOrUpdateItem(provider);
-
-    // Keep focus and select text after adding
-    _qtyFocusNode.requestFocus();
-    _selectAllText();
   }
 
   Future<void> _showDiscountDialog(ReceiptProvider provider) async {

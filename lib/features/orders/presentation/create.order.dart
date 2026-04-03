@@ -43,12 +43,19 @@ class _CreateOrdersState extends State<CreateOrders> {
   int _currentCrossAxisCount = 4;
 
   void _refocusSearch() {
-    _searchFocusNode.requestFocus();
-    _searchController.selection = TextSelection(
-      baseOffset: 0,
-      extentOffset: _searchController.text.length,
-    );
-    _shouldFocusQty = false;
+    setState(() {
+      _shouldFocusQty = false;
+    });
+    // Use post-frame callback so the focus happens AFTER all widget rebuilds
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _searchFocusNode.requestFocus();
+        _searchController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: _searchController.text.length,
+        );
+      }
+    });
   }
 
   void _create() {
@@ -94,8 +101,10 @@ class _CreateOrdersState extends State<CreateOrders> {
                 if (items.isEmpty) {
                   selectedCartItemIndex = 0;
                 } else {
-                  selectedCartItemIndex =
-                      selectedCartItemIndex.clamp(0, items.length - 1);
+                  selectedCartItemIndex = selectedCartItemIndex.clamp(
+                    0,
+                    items.length - 1,
+                  );
                 }
               });
             }
@@ -127,7 +136,8 @@ class _CreateOrdersState extends State<CreateOrders> {
       }
 
       if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-        if (isCartFocused) return true; // Consume but do nothing in cart for now
+        if (isCartFocused)
+          return true; // Consume but do nothing in cart for now
         if (isShiftPressed) {
           Provider.of<ReceiptProvider>(
             context,
@@ -160,7 +170,8 @@ class _CreateOrdersState extends State<CreateOrders> {
           final max = _maxItems > 0 ? _maxItems - 1 : 0;
           setState(() {
             _shouldFocusQty = true;
-            selectedItem = (selectedItem - 1).clamp(0, max);
+            final current = selectedItem < 0 ? 0 : selectedItem;
+            selectedItem = (current - 1).clamp(0, max);
           });
         }
         return true;
@@ -172,8 +183,10 @@ class _CreateOrdersState extends State<CreateOrders> {
           provider.getReceipt(receiptId).then((receipt) {
             if (receipt != null && receipt.items.isNotEmpty) {
               setState(() {
-                selectedCartItemIndex =
-                    (selectedCartItemIndex + 1).clamp(0, receipt.items.length - 1);
+                selectedCartItemIndex = (selectedCartItemIndex + 1).clamp(
+                  0,
+                  receipt.items.length - 1,
+                );
               });
             }
           });
@@ -181,8 +194,10 @@ class _CreateOrdersState extends State<CreateOrders> {
           final max = _maxItems > 0 ? _maxItems - 1 : 0;
           setState(() {
             _shouldFocusQty = true;
-            selectedItem =
-                (selectedItem + _currentCrossAxisCount).clamp(0, max);
+            selectedItem = (selectedItem + _currentCrossAxisCount).clamp(
+              0,
+              max,
+            );
           });
         }
         return true;
@@ -191,14 +206,16 @@ class _CreateOrdersState extends State<CreateOrders> {
       if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
         if (isCartFocused) {
           setState(() {
-            selectedCartItemIndex =
-                (selectedCartItemIndex - 1).clamp(0, selectedCartItemIndex);
+            selectedCartItemIndex = (selectedCartItemIndex - 1).clamp(
+              0,
+              selectedCartItemIndex,
+            );
           });
         } else {
           setState(() {
             _shouldFocusQty = true;
-            selectedItem =
-                (selectedItem - _currentCrossAxisCount).clamp(0, selectedItem);
+            final current = selectedItem < 0 ? 0 : selectedItem;
+            selectedItem = (current - _currentCrossAxisCount).clamp(0, current);
           });
         }
         return true;
@@ -283,8 +300,8 @@ class _CreateOrdersState extends State<CreateOrders> {
           onChanged: (val) {
             setState(() {
               _searchQuery = val.toLowerCase();
-              selectedItem = 0; // Reset selection when searching
-              _shouldFocusQty = false; // Never focus qty while typing in search
+              selectedItem = -1; // No selection when searching
+              _shouldFocusQty = false;
             });
           },
           decoration: InputDecoration(
@@ -379,11 +396,14 @@ class _CreateOrdersState extends State<CreateOrders> {
                               }
 
                               if (_currentCrossAxisCount != crossAxisCount) {
-                                WidgetsBinding.instance
-                                    .addPostFrameCallback((_) {
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) {
                                   if (mounted) {
-                                    setState(() => _currentCrossAxisCount =
-                                        crossAxisCount);
+                                    setState(
+                                      () => _currentCrossAxisCount =
+                                          crossAxisCount,
+                                    );
                                   }
                                 });
                               }
@@ -396,13 +416,15 @@ class _CreateOrdersState extends State<CreateOrders> {
                                   if (_searchQuery.isNotEmpty) {
                                     // Global Search - show items from all categories
                                     filteredItems = itemProv.items
-                                        .where((item) =>
-                                            item.itemName
-                                                .toLowerCase()
-                                                .contains(_searchQuery) ||
-                                            item.description
-                                                .toLowerCase()
-                                                .contains(_searchQuery))
+                                        .where(
+                                          (item) =>
+                                              item.itemName
+                                                  .toLowerCase()
+                                                  .contains(_searchQuery) ||
+                                              item.description
+                                                  .toLowerCase()
+                                                  .contains(_searchQuery),
+                                        )
                                         .toList();
                                   } else {
                                     if (activeCate == 0) {
@@ -413,8 +435,11 @@ class _CreateOrdersState extends State<CreateOrders> {
                                       final selectedCatId =
                                           categories[activeCate].id;
                                       filteredItems = itemProv.items
-                                          .where((item) =>
-                                              item.categoryId == selectedCatId)
+                                          .where(
+                                            (item) =>
+                                                item.categoryId ==
+                                                selectedCatId,
+                                          )
                                           .toList();
                                     }
                                   }
@@ -428,17 +453,17 @@ class _CreateOrdersState extends State<CreateOrders> {
                                   return GridView.builder(
                                     gridDelegate:
                                         SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: crossAxisCount,
-                                      crossAxisSpacing: 10,
-                                      mainAxisSpacing: 10,
-                                      mainAxisExtent: 220,
-                                    ),
+                                          crossAxisCount: crossAxisCount,
+                                          crossAxisSpacing: 10,
+                                          mainAxisSpacing: 10,
+                                          mainAxisExtent: 220,
+                                        ),
                                     itemCount: filteredItems.length,
                                     itemBuilder: (context, index) {
                                       return BuildItemCard(
                                         isRetail: filteredItems[index].isRetail,
-                                        itemId:
-                                            filteredItems[index].id.toString(),
+                                        itemId: filteredItems[index].id
+                                            .toString(),
                                         cate: filteredItems[index].categoryId,
                                         cost: filteredItems[index].cost,
                                         des: filteredItems[index].description,
@@ -447,8 +472,11 @@ class _CreateOrdersState extends State<CreateOrders> {
                                         price: filteredItems[index].price
                                             .toString(),
                                         title: filteredItems[index].itemName,
-                                        isSelect: selectedItem == index,
-                                        shouldFocus: _shouldFocusQty && (selectedItem == index),
+                                        isSelect: selectedItem >= 0 && selectedItem == index,
+                                        shouldFocus:
+                                            _shouldFocusQty &&
+                                            selectedItem >= 0 &&
+                                            (selectedItem == index),
                                         onAdded: () {
                                           _refocusSearch();
                                         },
