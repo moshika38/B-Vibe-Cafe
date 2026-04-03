@@ -11,7 +11,14 @@ import 'package:provider/provider.dart';
 
 class CurrentOrder extends StatefulWidget {
   final String receiptId;
-  const CurrentOrder({super.key, required this.receiptId});
+  final bool isFocused;
+  final int selectedIndex;
+  const CurrentOrder({
+    super.key,
+    required this.receiptId,
+    this.isFocused = false,
+    this.selectedIndex = 0,
+  });
 
   @override
   State<CurrentOrder> createState() => _CurrentOrderState();
@@ -150,8 +157,17 @@ class _CurrentOrderState extends State<CurrentOrder> {
     String total,
   ) {
     final theme = Theme.of(context).textTheme.labelSmall;
+    final bool isSelected = widget.isFocused && index == widget.selectedIndex;
+
     return Container(
-      color: index % 2 == 1 ? AppColors.divider : Colors.transparent,
+      decoration: BoxDecoration(
+        color: isSelected
+            ? AppColors.primary.withOpacity(0.12)
+            : (index % 2 == 1 ? AppColors.divider.withOpacity(0.3) : Colors.transparent),
+        border: isSelected
+            ? const Border(left: BorderSide(color: AppColors.primary, width: 4))
+            : null,
+      ),
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
       child: Row(
         children: [

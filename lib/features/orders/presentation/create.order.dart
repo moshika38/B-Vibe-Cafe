@@ -26,6 +26,8 @@ class _CreateOrdersState extends State<CreateOrders> {
   int activeCate = 0;
   int selectedItem = 0;
   String receiptId = "";
+  bool isCartFocused = false;
+  int selectedCartItemIndex = 0;
 
   Future? _categoriesFuture;
   Future? _itemsFuture;
@@ -58,16 +60,44 @@ class _CreateOrdersState extends State<CreateOrders> {
           );
       final bool isShiftPressed = HardwareKeyboard.instance.isShiftPressed;
 
-      if (event.logicalKey == LogicalKeyboardKey.delete) {
-        showPinDialog(context).then((confirmed) {
-          if (confirmed && mounted) {
-            Provider.of<ReceiptProvider>(
-              context,
-              listen: false,
-            ).deleteReceipt(receiptId);
-            context.pop();
-          }
+      if (event.logicalKey == LogicalKeyboardKey.tab) {
+        setState(() {
+          isCartFocused = !isCartFocused;
+          if (isCartFocused) selectedCartItemIndex = 0;
         });
+        return true;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.delete) {
+        if (isCartFocused) {
+          final provider = Provider.of<ReceiptProvider>(context, listen: false);
+          provider.getReceipt(receiptId).then((receipt) {
+            if (receipt != null &&
+                selectedCartItemIndex < receipt.items.length) {
+              final items = [...receipt.items];
+              items.removeAt(selectedCartItemIndex);
+              provider.updateReceiptItems(receiptId, items);
+              setState(() {
+                if (items.isEmpty) {
+                  selectedCartItemIndex = 0;
+                } else {
+                  selectedCartItemIndex =
+                      selectedCartItemIndex.clamp(0, items.length - 1);
+                }
+              });
+            }
+          });
+        } else {
+          showPinDialog(context).then((confirmed) {
+            if (confirmed && mounted) {
+              Provider.of<ReceiptProvider>(
+                context,
+                listen: false,
+              ).deleteReceipt(receiptId);
+              context.pop();
+            }
+          });
+        }
         return true;
       }
 
@@ -79,6 +109,7 @@ class _CreateOrdersState extends State<CreateOrders> {
       }
 
       if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        if (isCartFocused) return true; // Consume but do nothing in cart for now
         if (isShiftPressed) {
           Provider.of<ReceiptProvider>(
             context,
@@ -95,6 +126,7 @@ class _CreateOrdersState extends State<CreateOrders> {
       }
 
       if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        if (isCartFocused) return true;
         if (isShiftPressed) {
           Provider.of<ReceiptProvider>(
             context,
@@ -111,15 +143,34 @@ class _CreateOrdersState extends State<CreateOrders> {
       }
 
       if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-        final max = _maxItems > 0 ? _maxItems - 1 : 0;
-        setState(() => selectedItem =
-            (selectedItem + _currentCrossAxisCount).clamp(0, max));
+        if (isCartFocused) {
+          final provider = Provider.of<ReceiptProvider>(context, listen: false);
+          provider.getReceipt(receiptId).then((receipt) {
+            if (receipt != null && receipt.items.isNotEmpty) {
+              setState(() {
+                selectedCartItemIndex =
+                    (selectedCartItemIndex + 1).clamp(0, receipt.items.length - 1);
+              });
+            }
+          });
+        } else {
+          final max = _maxItems > 0 ? _maxItems - 1 : 0;
+          setState(() => selectedItem =
+              (selectedItem + _currentCrossAxisCount).clamp(0, max));
+        }
         return true;
       }
 
       if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-        setState(() => selectedItem =
-            (selectedItem - _currentCrossAxisCount).clamp(0, selectedItem));
+        if (isCartFocused) {
+          setState(() {
+            selectedCartItemIndex =
+                (selectedCartItemIndex - 1).clamp(0, selectedCartItemIndex);
+          });
+        } else {
+          setState(() => selectedItem =
+              (selectedItem - _currentCrossAxisCount).clamp(0, selectedItem));
+        }
         return true;
       }
     }
@@ -358,6 +409,10 @@ class _CreateOrdersState extends State<CreateOrders> {
 
   /// RIGHT SIDE (Cart)
   Widget _cartSection() {
-    return CurrentOrder(receiptId: receiptId);
+    return CurrentOrder(
+      receiptId: receiptId,
+      isFocused: isCartFocused,
+      selectedIndex: selectedCartItemIndex,
+    );
   }
 }

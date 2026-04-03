@@ -47,7 +47,7 @@ class _BuildItemCardState extends State<BuildItemCard> {
   late TextEditingController _qtyController;
   late FocusNode _qtyFocusNode;
 
-  bool _initialized = false;
+
 
   @override
   void initState() {
@@ -79,6 +79,7 @@ class _BuildItemCardState extends State<BuildItemCard> {
     );
     if (widget.isSelect) {
       _qtyFocusNode.requestFocus();
+      _selectAllText();
     }
   }
 
@@ -87,6 +88,42 @@ class _BuildItemCardState extends State<BuildItemCard> {
     super.didUpdateWidget(oldWidget);
     if (widget.isSelect && !oldWidget.isSelect) {
       _qtyFocusNode.requestFocus();
+      _selectAllText();
+      // Force sync with cart when selected
+      _syncWithProvider(Provider.of<ReceiptProvider>(context, listen: false));
+    }
+  }
+
+  void _selectAllText() {
+    _qtyController.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _qtyController.text.length,
+    );
+  }
+
+  void _syncWithProvider(ReceiptProvider provider) {
+    final cached = provider.getCachedReceipt(widget.receiptId);
+    if (cached != null) {
+      final existing =
+          cached.items.where((i) => i.id == widget.itemId).toList();
+      int providerQty = 1;
+      double providerDiscount = 0.0;
+
+      if (existing.isNotEmpty) {
+        providerQty = int.tryParse(existing.first.qty) ?? 1;
+        providerDiscount = double.tryParse(existing.first.discount) ?? 0.0;
+      }
+
+      if (_qty != providerQty) {
+        setState(() {
+          _qty = providerQty;
+          _qtyController.text = _qty.toString();
+          if (widget.isSelect) _selectAllText();
+        });
+      }
+      if (_discount != providerDiscount) {
+        setState(() => _discount = providerDiscount);
+      }
     }
   }
 
@@ -143,13 +180,15 @@ class _BuildItemCardState extends State<BuildItemCard> {
     final int newQty = int.tryParse(value) ?? 1;
     final int clampedQty = newQty < 1 ? 1 : newQty;
 
-    if (clampedQty != _qty || value == "") {
-      setState(() {
-        _qty = clampedQty;
-        if (value != "") _qtyController.text = _qty.toString();
-      });
-      _addOrUpdateItem(provider);
-    }
+    setState(() {
+      _qty = clampedQty;
+      _qtyController.text = _qty.toString();
+    });
+    _addOrUpdateItem(provider);
+
+    // Keep focus and select text after adding
+    _qtyFocusNode.requestFocus();
+    _selectAllText();
   }
 
   Future<void> _showDiscountDialog(ReceiptProvider provider) async {
@@ -239,26 +278,33 @@ class _BuildItemCardState extends State<BuildItemCard> {
 
     return Consumer<ReceiptProvider>(
       builder: (context, value, child) {
-        if (!_initialized) {
+        // Smart Sync: Only sync from provider if we are NOT currently typing/focused
+        if (!_qtyFocusNode.hasFocus) {
           final cached = value.getCachedReceipt(widget.receiptId);
           if (cached != null) {
-            final existing = cached.items
-                .where((i) => i.id == widget.itemId)
-                .toList();
-            if (existing.isNotEmpty) {
-              _qty = int.tryParse(existing.first.qty) ?? 0;
-              double absoluteDiscount =
-                  double.tryParse(existing.first.discount) ?? 0.0;
-              _discount = absoluteDiscount;
+            final existing =
+                cached.items.where((i) => i.id == widget.itemId).toList();
+            int providerQty = 1;
+            double providerDiscount = 0.0;
 
-              if (_qtyController.text == '1' && _qty != 1) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) _qtyController.text = _qty.toString();
-                });
-              }
+            if (existing.isNotEmpty) {
+              providerQty = int.tryParse(existing.first.qty) ?? 1;
+              providerDiscount = double.tryParse(existing.first.discount) ?? 0.0;
+            }
+
+            if (_qty != providerQty || _discount != providerDiscount) {
+              // Schedule update for next frame to avoid building while transitioning
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted && !_qtyFocusNode.hasFocus) {
+                  setState(() {
+                    _qty = providerQty;
+                    _discount = providerDiscount;
+                    _qtyController.text = _qty.toString();
+                  });
+                }
+              });
             }
           }
-          _initialized = true;
         }
 
         final finalPrice = basePrice - _discount;
