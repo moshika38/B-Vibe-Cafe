@@ -76,7 +76,7 @@ class CateCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 3), // Space between edit and drag
                 ],
-                if (dragHandle != null) dragHandle!,
+                ?dragHandle,
                 const SizedBox(width: 8),
                 Text(count, style: theme.textTheme.labelSmall),
               ],

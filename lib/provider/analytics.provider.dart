@@ -9,6 +9,7 @@ class AnalyticsSummary {
   final double totalCost;
   final double grossProfit;
   final int totalItemsSold;
+  final double profitMargin;
 
   AnalyticsSummary({
     required this.totalRevenue,
@@ -17,6 +18,7 @@ class AnalyticsSummary {
     required this.totalCost,
     required this.grossProfit,
     required this.totalItemsSold,
+    required this.profitMargin,
   });
 }
 
@@ -37,6 +39,7 @@ class AnalyticsProvider extends ChangeNotifier {
     totalCost: 0,
     grossProfit: 0,
     totalItemsSold: 0,
+    profitMargin: 0,
   );
   AnalyticsSummary get summary => _summary;
 
@@ -303,6 +306,7 @@ class AnalyticsProvider extends ChangeNotifier {
       totalCost: cost,
       grossProfit: revenue - cost,
       totalItemsSold: itemsSold,
+      profitMargin: revenue > 0 ? ((revenue - cost) / revenue) * 100 : 0,
     );
 
     // Prev period

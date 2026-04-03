@@ -11,6 +11,8 @@ import 'package:bvibe/features/dashboard/widgets/analysis_card.dart';
 import 'package:provider/provider.dart';
 import 'package:bvibe/provider/categories.helper.dart';
 import 'package:intl/intl.dart';
+import 'package:bvibe/provider/analytics.provider.dart';
+import 'package:bvibe/features/dashboard/widgets/summary_table.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -21,15 +23,9 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   bool _isLoading = true;
-  List<ReceiptModel> _todayReceipts = [];
-  List<Map<String, dynamic>> _popularItems = [];
-  List<double> _weeklyRevenue = List.filled(7, 0.0);
-  Map<String, double> _orderTypeMap = {'Dine-In': 0, 'Takeaway': 0};
-  Map<String, double> _categoryRevenue = {};
-
+  int _activeOrders = 0;
   double _totalRevenue = 0;
   int _totalOrders = 0;
-  int _activeOrders = 0;
   double _avgOrder = 0;
 
   String _revenueChange = '0%';
@@ -43,6 +39,7 @@ class _DashboardState extends State<Dashboard> {
     _loadDashboardData();
     // Add listener to refresh data when receipts change
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AnalyticsProvider>().loadAnalytics(period: 'Today');
       context.read<ReceiptProvider>().addListener(_onReceiptsChanged);
     });
   }
@@ -60,31 +57,20 @@ class _DashboardState extends State<Dashboard> {
   void _onReceiptsChanged() {
     if (mounted) {
       _loadDashboardData();
+      context.read<AnalyticsProvider>().loadAnalytics(period: 'Today');
     }
   }
 
   Future<void> _loadDashboardData() async {
     if (!mounted) return;
 
-    // Only set loading on initial load to avoid flickering on updates
-    if (_todayReceipts.isEmpty) {
-      setState(() => _isLoading = true);
-    }
-
     final provider = context.read<ReceiptProvider>();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
 
-    // Fetch Today's Data
+    // Fetch Today's Receipts for the list
     final todayData = await provider.getReceiptsByDateRange(today, today);
-
-    // Fetch Last 7 Days for Revenue Trend
-    final sevenDaysAgo = today.subtract(const Duration(days: 6));
-    final weeklyData = await provider.getReceiptsByDateRange(
-      sevenDaysAgo,
-      today,
-    );
 
     // Fetch Yesterday for comparison
     final yesterdayData = await provider.getReceiptsByDateRange(
@@ -95,41 +81,13 @@ class _DashboardState extends State<Dashboard> {
     if (!mounted) return;
 
     setState(() {
-      _todayReceipts = todayData;
-
-      // ── TODAY STATS ──
-      _totalOrders = _todayReceipts.length;
-      _totalRevenue = _todayReceipts.fold(
+      _activeOrders = todayData.where((r) => !r.paymentStatus).length;
+      _totalOrders = todayData.length;
+      _totalRevenue = todayData.fold(
         0.0,
         (sum, r) => sum + (double.tryParse(r.totalAmount) ?? 0),
       );
-      _activeOrders = _todayReceipts.where((r) => !r.paymentStatus).length;
       _avgOrder = _totalOrders > 0 ? _totalRevenue / _totalOrders : 0;
-
-      // ── WEEKLY TREND ──
-      _weeklyRevenue = List.filled(7, 0.0);
-      for (var receipt in weeklyData) {
-        final daysAgo = today
-            .difference(
-              DateTime(
-                receipt.receiptCreateDate.year,
-                receipt.receiptCreateDate.month,
-                receipt.receiptCreateDate.day,
-              ),
-            )
-            .inDays;
-        if (daysAgo >= 0 && daysAgo < 7) {
-          _weeklyRevenue[6 - daysAgo] +=
-              double.tryParse(receipt.totalAmount) ?? 0;
-        }
-      }
-
-      // ── ORDER TYPE SPLIT ──
-      _orderTypeMap = {'Dine-In': 0, 'Takeaway': 0, 'Retail': 0};
-      for (var receipt in _todayReceipts) {
-        final type = receipt.orderType;
-        _orderTypeMap[type] = (_orderTypeMap[type] ?? 0) + 1;
-      }
 
       // ── STAT CHANGES ──
       final yOrders = yesterdayData.length;
@@ -149,53 +107,6 @@ class _DashboardState extends State<Dashboard> {
         yesterdayData.where((r) => !r.paymentStatus).length.toDouble(),
       );
       _avgChange = _calculateChange(_avgOrder, yAvg.toDouble());
-
-      // ── POPULAR ITEMS & CATEGORY REVENUE ──
-      final itemMap = <String, Map<String, dynamic>>{};
-      _categoryRevenue = {};
-
-      // Map category ID to name
-      final catProvider = context.read<CategoriesProvider>();
-      if (catProvider.categories.isEmpty) {
-        catProvider.fetchCategories();
-      }
-      final catNameMap = {
-        for (var c in catProvider.categories) c.id: c.itemName,
-      };
-
-      for (var receipt in _todayReceipts) {
-        for (var item in receipt.items) {
-          final qty = double.tryParse(item.qty) ?? 0.0;
-          final price = double.tryParse(item.price) ?? 0.0;
-          final itemRevenue = qty * price;
-
-          // Item Map for ranking
-          if (itemMap.containsKey(item.itemName)) {
-            itemMap[item.itemName]!['count'] =
-                (itemMap[item.itemName]!['count'] as num).toDouble() + qty;
-          } else {
-            itemMap[item.itemName] = {
-              'name': item.itemName,
-              'count': qty,
-              'price': item.price,
-            };
-          }
-
-          // Category Revenue
-          final catId = item.category;
-          final catName = catNameMap[catId] ?? 'Other';
-          _categoryRevenue[catName] =
-              (_categoryRevenue[catName] ?? 0) + itemRevenue;
-        }
-      }
-
-      _popularItems = itemMap.values.toList();
-      _popularItems.sort(
-        (a, b) => (b['count'] as num).compareTo(a['count'] as num),
-      );
-      if (_popularItems.length > 5) {
-        _popularItems = _popularItems.sublist(0, 5);
-      }
 
       _isLoading = false;
     });
@@ -317,35 +228,39 @@ class _DashboardState extends State<Dashboard> {
             const SizedBox(height: 32),
 
             // Analytics Row
-            Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: AnalysisCard(
-                    title: 'Revenue Trend',
-                    subTitle: 'Last 7 days performance',
-                    child: _buildRevenueTrendChart(theme),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 1,
-                  child: AnalysisCard(
-                    title: 'Service Flow',
-                    subTitle: 'Dine-In vs Takeaway',
-                    child: _buildOrderTypePie(theme),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 1,
-                  child: AnalysisCard(
-                    title: 'Categories',
-                    subTitle: 'Revenue by category',
-                    child: _buildCategoryRevenuePie(theme),
-                  ),
-                ),
-              ],
+            Consumer<AnalyticsProvider>(
+              builder: (context, analytics, _) {
+                return Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: AnalysisCard(
+                        title: 'Revenue Trend',
+                        subTitle: 'Last 7 days performance',
+                        child: _buildRevenueTrendChart(theme, analytics),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 1,
+                      child: AnalysisCard(
+                        title: 'Service Flow',
+                        subTitle: 'Dine-In vs Takeaway',
+                        child: _buildOrderTypePie(theme, analytics),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 1,
+                      child: AnalysisCard(
+                        title: 'Categories',
+                        subTitle: 'Revenue by category',
+                        child: _buildCategoryRevenuePie(theme, analytics),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 32),
 
@@ -376,20 +291,29 @@ class _DashboardState extends State<Dashboard> {
                         ),
                         const SizedBox(height: 20),
                         Expanded(
-                          child: _todayReceipts.isEmpty
-                              ? const Center(child: Text('No orders yet today'))
-                              : ListView.separated(
-                                  itemCount: _todayReceipts.length > 20
-                                      ? 20
-                                      : _todayReceipts.length,
-                                  separatorBuilder: (context, index) =>
-                                      const Divider(),
-                                  itemBuilder: (context, index) {
-                                    return OrderListItem(
-                                      receipt: _todayReceipts[index],
-                                    );
-                                  },
+                          child: Consumer<ReceiptProvider>(
+                            builder: (context, receiptProvider, _) {
+                              return FutureBuilder<List<ReceiptModel>>(
+                                future: receiptProvider.getReceiptsByDateRange(
+                                  DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
+                                  DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
                                 ),
+                                builder: (context, snapshot) {
+                                  final receipts = snapshot.data ?? [];
+                                  if (receipts.isEmpty) {
+                                    return const Center(child: Text('No orders yet today'));
+                                  }
+                                  return ListView.separated(
+                                    itemCount: receipts.length > 20 ? 20 : receipts.length,
+                                    separatorBuilder: (context, index) => const Divider(),
+                                    itemBuilder: (context, index) {
+                                      return OrderListItem(receipt: receipts[index]);
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -419,21 +343,70 @@ class _DashboardState extends State<Dashboard> {
                         ),
                         const SizedBox(height: 20),
                         Expanded(
-                          child: _popularItems.isEmpty
-                              ? const Center(child: Text('No sales yet today'))
-                              : ListView.separated(
-                                  itemCount: _popularItems.length,
-                                  separatorBuilder: (context, index) =>
-                                      const SizedBox(height: 12),
-                                  itemBuilder: (context, index) {
-                                    final item = _popularItems[index];
-                                    return PopularItem(
-                                      name: item['name'],
-                                      count: item['count'].toInt().toString(),
-                                      price: item['price'],
-                                    );
-                                  },
-                                ),
+                          child: Consumer<AnalyticsProvider>(
+                            builder: (context, analytics, _) {
+                              final popular = analytics.topItems;
+                              if (popular.isEmpty) {
+                                return const Center(child: Text('No sales yet today'));
+                              }
+                              return ListView.separated(
+                                itemCount: popular.length,
+                                separatorBuilder: (context, index) => const SizedBox(height: 12),
+                                itemBuilder: (context, index) {
+                                  final item = popular[index];
+                                  return PopularItem(
+                                    name: item['name'],
+                                    count: item['qty'].toInt().toString(),
+                                    price: item['price'].toString(),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            // Detailed Summary Below
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.divider),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Symbols.analytics, color: AppColors.primary, size: 24),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Detailed Business Intelligence',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: AppColors.textPrimary,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Consumer<AnalyticsProvider>(
+                          builder: (context, analytics, _) {
+                            return FinancialSummaryTable(
+                              summary: analytics.summary,
+                              title: "Daily Detailed Metrics",
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -447,15 +420,22 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildRevenueTrendChart(ThemeData theme) {
-    if (_weeklyRevenue.every((r) => r == 0)) {
+  Widget _buildRevenueTrendChart(ThemeData theme, AnalyticsProvider analytics) {
+    // Generate weekly revenue list from map
+    final List<double> weeklyRevenue = List.generate(7, (index) {
+      final date = DateTime.now().subtract(Duration(days: 6 - index));
+      final key = DateFormat('yyyy-MM-dd').format(date);
+      return analytics.revenueByDay[key] ?? 0.0;
+    });
+
+    if (weeklyRevenue.every((r) => r == 0)) {
       return const Center(child: Text('Start selling to see business trends'));
     }
 
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
-        maxY: _weeklyRevenue.fold(0.0, (max, r) => r > max ? r : max) * 1.2,
+        maxY: weeklyRevenue.fold(0.0, (max, r) => r > max ? r : max) * 1.2,
         titlesData: FlTitlesData(
           show: true,
           bottomTitles: AxisTitles(
@@ -484,13 +464,13 @@ class _DashboardState extends State<Dashboard> {
               showTitles: true,
               getTitlesWidget: (value, meta) {
                 final index = value.toInt();
-                if (index < 0 || index >= _weeklyRevenue.length) {
+                if (index < 0 || index >= weeklyRevenue.length) {
                   return const SizedBox.shrink();
                 }
-                final total = _weeklyRevenue.fold(0.0, (a, b) => a + b);
+                final total = weeklyRevenue.fold(0.0, (a, b) => a + b);
                 if (total == 0) return const SizedBox.shrink();
                 final percent =
-                    ((_weeklyRevenue[index] / total) * 100).toStringAsFixed(1);
+                    ((weeklyRevenue[index] / total) * 100).toStringAsFixed(1);
                 return SideTitleWidget(
                   meta: meta,
                   child: Text(
@@ -516,7 +496,7 @@ class _DashboardState extends State<Dashboard> {
           enabled: true,
           touchTooltipData: BarTouchTooltipData(
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              final total = _weeklyRevenue.fold(0.0, (a, b) => a + b);
+              final total = weeklyRevenue.fold(0.0, (a, b) => a + b);
               final percent = ((rod.toY / total) * 100).toStringAsFixed(1);
               return BarTooltipItem(
                 'LKR ${rod.toY.toStringAsFixed(2)}\n($percent%)',
@@ -533,7 +513,7 @@ class _DashboardState extends State<Dashboard> {
             x: index,
             barRods: [
               BarChartRodData(
-                toY: _weeklyRevenue[index],
+                toY: weeklyRevenue[index],
                 color: AppColors.primary,
                 width: 22,
                 borderRadius: const BorderRadius.vertical(
@@ -541,8 +521,7 @@ class _DashboardState extends State<Dashboard> {
                 ),
                 backDrawRodData: BackgroundBarChartRodData(
                   show: true,
-                  toY:
-                      _weeklyRevenue.fold(0.0, (max, r) => r > max ? r : max) *
+                  toY: weeklyRevenue.fold(0.0, (max, r) => r > max ? r : max) *
                       1.2,
                   color: AppColors.primary.withOpacity(0.05),
                 ),
@@ -554,52 +533,55 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildOrderTypePie(ThemeData theme) {
-    final hasData = _orderTypeMap.values.any((v) => v > 0);
+  Widget _buildOrderTypePie(ThemeData theme, AnalyticsProvider analytics) {
+    final data = analytics.orderTypeBreakdown;
+    final hasData = data.values.any((v) => v > 0);
     if (!hasData) {
       return const Center(
         child: Text('Order flow distribution will appear here'),
       );
     }
 
-    final total = _orderTypeMap.values.fold(0.0, (sum, v) => sum + v);
+    final total = data.values.fold(0.0, (sum, v) => sum + v);
 
     return PieChart(
       PieChartData(
         sectionsSpace: 4,
         centerSpaceRadius: 50,
         sections: [
-          PieChartSectionData(
-            value: _orderTypeMap['Dine-In'] ?? 0,
-            title:
-                '${((_orderTypeMap['Dine-In'] ?? 0) / total * 100).toStringAsFixed(1)}%',
-            color: Colors.blue,
-            radius: 20,
-            titleStyle: theme.textTheme.labelSmall?.copyWith(
-              color: Colors.white,
-              fontSize: 10,
-            ),
-            badgeWidget: _buildPieLabel('Dine-In', Colors.blue),
-            badgePositionPercentageOffset: 2.2,
-          ),
-          PieChartSectionData(
-            value: _orderTypeMap['Takeaway'] ?? 0,
-            title:
-                '${((_orderTypeMap['Takeaway'] ?? 0) / total * 100).toStringAsFixed(1)}%',
-            color: Colors.orange,
-            radius: 20,
-            titleStyle: theme.textTheme.labelSmall?.copyWith(
-              color: Colors.white,
-              fontSize: 10,
-            ),
-            badgeWidget: _buildPieLabel('Takeaway', Colors.orange),
-            badgePositionPercentageOffset: 2.2,
-          ),
-          if ((_orderTypeMap['Retail'] ?? 0) > 0)
+          if ((data['Dine-In'] ?? 0) > 0)
             PieChartSectionData(
-              value: _orderTypeMap['Retail'] ?? 0,
+              value: data['Dine-In'] ?? 0,
               title:
-                  '${((_orderTypeMap['Retail'] ?? 0) / total * 100).toStringAsFixed(1)}%',
+                  '${((data['Dine-In'] ?? 0) / total * 100).toStringAsFixed(1)}%',
+              color: Colors.blue,
+              radius: 20,
+              titleStyle: theme.textTheme.labelSmall?.copyWith(
+                color: Colors.white,
+                fontSize: 10,
+              ),
+              badgeWidget: _buildPieLabel('Dine-In', Colors.blue),
+              badgePositionPercentageOffset: 2.2,
+            ),
+          if ((data['Takeaway'] ?? 0) > 0)
+            PieChartSectionData(
+              value: data['Takeaway'] ?? 0,
+              title:
+                  '${((data['Takeaway'] ?? 0) / total * 100).toStringAsFixed(1)}%',
+              color: Colors.orange,
+              radius: 20,
+              titleStyle: theme.textTheme.labelSmall?.copyWith(
+                color: Colors.white,
+                fontSize: 10,
+              ),
+              badgeWidget: _buildPieLabel('Takeaway', Colors.orange),
+              badgePositionPercentageOffset: 2.2,
+            ),
+          if ((data['Retail'] ?? 0) > 0)
+            PieChartSectionData(
+              value: data['Retail'] ?? 0,
+              title:
+                  '${((data['Retail'] ?? 0) / total * 100).toStringAsFixed(1)}%',
               color: Colors.green,
               radius: 20,
               titleStyle: theme.textTheme.labelSmall?.copyWith(
@@ -614,21 +596,28 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildCategoryRevenuePie(ThemeData theme) {
+  Widget _buildCategoryRevenuePie(ThemeData theme, AnalyticsProvider analytics) {
     final catProvider = context.read<CategoriesProvider>();
     final allCategories = catProvider.categories;
+    final catRevenue = analytics.categoryRevenue;
 
     if (allCategories.isEmpty) {
       return const Center(child: Text('No categories defined'));
     }
 
-    final total = _categoryRevenue.values.fold(0.0, (sum, v) => sum + v);
+    final total = catRevenue.values.fold(0.0, (sum, v) => sum + v);
 
-    // Prepare sections for categories with revenue
+    // Map ID to Name and revenue
+    final namedRevenue = <String, double>{};
+    final catNameMap = {for (var c in allCategories) c.id: c.itemName};
+    catRevenue.forEach((id, rev) {
+      final name = catNameMap[id] ?? id;
+      namedRevenue[name] = (namedRevenue[name] ?? 0) + rev;
+    });
+
     final List<PieChartSectionData> sections = [];
     final List<Widget> legendItems = [];
 
-    // Colors for consistency (we can map these to categories for stability)
     final colors = [
       Colors.purple,
       Colors.teal,
@@ -642,46 +631,29 @@ class _DashboardState extends State<Dashboard> {
       Colors.deepOrange,
     ];
 
-    for (int i = 0; i < allCategories.length; i++) {
-      final category = allCategories[i];
-      final revenue = _categoryRevenue[category.itemName] ?? 0.0;
-      final color = colors[i % colors.length];
-
-      // Add to legend (all categories)
-      legendItems.add(_buildPieLabel(category.itemName, color));
-
-      // Add to pie (only if has revenue > 0)
-      if (revenue > 0 && total > 0) {
+    int colorIndex = 0;
+    namedRevenue.forEach((name, rev) {
+      if (rev > 0) {
+        final color = colors[colorIndex % colors.length];
         sections.add(
           PieChartSectionData(
-            value: revenue,
-            title: '${(revenue / total * 100).toStringAsFixed(1)}%',
+            value: rev,
+            title: '${(rev / total * 100).toStringAsFixed(1)}%',
             color: color,
             radius: 20,
             titleStyle: theme.textTheme.labelSmall?.copyWith(
               color: Colors.white,
               fontSize: 10,
             ),
-            badgeWidget: null, // We'll show labels in a legend column instead if needed
           ),
         );
+        legendItems.add(_buildPieLabel(name, color));
+        colorIndex++;
       }
-    }
+    });
 
     if (total == 0 || sections.isEmpty) {
-      return Column(
-        children: [
-          const Expanded(
-            child: Center(child: Text('No sales by category today')),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            children: legendItems,
-          ),
-        ],
-      );
+      return const Center(child: Text('No sales by category today'));
     }
 
     return Column(
