@@ -106,28 +106,30 @@ class _BusinessPageState extends State<BusinessPage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header
-        Text(
-          "Business Info",
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w700,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Text(
+            "Business Info",
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          "Manage your business profile.",
-          style: theme.textTheme.labelSmall,
-        ),
+          const SizedBox(height: 4),
+          Text(
+            "Manage your business profile.",
+            style: theme.textTheme.labelSmall,
+          ),
 
-        const SizedBox(height: 30),
+          const SizedBox(height: 30),
 
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Left — form
             Expanded(
               flex: 2,
@@ -297,15 +299,20 @@ class _BusinessPageState extends State<BusinessPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _sectionTitle(theme, "Preview"),
+                  _sectionTitle(theme, "Receipt Preview"),
                   const SizedBox(height: 16),
                   _buildPreviewCard(theme),
+                  const SizedBox(height: 30),
+                  _sectionTitle(theme, "KOT Preview"),
+                  const SizedBox(height: 16),
+                  _buildKOTPreviewCard(theme),
                 ],
               ),
             ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -540,6 +547,124 @@ class _BusinessPageState extends State<BusinessPage> {
               fontSize: 10,
               fontWeight: FontWeight.w500,
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildKOTPreviewCard(ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textSecondary.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Text(
+            "KITCHEN ORDER TOKEN",
+            textAlign: TextAlign.center,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.5,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _receiptDivider(),
+          const SizedBox(height: 16),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Order: #1234", style: _kotInfoStyle(theme)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.textPrimary,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  "TAKEAWAY",
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: AppColors.surface,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text("Time: 12:45 PM", style: _kotInfoStyle(theme)),
+          ),
+
+          const SizedBox(height: 16),
+          _receiptDivider(),
+          const SizedBox(height: 16),
+
+          // KOT Items — No prices, focused on Name and Qty
+          _kotLineItem(theme, "Sample Coffee", "1"),
+          const SizedBox(height: 8),
+          _kotLineItem(theme, "Butter Croissant", "2"),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "  Note: Extra butter, please.",
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 9,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+          _receiptDivider(),
+        ],
+      ),
+    );
+  }
+
+  TextStyle? _kotInfoStyle(ThemeData theme) {
+    return theme.textTheme.labelSmall?.copyWith(
+      color: AppColors.textPrimary,
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
+    );
+  }
+
+  Widget _kotLineItem(ThemeData theme, String name, String qty) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            name,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        Text(
+          "x$qty",
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: AppColors.textPrimary,
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ],

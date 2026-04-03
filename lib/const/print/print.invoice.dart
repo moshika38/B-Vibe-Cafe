@@ -12,11 +12,30 @@ class PrintInvoice {
     required SavedPrinter? printer,
   }) async {
     if (printer == null) return false;
-    
+
     try {
       final profile = await CapabilityProfile.load();
       final generator = Generator(PaperSize.mm80, profile);
       List<int> bytes = [];
+
+      // Financial Logic matching InvoicePage/InvoiceDisplayModel
+      final double grandTotal = double.tryParse(receipt.totalAmount) ?? 0;
+      final double totalDiscount = receipt.items.fold(
+          0.0,
+          (sum, item) =>
+              sum +
+              (double.tryParse(item.discount) ?? 0) *
+                  (int.tryParse(item.qty) ?? 1));
+
+      final bool isTakeaway = receipt.orderType == 'Takeaway';
+      final bool isRetail =
+          receipt.items.isNotEmpty && receipt.items.every((i) => i.isRetail);
+      final bool shouldExcludeServiceCharge = isRetail || isTakeaway;
+
+      final double netTotal =
+          shouldExcludeServiceCharge ? grandTotal : grandTotal / 1.10;
+      final double serviceCharge = grandTotal - netTotal;
+      final double subtotal = netTotal + totalDiscount;
 
       // Header
       bytes += generator.text(
@@ -40,57 +59,187 @@ class PrintInvoice {
       final tel = businessInfo?.businessNumber;
       if (tel != null && tel.isNotEmpty) {
         bytes += generator.text(
-          "Tel: $tel",
+          tel,
           styles: const PosStyles(align: PosAlign.center),
         );
       }
       bytes += generator.hr();
 
-      // Meta
-      bytes += generator.text("Invoice: ${receipt.receiptId}");
-      bytes += generator.text("Date: ${DateFormat('MMM dd, yyyy HH:mm').format(DateTime.now())}");
+      // Meta Section
+      bytes += generator.row([
+        PosColumn(
+            text: 'Invoice',
+            width: 4,
+            styles: const PosStyles(align: PosAlign.left)),
+        PosColumn(
+            text: receipt.receiptId,
+            width: 8,
+            styles: const PosStyles(align: PosAlign.right, bold: true)),
+      ]);
+      bytes += generator.row([
+        PosColumn(
+            text: 'Date & Time',
+            width: 4,
+            styles: const PosStyles(align: PosAlign.left)),
+        PosColumn(
+            text:
+                '${DateFormat('MMM dd, yyyy').format(receipt.receiptCreateDate)} . ${DateFormat('HH:mm').format(receipt.receiptCreateTime)}',
+            width: 8,
+            styles: const PosStyles(align: PosAlign.right, bold: true)),
+      ]);
       bytes += generator.hr();
 
-      // Items
+      // Items Header
       bytes += generator.row([
-        PosColumn(text: 'ITEM', width: 6, styles: const PosStyles(bold: true)),
-        PosColumn(text: 'QTY', width: 2, styles: const PosStyles(bold: true, align: PosAlign.center)),
-        PosColumn(text: 'PRICE', width: 4, styles: const PosStyles(bold: true, align: PosAlign.right)),
+        PosColumn(
+            text: 'ITEM',
+            width: 6,
+            styles: const PosStyles(bold: true, height: PosTextSize.size1, width: PosTextSize.size1)),
+        PosColumn(
+            text: 'QTY',
+            width: 2,
+            styles: const PosStyles(
+                bold: true, height: PosTextSize.size1, width: PosTextSize.size1, align: PosAlign.center)),
+        PosColumn(
+            text: 'PRICE',
+            width: 4,
+            styles: const PosStyles(
+                bold: true, height: PosTextSize.size1, width: PosTextSize.size1, align: PosAlign.right)),
       ]);
       bytes += generator.hr(len: 32);
 
+      // Items Section
       for (var item in receipt.items) {
-        bytes += generator.row([
-          PosColumn(text: item.itemName, width: 6),
-          PosColumn(text: "x${item.qty}", width: 2, styles: const PosStyles(align: PosAlign.center)),
-          PosColumn(text: item.price, width: 4, styles: const PosStyles(align: PosAlign.right)),
-        ]);
-        if (double.tryParse(item.discount) != null && double.parse(item.discount) > 0) {
-          bytes += generator.text("  Discount: -${item.discount}");
-        }
-      }
-      bytes += generator.hr();
+        final double itemPrice = double.tryParse(item.price) ?? 0;
+        final double itemDiscount = double.tryParse(item.discount) ?? 0;
+        final double finalPrice = (itemPrice - itemDiscount) * (int.tryParse(item.qty) ?? 1);
 
-      // Summary
+        bytes += generator.row([
+          PosColumn(
+              text: item.itemName,
+              width: 6,
+              styles: const PosStyles(align: PosAlign.left)),
+          PosColumn(
+              text: "x${item.qty}",
+              width: 2,
+              styles: const PosStyles(align: PosAlign.center)),
+          PosColumn(
+              text: finalPrice.toStringAsFixed(2),
+              width: 4,
+              styles: const PosStyles(align: PosAlign.right)),
+        ]);
+
+        if (itemDiscount > 0) {
+          bytes += generator.text(
+              "  Discount: - LKR ${itemDiscount.toStringAsFixed(2)}",
+              styles: const PosStyles(align: PosAlign.left));
+        }
+        bytes += generator.hr(len: 32); // itemDash substitute
+      }
+
+      // Summary Section
       bytes += generator.row([
-        PosColumn(text: 'TOTAL', width: 8, styles: const PosStyles(bold: true, height: PosTextSize.size2)),
-        PosColumn(text: "LKR ${receipt.totalAmount}", width: 4, styles: const PosStyles(bold: true, align: PosAlign.right, height: PosTextSize.size2)),
+        PosColumn(
+            text: 'Subtotal',
+            width: 8,
+            styles: const PosStyles(align: PosAlign.left)),
+        PosColumn(
+            text: 'LKR ${subtotal.toStringAsFixed(2)}',
+            width: 4,
+            styles: const PosStyles(align: PosAlign.right)),
+      ]);
+
+      if (totalDiscount > 0) {
+        bytes += generator.row([
+          PosColumn(
+              text: 'Discount',
+              width: 8,
+              styles: const PosStyles(align: PosAlign.left)),
+          PosColumn(
+              text: '- LKR ${totalDiscount.toStringAsFixed(2)}',
+              width: 4,
+              styles: const PosStyles(align: PosAlign.right)),
+        ]);
+      }
+
+      if (serviceCharge > 0) {
+        bytes += generator.row([
+          PosColumn(
+              text: 'Service Charge (10%)',
+              width: 8,
+              styles: const PosStyles(align: PosAlign.left)),
+          PosColumn(
+              text: 'LKR ${serviceCharge.toStringAsFixed(2)}',
+              width: 4,
+              styles: const PosStyles(align: PosAlign.right)),
+        ]);
+      }
+
+      bytes += generator.feed(1);
+      bytes += generator.row([
+        PosColumn(
+            text: 'GRAND TOTAL',
+            width: 6,
+            styles: const PosStyles(
+                bold: true,
+                align: PosAlign.left,
+                height: PosTextSize.size1,
+                width: PosTextSize.size1)),
+        PosColumn(
+            text: 'LKR ${grandTotal.toStringAsFixed(2)}',
+            width: 6,
+            styles: const PosStyles(
+                bold: true,
+                align: PosAlign.right,
+                height: PosTextSize.size2,
+                width: PosTextSize.size1)),
       ]);
       bytes += generator.hr();
 
-      // Payment
-      bytes += generator.text("Method: ${receipt.paymentMethod}");
-      bytes += generator.text("Paid: LKR ${receipt.paidAmount}");
-      bytes += generator.text("Balance: LKR ${receipt.balanceAmount}");
+      // Payment Section
+      bytes += generator.row([
+        PosColumn(
+            text: 'METHOD',
+            width: 4,
+            styles: const PosStyles(bold: true, align: PosAlign.left)),
+        PosColumn(
+            text: 'PAID',
+            width: 4,
+            styles: const PosStyles(bold: true, align: PosAlign.center)),
+        PosColumn(
+            text: 'CHANGE',
+            width: 4,
+            styles: const PosStyles(bold: true, align: PosAlign.right)),
+      ]);
+      bytes += generator.row([
+        PosColumn(
+            text: receipt.paymentMethod.toUpperCase(),
+            width: 4,
+            styles: const PosStyles(align: PosAlign.left)),
+        PosColumn(
+            text: receipt.paidAmount,
+            width: 4,
+            styles: const PosStyles(align: PosAlign.center)),
+        PosColumn(
+            text: receipt.balanceAmount,
+            width: 4,
+            styles: const PosStyles(align: PosAlign.right)),
+      ]);
       bytes += generator.hr();
 
-      // Footer
+      // Footer Section
       final tagLine = businessInfo?.tagLine;
       if (tagLine != null && tagLine.isNotEmpty) {
-        bytes += generator.text(tagLine, styles: const PosStyles(align: PosAlign.center));
+        bytes += generator.text(
+          tagLine,
+          styles: const PosStyles(align: PosAlign.center),
+        );
       }
-      bytes += generator.text("THANK YOU!", styles: const PosStyles(align: PosAlign.center, bold: true));
-      
+      bytes += generator.text("THANK YOU!",
+          styles: const PosStyles(
+              align: PosAlign.center, bold: true, width: PosTextSize.size1));
+      bytes += generator.hr();
+
       bytes += generator.feed(3);
       bytes += generator.cut();
 
@@ -115,7 +264,14 @@ class PrintInvoice {
       bytes += generator.text("KITCHEN ORDER TOKEN", styles: const PosStyles(align: PosAlign.center, bold: true, height: PosTextSize.size2));
       bytes += generator.hr();
       bytes += generator.text("Order: ${receipt.receiptId}", styles: const PosStyles(bold: true));
-      bytes += generator.text("Type: ${receipt.orderType}");
+      bytes += generator.text(
+        "TYPE: ${receipt.orderType.toUpperCase()}",
+        styles: const PosStyles(
+          bold: true,
+          height: PosTextSize.size2,
+          width: PosTextSize.size2,
+        ),
+      );
       bytes += generator.text("Time: ${DateFormat('HH:mm').format(DateTime.now())}");
       bytes += generator.hr();
 
