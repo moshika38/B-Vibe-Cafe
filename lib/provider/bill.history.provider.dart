@@ -127,4 +127,24 @@ class BillHistoryProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> fetchArchivedReceipts() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final db = await DatabaseHelper.instance.database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'archive_receipts',
+        orderBy: 'receipt_create_date DESC, receipt_create_time DESC',
+      );
+
+      _receipts = maps.map((e) => ReceiptModel.fromMap(e)).toList();
+    } catch (e) {
+      debugPrint("Error fetching archived receipts: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

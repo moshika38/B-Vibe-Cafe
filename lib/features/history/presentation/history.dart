@@ -103,6 +103,9 @@ class _HistoryState extends State<History> {
           now,
         );
         break;
+      case 5:
+        provider.fetchArchivedReceipts();
+        break;
     }
   }
 
@@ -171,6 +174,7 @@ class _HistoryState extends State<History> {
                 "Yesterday",
                 "Last 7 Days",
                 "Last Month",
+                "Archived Orders",
               ],
             ),
 

@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 14,
+      version: 15,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -214,6 +214,28 @@ CREATE TABLE IF NOT EXISTS printers (
             print("Database migration version 14 error: $e");
           }
         }
+        if (oldVersion < 15) {
+          try {
+            await db.execute('''
+CREATE TABLE IF NOT EXISTS archive_receipts (
+  receipt_id TEXT PRIMARY KEY,
+  receipt_create_date TEXT NOT NULL,
+  receipt_create_time TEXT NOT NULL,
+  payment_status INTEGER NOT NULL,
+  payment_date TEXT NOT NULL,
+  payment_time TEXT NOT NULL,
+  payment_method TEXT NOT NULL,
+  total_amount TEXT NOT NULL,
+  paid_amount TEXT NOT NULL,
+  balance_amount TEXT NOT NULL,
+  items TEXT NOT NULL,
+  order_type TEXT NOT NULL DEFAULT "Dine-In"
+)
+''');
+          } catch (e) {
+            print("Database migration version 15 error: $e");
+          }
+        }
       },
     );
   }
@@ -275,6 +297,24 @@ CREATE TABLE IF NOT EXISTS receipts (
 )
 ''');
 
+    // ── Table: Archive Receipts ──
+    await db.execute('''
+CREATE TABLE IF NOT EXISTS archive_receipts (
+  receipt_id $idTypeText,
+  receipt_create_date $textType,
+  receipt_create_time $textType,
+  payment_status $intType,
+  payment_date $textType,
+  payment_time $textType,
+  payment_method $textType,
+  total_amount $textType,
+  paid_amount $textType,
+  balance_amount $textType,
+  items $textType,
+  order_type $textType
+)
+''');
+
     // ── Table: Printers ──
     await db.execute('''
 CREATE TABLE IF NOT EXISTS printers (
@@ -305,10 +345,55 @@ CREATE TABLE IF NOT EXISTS business_info (
 
   Future<void> initializeAppDatabase() async {
     final db = await instance.database;
+    
+    // Auto-archive old receipts at startup
+    await archiveOldReceipts();
+
     final result = await db.query('users');
 
     if (result.isEmpty) {
       await db.insert('users', {'username': 'user', 'password': '1234'});
+    }
+  }
+
+  Future<void> archiveOldReceipts() async {
+    try {
+      final db = await instance.database;
+      final now = DateTime.now();
+
+      // Calculate cutoff date: 4 months ago
+      final cutoff = DateTime(now.year, now.month - 4, now.day);
+      final cutoffDate = cutoff.toIso8601String();
+
+      await db.transaction((txn) async {
+        // 1. Get old receipts
+        final List<Map<String, dynamic>> oldReceipts = await txn.query(
+          'receipts',
+          where: 'receipt_create_date < ?',
+          whereArgs: [cutoffDate],
+        );
+
+        if (oldReceipts.isEmpty) return;
+
+        // 2. Move to archive_receipts
+        for (var receipt in oldReceipts) {
+          await txn.insert(
+            'archive_receipts',
+            receipt,
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+
+        // 3. Delete from original table
+        await txn.delete(
+          'receipts',
+          where: 'receipt_create_date < ?',
+          whereArgs: [cutoffDate],
+        );
+      });
+      print("System startup: Auto-archiving completed.");
+    } catch (e) {
+      print("Error in startup archiveOldReceipts: $e");
     }
   }
 
