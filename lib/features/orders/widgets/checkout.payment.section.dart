@@ -1,3 +1,6 @@
+import 'package:bvibe/const/print/print.invoice.dart';
+import 'package:bvibe/provider/business.info.dart';
+import 'package:bvibe/provider/printer.provider.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:bvibe/features/orders/widgets/checkout.widgets.dart';
@@ -93,9 +96,23 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
         }
       }
 
-      if (event.logicalKey == LogicalKeyboardKey.enter || event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+      if (event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
         if (isConform) {
-          print("Print receipt");
+          final printerProvider = Provider.of<PrinterProvider>(
+            context,
+            listen: false,
+          );
+          final businessInfo = Provider.of<BusinessInfoProvider>(
+            context,
+            listen: false,
+          );
+
+          PrintInvoice.printReceipt(
+            receipt: widget.receipt,
+            businessInfo: businessInfo.invoiceData,
+            printer: printerProvider.primaryPrinter,
+          );
 
           context.go('/orders');
         } else {
@@ -225,7 +242,21 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
               isConform,
               isConform
                   ? () {
-                      print("Print recipt");
+                      final printerProvider = Provider.of<PrinterProvider>(
+                        context,
+                        listen: false,
+                      );
+                      final businessInfo = Provider.of<BusinessInfoProvider>(
+                        context,
+                        listen: false,
+                      );
+
+                      PrintInvoice.printReceipt(
+                        receipt: widget.receipt,
+                        businessInfo: businessInfo.invoiceData,
+                        printer: printerProvider.primaryPrinter,
+                      );
+
                       context.go('/orders');
                     }
                   : () {},

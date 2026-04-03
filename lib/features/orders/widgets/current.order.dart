@@ -1,4 +1,7 @@
+import 'package:bvibe/const/print/print.invoice.dart';
+import 'package:bvibe/provider/printer.provider.dart';
 import 'package:bvibe/components/conform.window.dart';
+import 'package:bvibe/const/snack/app.snack.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/data/workspace/number.format.dart';
 import 'package:bvibe/features/orders/widgets/current.order.widget.dart';
@@ -163,7 +166,9 @@ class _CurrentOrderState extends State<CurrentOrder> {
       decoration: BoxDecoration(
         color: isSelected
             ? AppColors.primary.withOpacity(0.12)
-            : (index % 2 == 1 ? AppColors.divider.withOpacity(0.3) : Colors.transparent),
+            : (index % 2 == 1
+                  ? AppColors.divider.withOpacity(0.3)
+                  : Colors.transparent),
         border: isSelected
             ? const Border(left: BorderSide(color: AppColors.primary, width: 4))
             : null,
@@ -314,6 +319,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
                 child: TextButton(
                   onPressed: () async {
                     final isValid = await showPinDialog(context);
+                    if (!mounted) return;
                     if (isValid) {
                       context.go('/orders');
                       value.deleteReceipt(widget.receiptId);
@@ -335,19 +341,34 @@ class _CurrentOrderState extends State<CurrentOrder> {
               child: ElevatedButton(
                 onPressed: () {
                   if (receipt.items.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Please add items to securely place the order!',
-                        ),
-                        duration: Duration(seconds: 2),
-                        backgroundColor: Colors.redAccent,
-                      ),
+                    AppSnack.errorSnack(
+                      context,
+                      'Please add items to securely place the order!',
                     );
                     return;
                   }
                   // go to checkout page
                   context.push('/orders/checkout', extra: widget.receiptId);
+
+                  // KOT Printing
+                  final bool isDineIn = receipt.orderType == 'Dine-In';
+                  final bool hasGrocery =
+                      receipt.items.any((item) => item.isRetail);
+
+                  if (!isDineIn && !hasGrocery) {
+                    final printerProvider = Provider.of<PrinterProvider>(
+                      context,
+                      listen: false,
+                    );
+                    PrintInvoice.printKOT(
+                      receipt: receipt,
+                      printer: printerProvider.secondaryPrinter,
+                    );
+                  }
+                  
+
+
+                  
                 },
                 child: Text(
                   "Place Order ( Ctrl+Enter )",
