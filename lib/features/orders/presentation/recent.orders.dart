@@ -340,18 +340,16 @@ class _RecentOrdersState extends State<RecentOrders> {
                                             bool shouldUpdate = false;
                                             if (_totalItems != receipt.length) {
                                               shouldUpdate = true;
-                                            } else if (_currentReceipts
-                                                    .isNotEmpty &&
-                                                receipt.isNotEmpty) {
-                                              // Check if the data content has changed (like payment status)
-                                              if (_currentReceipts[0]
-                                                          .paymentStatus !=
-                                                      receipt[0]
-                                                          .paymentStatus ||
-                                                  _currentReceipts[0]
-                                                          .receiptId !=
-                                                      receipt[0].receiptId) {
-                                                shouldUpdate = true;
+                                            } else {
+                                              // Thoroughly check if any item's ID or payment status has changed
+                                              for (int i = 0; i < receipt.length; i++) {
+                                                if (_currentReceipts.isEmpty ||
+                                                    i >= _currentReceipts.length ||
+                                                    _currentReceipts[i].receiptId != receipt[i].receiptId ||
+                                                    _currentReceipts[i].paymentStatus != receipt[i].paymentStatus) {
+                                                  shouldUpdate = true;
+                                                  break;
+                                                }
                                               }
                                             }
 
