@@ -4,6 +4,7 @@ import 'package:bvibe/features/settings/pages/shortcut.keys.dart';
 import 'package:bvibe/features/settings/pages/printer.page.dart';
 import 'package:bvibe/features/settings/pages/security.page.dart';
 import 'package:bvibe/features/settings/pages/supports.page.dart';
+import 'package:bvibe/features/settings/pages/backup_restore.page.dart';
 import 'package:bvibe/features/settings/widgets/header.dart';
 import 'package:bvibe/features/settings/widgets/settings.items.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,7 @@ class _SettingsState extends State<Settings> {
     BusinessPage(),
     SupportsPage(),
     SecurityPage(),
+    BackupRestorePage(),
   ];
   @override
   Widget build(BuildContext context) {
@@ -54,6 +56,7 @@ class _SettingsState extends State<Settings> {
                       onTap2: () => onItemTapped(2),
                       onTap3: () => onItemTapped(3),
                       onTap4: () => onItemTapped(4),
+                      onTap5: () => onItemTapped(5),
                       selectedItem: selectedItem,
                     ),
                   ),

@@ -8,6 +8,7 @@ class SettingsItems extends StatefulWidget {
   final VoidCallback onTap2;
   final VoidCallback onTap3;
   final VoidCallback onTap4;
+  final VoidCallback onTap5;
   final int selectedItem;
   const SettingsItems({
     super.key,
@@ -16,6 +17,7 @@ class SettingsItems extends StatefulWidget {
     required this.onTap2,
     required this.onTap3,
     required this.onTap4,
+    required this.onTap5,
     required this.selectedItem,
   });
 
@@ -80,6 +82,13 @@ class _SettingsItemsState extends State<SettingsItems> {
                   Symbols.security,
                   widget.selectedItem == 4,
                   widget.onTap4,
+                ),
+                _buildItemsCard(
+                  theme,
+                  "Backup & Restore",
+                  Symbols.backup,
+                  widget.selectedItem == 5,
+                  widget.onTap5,
                 ),
               ],
             ),
