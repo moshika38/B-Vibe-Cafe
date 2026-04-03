@@ -95,7 +95,8 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
 
       if (event.logicalKey == LogicalKeyboardKey.enter || event.logicalKey == LogicalKeyboardKey.numpadEnter) {
         if (isConform) {
-          print("Print recipt");
+          print("Print receipt");
+
           context.go('/orders');
         } else {
           if (!_isInsufficient) {

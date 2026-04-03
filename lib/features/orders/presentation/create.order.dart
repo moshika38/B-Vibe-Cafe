@@ -9,6 +9,8 @@ import 'package:bvibe/provider/categories.helper.dart';
 import 'package:bvibe/provider/item.provider.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:bvibe/components/conform.window.dart';
+import 'package:bvibe/data/model/item.model.dart';
+import 'package:bvibe/data/model/categories.model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -30,13 +32,24 @@ class _CreateOrdersState extends State<CreateOrders> {
   int selectedCartItemIndex = 0;
 
   Future? _categoriesFuture;
-  Future? _itemsFuture;
-  int? _lastActiveCate;
   int _maxCategories = 0;
   int _maxItems = 0;
 
   final FocusNode _focusNode = FocusNode();
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  String _searchQuery = "";
+  bool _shouldFocusQty = false;
   int _currentCrossAxisCount = 4;
+
+  void _refocusSearch() {
+    _searchFocusNode.requestFocus();
+    _searchController.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _searchController.text.length,
+    );
+    _shouldFocusQty = false;
+  }
 
   void _create() {
     final id = DummyData.dummyReceipt;
@@ -101,6 +114,11 @@ class _CreateOrdersState extends State<CreateOrders> {
         return true;
       }
 
+      if (isCtrlPressed && event.logicalKey == LogicalKeyboardKey.keyS) {
+        _refocusSearch();
+        return true;
+      }
+
       if (isCtrlPressed &&
           (event.logicalKey == LogicalKeyboardKey.enter ||
               event.logicalKey == LogicalKeyboardKey.numpadEnter)) {
@@ -120,7 +138,10 @@ class _CreateOrdersState extends State<CreateOrders> {
           setState(() => activeCate = (activeCate + 1).clamp(0, max));
         } else {
           final max = _maxItems > 0 ? _maxItems - 1 : 0;
-          setState(() => selectedItem = (selectedItem + 1).clamp(0, max));
+          setState(() {
+            _shouldFocusQty = true;
+            selectedItem = (selectedItem + 1).clamp(0, max);
+          });
         }
         return true;
       }
@@ -137,7 +158,10 @@ class _CreateOrdersState extends State<CreateOrders> {
           setState(() => activeCate = (activeCate - 1).clamp(0, max));
         } else {
           final max = _maxItems > 0 ? _maxItems - 1 : 0;
-          setState(() => selectedItem = (selectedItem - 1).clamp(0, max));
+          setState(() {
+            _shouldFocusQty = true;
+            selectedItem = (selectedItem - 1).clamp(0, max);
+          });
         }
         return true;
       }
@@ -155,8 +179,11 @@ class _CreateOrdersState extends State<CreateOrders> {
           });
         } else {
           final max = _maxItems > 0 ? _maxItems - 1 : 0;
-          setState(() => selectedItem =
-              (selectedItem + _currentCrossAxisCount).clamp(0, max));
+          setState(() {
+            _shouldFocusQty = true;
+            selectedItem =
+                (selectedItem + _currentCrossAxisCount).clamp(0, max);
+          });
         }
         return true;
       }
@@ -168,8 +195,11 @@ class _CreateOrdersState extends State<CreateOrders> {
                 (selectedCartItemIndex - 1).clamp(0, selectedCartItemIndex);
           });
         } else {
-          setState(() => selectedItem =
-              (selectedItem - _currentCrossAxisCount).clamp(0, selectedItem));
+          setState(() {
+            _shouldFocusQty = true;
+            selectedItem =
+                (selectedItem - _currentCrossAxisCount).clamp(0, selectedItem);
+          });
         }
         return true;
       }
@@ -182,13 +212,17 @@ class _CreateOrdersState extends State<CreateOrders> {
     super.initState();
     widget.invoiceId.isEmpty ? _create() : receiptId = widget.invoiceId;
     HardwareKeyboard.instance.addHandler(_handleGlobalKey);
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _focusNode.requestFocus(),
-    );
+    // Fetch all items once for global search and "All" category
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ItemProvider>().fetchItems();
+      _refocusSearch();
+    });
   }
 
   @override
   void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
     HardwareKeyboard.instance.removeHandler(_handleGlobalKey);
     _focusNode.dispose();
     super.dispose();
@@ -244,12 +278,25 @@ class _CreateOrdersState extends State<CreateOrders> {
         ),
 
         TextField(
+          controller: _searchController,
+          focusNode: _searchFocusNode,
+          onChanged: (val) {
+            setState(() {
+              _searchQuery = val.toLowerCase();
+              selectedItem = 0; // Reset selection when searching
+              _shouldFocusQty = false; // Never focus qty while typing in search
+            });
+          },
           decoration: InputDecoration(
             hintText: 'Search...',
             prefixIcon: const Icon(Icons.search, color: AppColors.textHint),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: AppColors.textHint),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
             ),
           ),
         ),
@@ -269,7 +316,17 @@ class _CreateOrdersState extends State<CreateOrders> {
                   }
 
                   if (asyncSnapshot.hasData) {
-                    final categories = asyncSnapshot.data!;
+                    final rawCategories =
+                        asyncSnapshot.data! as List<CategoriesModel>;
+                    // Add virtual "All" category
+                    final categories = [
+                      CategoriesModel(
+                        id: 'all',
+                        itemName: 'All Items',
+                        iconNumber: Icons.grid_view.codePoint,
+                      ),
+                      ...rawCategories,
+                    ];
                     _maxCategories = categories.length;
 
                     if (categories.isEmpty) {
@@ -299,6 +356,7 @@ class _CreateOrdersState extends State<CreateOrders> {
                                   setState(() {
                                     activeCate = index;
                                     selectedItem = 0;
+                                    _searchFocusNode.requestFocus();
                                   });
                                 },
                               );
@@ -324,69 +382,85 @@ class _CreateOrdersState extends State<CreateOrders> {
                                 WidgetsBinding.instance
                                     .addPostFrameCallback((_) {
                                   if (mounted) {
-                                    setState(() =>
-                                        _currentCrossAxisCount = crossAxisCount);
+                                    setState(() => _currentCrossAxisCount =
+                                        crossAxisCount);
                                   }
                                 });
                               }
 
                               return Consumer<ItemProvider>(
                                 builder: (context, itemProv, child) {
-                                  if (_lastActiveCate != activeCate) {
-                                    _lastActiveCate = activeCate;
-                                    _itemsFuture = itemProv.readAllItems(
-                                      categories[activeCate].id ?? "",
-                                    );
+                                  // Determine list to show
+                                  List<ItemModel> filteredItems = [];
+
+                                  if (_searchQuery.isNotEmpty) {
+                                    // Global Search - show items from all categories
+                                    filteredItems = itemProv.items
+                                        .where((item) =>
+                                            item.itemName
+                                                .toLowerCase()
+                                                .contains(_searchQuery) ||
+                                            item.description
+                                                .toLowerCase()
+                                                .contains(_searchQuery))
+                                        .toList();
+                                  } else {
+                                    if (activeCate == 0) {
+                                      // "All" category selected, no search query
+                                      filteredItems = itemProv.items;
+                                    } else {
+                                      // Specific category selected, no search query
+                                      final selectedCatId =
+                                          categories[activeCate].id;
+                                      filteredItems = itemProv.items
+                                          .where((item) =>
+                                              item.categoryId == selectedCatId)
+                                          .toList();
+                                    }
                                   }
-                                  return FutureBuilder(
-                                    future: _itemsFuture,
-                                    builder: (context, itemSnapshot) {
-                                      if (itemSnapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return const Center(
-                                          child: CircularProgressIndicator(),
-                                        );
-                                      }
 
-                                      if (itemSnapshot.hasData) {
-                                        final data = itemSnapshot.data!;
-                                        _maxItems = data.length;
-                                        if (data.isEmpty) {
-                                          return const EmptyItem();
-                                        }
-                                        return GridView.builder(
-                                          gridDelegate:
-                                              SliverGridDelegateWithFixedCrossAxisCount(
-                                                crossAxisCount: crossAxisCount,
-                                                crossAxisSpacing: 10,
-                                                mainAxisSpacing: 10,
-                                                mainAxisExtent: 220,
-                                              ),
-                                          itemCount: data.length,
-                                          itemBuilder: (context, index) {
-                                            return BuildItemCard(
-                                              isRetail: data[index].isRetail,
-                                              itemId: data[index].id.toString(),
-                                              cate: data[index].categoryId,
-                                              cost: data[index].cost,
-                                              des: data[index].description,
-                                              receiptId: receiptId,
-                                              image: data[index].imagePath,
-                                              price: data[index].price
-                                                  .toString(),
-                                              title: data[index].itemName,
-                                              isSelect: selectedItem == index,
-                                              onTap: () {
-                                                setState(() {
-                                                  selectedItem = index;
-                                                });
-                                              },
-                                            );
-                                          },
-                                        );
-                                      }
+                                  _maxItems = filteredItems.length;
 
-                                      return const EmptyItem();
+                                  if (filteredItems.isEmpty) {
+                                    return const EmptyItem();
+                                  }
+
+                                  return GridView.builder(
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: crossAxisCount,
+                                      crossAxisSpacing: 10,
+                                      mainAxisSpacing: 10,
+                                      mainAxisExtent: 220,
+                                    ),
+                                    itemCount: filteredItems.length,
+                                    itemBuilder: (context, index) {
+                                      return BuildItemCard(
+                                        isRetail: filteredItems[index].isRetail,
+                                        itemId:
+                                            filteredItems[index].id.toString(),
+                                        cate: filteredItems[index].categoryId,
+                                        cost: filteredItems[index].cost,
+                                        des: filteredItems[index].description,
+                                        receiptId: receiptId,
+                                        image: filteredItems[index].imagePath,
+                                        price: filteredItems[index].price
+                                            .toString(),
+                                        title: filteredItems[index].itemName,
+                                        isSelect: selectedItem == index,
+                                        shouldFocus: _shouldFocusQty && (selectedItem == index),
+                                        onAdded: () {
+                                          _refocusSearch();
+                                        },
+                                        onTap: () {
+                                          setState(() {
+                                            selectedItem = index;
+                                            _shouldFocusQty = true;
+                                            // Request focus back to search bar after selecting
+                                            _refocusSearch();
+                                          });
+                                        },
+                                      );
                                     },
                                   );
                                 },

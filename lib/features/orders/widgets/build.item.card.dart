@@ -19,8 +19,10 @@ class BuildItemCard extends StatefulWidget {
   final String cate;
   final String cost;
   final String des;
-  final bool isRetail;
+   final bool isRetail;
   final VoidCallback? onTap;
+  final VoidCallback? onAdded;
+  final bool shouldFocus;
 
   const BuildItemCard({
     super.key,
@@ -35,6 +37,8 @@ class BuildItemCard extends StatefulWidget {
     required this.des,
     required this.isRetail,
     this.onTap,
+    this.onAdded,
+    this.shouldFocus = false,
   });
 
   @override
@@ -77,7 +81,7 @@ class _BuildItemCardState extends State<BuildItemCard> {
         return KeyEventResult.ignored;
       },
     );
-    if (widget.isSelect) {
+    if (widget.shouldFocus) {
       _qtyFocusNode.requestFocus();
       _selectAllText();
     }
@@ -86,7 +90,7 @@ class _BuildItemCardState extends State<BuildItemCard> {
   @override
   void didUpdateWidget(covariant BuildItemCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isSelect && !oldWidget.isSelect) {
+    if (widget.shouldFocus && !oldWidget.shouldFocus) {
       _qtyFocusNode.requestFocus();
       _selectAllText();
       // Force sync with cart when selected
@@ -155,6 +159,7 @@ class _BuildItemCardState extends State<BuildItemCard> {
         isRetail: widget.isRetail,
       ),
     );
+    widget.onAdded?.call();
   }
 
   void _increment(ReceiptProvider provider) {

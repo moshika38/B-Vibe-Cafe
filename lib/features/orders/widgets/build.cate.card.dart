@@ -36,7 +36,16 @@ class BuildCateCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Image.asset("assets/cate/$icon.png", width: 20, height: 20),
+                Image.asset(
+                  "assets/cate/$icon.png",
+                  width: 20,
+                  height: 20,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.category_outlined,
+                    size: 20,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 const SizedBox(width: 5),
                 Text(
                   title,
