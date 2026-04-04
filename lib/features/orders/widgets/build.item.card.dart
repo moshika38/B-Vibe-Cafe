@@ -219,7 +219,7 @@ class _BuildItemCardState extends State<BuildItemCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${widget.title}',
+                widget.title,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,

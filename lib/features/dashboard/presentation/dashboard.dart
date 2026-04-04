@@ -9,7 +9,7 @@ import 'package:bvibe/features/dashboard/widgets/order_list_item.dart';
 import 'package:bvibe/features/dashboard/widgets/popular_item.dart';
 import 'package:bvibe/features/dashboard/widgets/analysis_card.dart';
 import 'package:provider/provider.dart';
-import 'package:bvibe/provider/categories.helper.dart';
+import 'package:bvibe/provider/categories.provider.dart';
 import 'package:intl/intl.dart';
 import 'package:bvibe/provider/analytics.provider.dart';
 import 'package:bvibe/features/dashboard/widgets/summary_table.dart';

@@ -134,7 +134,7 @@ class _CreateCategoriesState extends State<CreateCategories> {
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                 ),
-                itemCount: 16,
+                itemCount: 23,
                 itemBuilder: (context, index) {
                   final isSelected = _selectedIcon == index;
                   return GestureDetector(

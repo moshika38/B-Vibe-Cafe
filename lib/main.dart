@@ -6,7 +6,7 @@ import 'package:bvibe/provider/business.info.dart';
 import 'package:bvibe/routes/app.routes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:bvibe/provider/categories.helper.dart';
+import 'package:bvibe/provider/categories.provider.dart';
 import 'package:bvibe/provider/item.provider.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:window_manager/window_manager.dart';

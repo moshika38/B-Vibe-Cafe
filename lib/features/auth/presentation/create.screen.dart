@@ -71,7 +71,7 @@ class _CreateScreenState extends State<CreateScreen> {
           // ── Unique animated glowing background ──
           const AuthBgDecoration(),
 
-          // ── Centered Glassmorphic Form Card ──
+          // ── Centered   Form Card ──
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),

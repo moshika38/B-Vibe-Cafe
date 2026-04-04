@@ -10,8 +10,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class ViewOrder extends StatelessWidget {
-  final String ReceiptId;
-  const ViewOrder({super.key, required this.ReceiptId});
+  final String receiptId;
+  const ViewOrder({super.key, required this.receiptId});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class ViewOrder extends StatelessWidget {
       final printerProvider = context.read<PrinterProvider>();
       final businessInfo = context.read<BusinessInfoProvider>();
 
-      final receipt = await receiptProvider.getReceipt(ReceiptId);
+      final receipt = await receiptProvider.getReceipt(receiptId);
       if (receipt != null) {
         PrintInvoice.printReceipt(
           receipt: receipt,
@@ -79,7 +79,7 @@ class ViewOrder extends StatelessWidget {
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                child: InvoicePage.fromId(ReceiptId),
+                child: InvoicePage.fromId(receiptId),
               ),
             ),
           ],

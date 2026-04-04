@@ -1,5 +1,5 @@
 name: bvibe
-description: "A new Flutter project."
+description: "POS System"
 
 publish_to: "none"
 
@@ -40,6 +40,23 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: false
+  ios: false
+  image_path: "assets/img/icon.png"
+  web:
+    generate: false
+    image_path: "assets/img/icon.png"
+    background_color: "#ffffff"
+    theme_color: "#ffffff"
+  windows:
+    generate: true
+    image_path: "assets/img/icon.png"
+    icon_size: 256
+  macos:
+    generate: false
 
 flutter:
   uses-material-design: true

@@ -4,7 +4,7 @@ import 'package:bvibe/features/analyze/widgets/charts.dart';
 import 'package:bvibe/features/analyze/widgets/kpi_card.dart';
 import 'package:bvibe/features/analyze/helper/export_service.dart';
 import 'package:bvibe/provider/analytics.provider.dart';
-import 'package:bvibe/provider/categories.helper.dart';
+import 'package:bvibe/provider/categories.provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';

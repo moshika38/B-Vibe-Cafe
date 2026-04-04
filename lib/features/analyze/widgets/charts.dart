@@ -254,7 +254,7 @@ class OrdersHeatmapChart extends StatelessWidget {
         ),
         barTouchData: BarTouchData(
           touchTooltipData: BarTouchTooltipData(
-            getTooltipItem: (group, _, rod, __) => BarTooltipItem(
+            getTooltipItem: (group, _, rod, _) => BarTooltipItem(
               '${_hourLabel(group.x)}\n${rod.toY.toInt()} orders',
               const TextStyle(
                 color: Colors.white,
@@ -478,7 +478,7 @@ class TopItemsChart extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       itemCount: items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, i) {
         final item = items[i];
         final revenue = item['revenue'] as double;

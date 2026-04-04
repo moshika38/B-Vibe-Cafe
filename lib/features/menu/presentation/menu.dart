@@ -2,7 +2,7 @@ import 'package:bvibe/components/app.title.dart';
 import 'package:bvibe/const/snack/app.snack.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
-import 'package:bvibe/provider/categories.helper.dart';
+import 'package:bvibe/provider/categories.provider.dart';
 import 'package:bvibe/features/dashboard/widgets/cate.card.dart';
 import 'package:bvibe/features/menu/widgets/edit.item.cart.dart';
 import 'package:bvibe/features/menu/widgets/headline.dart';
@@ -133,17 +133,17 @@ class _AppMenuState extends State<AppMenu> {
                               return ReorderableListView.builder(
                                 scrollController: _scrollController,
                                 itemCount: listOfCate.length,
-                                buildDefaultDragHandles: false, // Use custom handle
+                                buildDefaultDragHandles: false,  
                                 onReorder: (oldIndex, newIndex) {
                                   if (newIndex > oldIndex) {
                                     newIndex -= 1;
                                   }
                                   final itemId = listOfCate[oldIndex].id;
                                   if (itemId != null) {
-                                    // Prevent index out of bounds and unnecessary updates
+                                     
                                     if (oldIndex == newIndex) return;
 
-                                    // Update local activeIndex before reorder to keep UI selection stable
+                                     
                                     if (activeIndex == oldIndex) {
                                       setState(() => activeIndex = newIndex);
                                     } else if (activeIndex > oldIndex &&

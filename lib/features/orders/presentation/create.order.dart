@@ -8,7 +8,7 @@ import 'package:bvibe/features/orders/widgets/build.cate.card.dart';
 import 'package:bvibe/features/orders/widgets/build.item.card.dart';
 import 'package:bvibe/features/orders/widgets/current.order.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
-import 'package:bvibe/provider/categories.helper.dart';
+import 'package:bvibe/provider/categories.provider.dart';
 import 'package:bvibe/provider/item.provider.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:bvibe/components/conform.window.dart';
@@ -172,8 +172,9 @@ class _CreateOrdersState extends State<CreateOrders> {
       }
 
       if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-        if (isCartFocused)
+        if (isCartFocused) {
           return true; // Consume but do nothing in cart for now
+        }
         if (isShiftPressed) {
           Provider.of<ReceiptProvider>(
             context,
