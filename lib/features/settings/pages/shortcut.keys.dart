@@ -47,19 +47,19 @@ class _ShortcutKeysState extends State<ShortcutKeys> {
             _buildShortcutRow(context, "Change Category", ["Ctrl", "← / →"]),
             _buildShortcutRow(context, "Select Item", ["←", "→"]),
             _buildShortcutRow(context, "Add Item Normally", ["Enter"]),
-            _buildShortcutRow(context, "Display/Add Discount", ["Ctrl", "Enter"]),
+            _buildShortcutRow(context, "Display/Add Discount", ["Ctrl", "D"]),
             _buildShortcutRow(context, "Close Discount Pop-up", ["Backspace"]),
             _buildShortcutRow(context, "Navigate Back (Recent Orders)", ["Backspace"]),
-            _buildShortcutRow(context, "Switch Takeaway/Dine-In", ["Ctrl", "1 / 2"]),
+            _buildShortcutRow(context, "Switch Takeaway/Dine-In", ["Shift", "← / →"]),
             _buildShortcutRow(context, "Delete Item", ["Delete"]),
-            _buildShortcutRow(context, "Navigate to Checkout", ["Numpad Enter"], isLast: true),
+            _buildShortcutRow(context, "Navigate to Checkout", ["Ctrl", "Enter"], isLast: true),
           ]),
           const SizedBox(height: 24),
 
           // Checkout Page Section
           _buildSectionHeader(context, "Checkout Page"),
           _buildShortcutsContainer([
-            _buildShortcutRow(context, "Change Payment Method", ["Ctrl", "1 / 2 / 3"]),
+            _buildShortcutRow(context, "Change Payment Method", ["Ctrl", "← / →"]),
             _buildShortcutRow(context, "Confirm Payment", ["Enter"]),
             _buildShortcutRow(context, "Print Receipt (If Success)", ["Enter"]),
             _buildShortcutRow(context, "Navigate Back (Order Screen)", ["Backspace"], isLast: true),
