@@ -110,7 +110,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
                 ),
                 child: Center(
                   child: Text(
-                    "Dine-In",
+                    "Dine-In ( Shift+left )",
                     style: TextStyle(
                       color: !isTakeaway
                           ? AppColors.surface
@@ -133,7 +133,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
                 ),
                 child: Center(
                   child: Text(
-                    "Takeaway",
+                    "Takeaway  ( Shift+right )",
                     style: TextStyle(
                       color: isTakeaway
                           ? AppColors.surface
@@ -352,8 +352,9 @@ class _CurrentOrderState extends State<CurrentOrder> {
 
                   // KOT Printing
                   final bool isDineIn = receipt.orderType == 'Dine-In';
-                  final bool hasGrocery =
-                      receipt.items.any((item) => item.isRetail);
+                  final bool hasGrocery = receipt.items.any(
+                    (item) => item.isRetail,
+                  );
 
                   if (!isDineIn && !hasGrocery) {
                     final printerProvider = Provider.of<PrinterProvider>(
@@ -365,10 +366,6 @@ class _CurrentOrderState extends State<CurrentOrder> {
                       printer: printerProvider.secondaryPrinter,
                     );
                   }
-                  
-
-
-                  
                 },
                 child: Text(
                   "Place Order ( Ctrl+Enter )",

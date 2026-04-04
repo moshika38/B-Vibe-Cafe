@@ -19,7 +19,7 @@ class BuildItemCard extends StatefulWidget {
   final String cate;
   final String cost;
   final String des;
-   final bool isRetail;
+  final bool isRetail;
   final VoidCallback? onTap;
   final VoidCallback? onAdded;
   final bool shouldFocus;
@@ -51,8 +51,6 @@ class _BuildItemCardState extends State<BuildItemCard> {
   late TextEditingController _qtyController;
   late FocusNode _qtyFocusNode;
 
-
-
   @override
   void initState() {
     super.initState();
@@ -70,14 +68,15 @@ class _BuildItemCardState extends State<BuildItemCard> {
               });
               return KeyEventResult.handled;
             }
+          } else if (event.logicalKey == LogicalKeyboardKey.keyD &&
+              HardwareKeyboard.instance.isControlPressed) {
+            _showDiscountDialog(context.read<ReceiptProvider>());
+            return KeyEventResult.handled;
           } else if (event.logicalKey == LogicalKeyboardKey.enter ||
               event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-            if (HardwareKeyboard.instance.isShiftPressed) {
-              _showDiscountDialog(context.read<ReceiptProvider>());
-              return KeyEventResult.handled;
-            }
             // Plain Enter: add/update item with current qty, then refocus search
-            if (!HardwareKeyboard.instance.isControlPressed) {
+            if (!HardwareKeyboard.instance.isControlPressed &&
+                !HardwareKeyboard.instance.isShiftPressed) {
               final provider = context.read<ReceiptProvider>();
               _onQtyChanged(_qtyController.text, provider);
               return KeyEventResult.handled;
@@ -114,8 +113,9 @@ class _BuildItemCardState extends State<BuildItemCard> {
   void _syncWithProvider(ReceiptProvider provider) {
     final cached = provider.getCachedReceipt(widget.receiptId);
     if (cached != null) {
-      final existing =
-          cached.items.where((i) => i.id == widget.itemId).toList();
+      final existing = cached.items
+          .where((i) => i.id == widget.itemId)
+          .toList();
       int providerQty = 1;
       double providerDiscount = 0.0;
 
@@ -214,9 +214,28 @@ class _BuildItemCardState extends State<BuildItemCard> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text(
-            'Apply Discount (LKR)',
-            style: TextStyle(fontWeight: FontWeight.bold),
+          title: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${widget.title}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${AppNumberFormat.formatNumber(double.tryParse(widget.price) ?? 0.0)} LKR',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
           ),
           content: Focus(
             onKeyEvent: (node, event) {
@@ -289,14 +308,16 @@ class _BuildItemCardState extends State<BuildItemCard> {
         if (!_qtyFocusNode.hasFocus) {
           final cached = value.getCachedReceipt(widget.receiptId);
           if (cached != null) {
-            final existing =
-                cached.items.where((i) => i.id == widget.itemId).toList();
+            final existing = cached.items
+                .where((i) => i.id == widget.itemId)
+                .toList();
             int providerQty = 1;
             double providerDiscount = 0.0;
 
             if (existing.isNotEmpty) {
               providerQty = int.tryParse(existing.first.qty) ?? 1;
-              providerDiscount = double.tryParse(existing.first.discount) ?? 0.0;
+              providerDiscount =
+                  double.tryParse(existing.first.discount) ?? 0.0;
             }
 
             if (_qty != providerQty || _discount != providerDiscount) {
@@ -451,19 +472,22 @@ class _BuildItemCardState extends State<BuildItemCard> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               /// Discount Option Button
-                              InkWell(
-                                onTap: () => _showDiscountDialog(value),
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.background,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.local_offer_outlined,
-                                    size: 18,
-                                    color: AppColors.textSecondary,
+                              Tooltip(
+                                message: 'Apply Discount (Ctrl+D)',
+                                child: InkWell(
+                                  onTap: () => _showDiscountDialog(value),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.background,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.local_offer_outlined,
+                                      size: 18,
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
                                 ),
                               ),

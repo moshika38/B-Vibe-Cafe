@@ -305,7 +305,7 @@ class _CreateOrdersState extends State<CreateOrders> {
             });
           },
           decoration: InputDecoration(
-            hintText: 'Search...',
+            hintText: '( Ctrl+S ) Search...',
             prefixIcon: const Icon(Icons.search, color: AppColors.textHint),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -472,7 +472,9 @@ class _CreateOrdersState extends State<CreateOrders> {
                                         price: filteredItems[index].price
                                             .toString(),
                                         title: filteredItems[index].itemName,
-                                        isSelect: selectedItem >= 0 && selectedItem == index,
+                                        isSelect:
+                                            selectedItem >= 0 &&
+                                            selectedItem == index,
                                         shouldFocus:
                                             _shouldFocusQty &&
                                             selectedItem >= 0 &&

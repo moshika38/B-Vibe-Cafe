@@ -68,6 +68,8 @@ class _FormPanelState extends State<FormPanel> {
           TextField(
                 autofocus: true,
                 controller: widget.staffIdController,
+                textInputAction: TextInputAction.next,
+                onSubmitted: (_) => FocusScope.of(context).nextFocus(),
                 decoration: const InputDecoration(
                   hintText: 'Enter your ID number',
                   prefixIcon: Icon(
@@ -87,9 +89,11 @@ class _FormPanelState extends State<FormPanel> {
 
           const SizedBox(height: 8),
           TextField(
-                autofocus: true,
+                autofocus: false,
                 controller: widget.pinController,
                 obscureText: widget.obscurePin,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => widget.onLogin(),
                 decoration: InputDecoration(
                   hintText: '••••••••',
                   prefixIcon: const Icon(

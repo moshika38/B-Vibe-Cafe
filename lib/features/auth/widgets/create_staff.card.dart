@@ -89,6 +89,8 @@ class CreateStaffCard extends StatelessWidget {
               const SizedBox(height: 8),
               TextField(
                 controller: staffIdController,
+                textInputAction: TextInputAction.next,
+                onSubmitted: (_) => FocusScope.of(context).nextFocus(),
                 decoration: const InputDecoration(
                   hintText: 'Enter staff ID number',
                   prefixIcon: Icon(
@@ -105,6 +107,8 @@ class CreateStaffCard extends StatelessWidget {
               TextField(
                 controller: pinController,
                 obscureText: obscurePin,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => onCreate(),
                 decoration: InputDecoration(
                   hintText: '••••••••',
                   prefixIcon: const Icon(
