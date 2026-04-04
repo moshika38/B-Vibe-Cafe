@@ -16,18 +16,22 @@ class _SecurityPageState extends State<SecurityPage> {
   final _currentPinCtrl = TextEditingController();
   final _newPinCtrl = TextEditingController();
   final _confirmPinCtrl = TextEditingController();
+  final _newUsernameCtrl = TextEditingController();
 
   bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _obscureConfirm = true;
   String? _pinError;
+  String? _usernameError;
   bool _success = false;
+  bool _usernameSuccess = false;
 
   @override
   void dispose() {
     _currentPinCtrl.dispose();
     _newPinCtrl.dispose();
     _confirmPinCtrl.dispose();
+    _newUsernameCtrl.dispose();
     super.dispose();
   }
 
@@ -79,8 +83,11 @@ class _SecurityPageState extends State<SecurityPage> {
   Future<void> _loadAuthData() async {
     final currentUser = await AuthHelper.instance.readCurrentUserData();
     if (currentUser != null) {
-      setState(() => cPin = currentUser.passCode);
-      setState(() => cUser = currentUser.userName);
+      setState(() {
+        cPin = currentUser.passCode;
+        cUser = currentUser.userName;
+        _newUsernameCtrl.text = currentUser.userName;
+      });
     }
   }
 
@@ -88,15 +95,96 @@ class _SecurityPageState extends State<SecurityPage> {
     final user = AuthModel(userName: cUser, passCode: _newPinCtrl.text);
     final result = await AuthHelper.instance.insertUser(user);
     if (result > 0) {
+      setState(() => cPin = _newPinCtrl.text);
       if (mounted) {
-        AppSnack.successSnack(context, "Successfully created account");
+        AppSnack.successSnack(context, "Successfully updated PIN");
       }
     }
   }
 
+  Future<void> _updateUsername() async {
+    final user = AuthModel(userName: _newUsernameCtrl.text, passCode: cPin);
+    final result = await AuthHelper.instance.insertUser(user);
+    if (result > 0) {
+      setState(() {
+        cUser = _newUsernameCtrl.text;
+        _usernameSuccess = true;
+      });
+      if (mounted) {
+        AppSnack.successSnack(context, "Successfully updated Username");
+      }
+    }
+  }
+
+  Future<void> _showVerifyPinDialog() async {
+    final TextEditingController verifyPinCtrl = TextEditingController();
+    bool obscure = true;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(
+            "Verify PIN",
+            style: theme.textTheme.labelMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Please enter your current PIN to authorize this change.",
+                style: theme.textTheme.labelSmall,
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: verifyPinCtrl,
+                obscureText: obscure,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Symbols.lock, size: 18),
+                  hintText: "Enter Current PIN",
+                  suffixIcon: IconButton(
+                    onPressed: () => setDialogState(() => obscure = !obscure),
+                    icon: Icon(
+                      obscure ? Symbols.visibility : Symbols.visibility_off,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel"),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (verifyPinCtrl.text == cPin) {
+                  Navigator.pop(context, true);
+                } else {
+                  AppSnack.errorSnack(context, "Incorrect PIN");
+                }
+              },
+              child: const Text("Verify"),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed == true) {
+      _updateUsername();
+    }
+  }
+
+  late ThemeData theme;
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +209,16 @@ class _SecurityPageState extends State<SecurityPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Form
-            Expanded(flex: 2, child: _buildPinCard(theme)),
+            Expanded(
+              flex: 2,
+              child: Column(
+                children: [
+                  _buildUsernameCard(theme),
+                  const SizedBox(height: 20),
+                  _buildPinCard(theme),
+                ],
+              ),
+            ),
 
             const SizedBox(width: 30),
 
@@ -387,6 +484,142 @@ class _SecurityPageState extends State<SecurityPage> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUsernameCard(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textSecondary.withValues(alpha: 0.07),
+            blurRadius: 14,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Symbols.person,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Change Username",
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    "Update your system access name",
+                    style: theme.textTheme.labelSmall,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Divider(color: AppColors.divider, height: 1),
+          const SizedBox(height: 20),
+          Text("New Username", style: theme.textTheme.labelMedium),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _newUsernameCtrl,
+            onChanged: (v) => setState(() {
+              _usernameError = null;
+              _usernameSuccess = false;
+            }),
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Symbols.person_outline, size: 18),
+              hintText: "Enter new username",
+            ),
+          ),
+          if (_usernameError != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              _usernameError!,
+              style: theme.textTheme.labelSmall?.copyWith(color: Colors.red),
+            ),
+          ],
+          if (_usernameSuccess) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF22C55E).withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: const Color(0xFF22C55E).withValues(alpha: 0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Symbols.check_circle,
+                    size: 16,
+                    color: Color(0xFF22C55E),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Username updated successfully.",
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: const Color(0xFF22C55E),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () {
+                if (_newUsernameCtrl.text.isEmpty) {
+                  setState(() => _usernameError = "Username cannot be empty.");
+                  return;
+                }
+                _showVerifyPinDialog();
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                "Update Username",
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),

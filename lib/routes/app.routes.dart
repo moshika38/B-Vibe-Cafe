@@ -50,7 +50,10 @@ class AppRoutes {
             ],
           ),
           GoRoute(path: '/history', builder: (context, state) => History()),
-          GoRoute(path: '/analyze', builder: (context, state) => AnalyzeScreen()),
+          GoRoute(
+            path: '/analyze',
+            builder: (context, state) => AnalyzeScreen(),
+          ),
           GoRoute(path: '/settings', builder: (context, state) => Settings()),
         ],
       ),

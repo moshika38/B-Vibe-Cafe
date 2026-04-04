@@ -1,6 +1,7 @@
 import 'package:bvibe/features/shell/widgets/menu.item.dart';
 import 'package:bvibe/features/shell/widgets/title.dart';
 import 'package:bvibe/features/shell/widgets/user.role.card.dart';
+import 'package:bvibe/features/lock/lock.screen.dart';
 import 'package:bvibe/provider/screen.provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +13,15 @@ class MainShell extends StatelessWidget {
   final Widget child;
 
   const MainShell({super.key, required this.child});
+
+  void _showLockScreen(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useSafeArea: false,
+      builder: (context) => const LockScreen(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,22 +43,25 @@ class MainShell extends StatelessWidget {
       builder: (context, screenProvider, _) => Focus(
         autofocus: true,
         onKeyEvent: (node, event) {
-          if (event is KeyDownEvent &&
-              event.logicalKey == LogicalKeyboardKey.tab) {
-            // Find current index
-            final int currentIndex = menuRoutes.indexWhere(
-              (route) => isActive(route['path']),
-            );
+          if (event is KeyDownEvent) {
+            // Tab key navigation
+            if (event.logicalKey == LogicalKeyboardKey.tab) {
+              final int currentIndex = menuRoutes.indexWhere(
+                (route) => isActive(route['path']),
+              );
+              final int nextIndex = (currentIndex + 1) % menuRoutes.length;
+              final Map<String, dynamic> nextRoute = menuRoutes[nextIndex];
+              context.go(nextRoute['path']);
+              screenProvider.updateScreenStatus(nextRoute['isOrder']);
+              return KeyEventResult.handled;
+            }
 
-            // Calculate next index (circular)
-            final int nextIndex = (currentIndex + 1) % menuRoutes.length;
-            final Map<String, dynamic> nextRoute = menuRoutes[nextIndex];
-
-            // Navigate and update state
-            context.go(nextRoute['path']);
-            screenProvider.updateScreenStatus(nextRoute['isOrder']);
-
-            return KeyEventResult.handled;
+            // Ctrl + L for Lock Screen
+            if (event.logicalKey == LogicalKeyboardKey.keyL &&
+                HardwareKeyboard.instance.isControlPressed) {
+              _showLockScreen(context);
+              return KeyEventResult.handled;
+            }
           }
           return KeyEventResult.ignored;
         },
