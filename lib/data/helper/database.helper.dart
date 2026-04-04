@@ -35,7 +35,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 15,
+      version: 17,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -248,6 +248,30 @@ CREATE TABLE IF NOT EXISTS archive_receipts (
             print("Database migration version 15 error: $e");
           }
         }
+        if (oldVersion < 16) {
+          try {
+            await db.execute(
+              'ALTER TABLE receipts ADD COLUMN total_discount TEXT NOT NULL DEFAULT "0.00"',
+            );
+            await db.execute(
+              'ALTER TABLE archive_receipts ADD COLUMN total_discount TEXT NOT NULL DEFAULT "0.00"',
+            );
+          } catch (e) {
+            print("Database migration version 16 error: $e");
+          }
+        }
+        if (oldVersion < 17) {
+          try {
+            await db.execute(
+              'ALTER TABLE receipts ADD COLUMN last_kot_items TEXT DEFAULT ""',
+            );
+            await db.execute(
+              'ALTER TABLE archive_receipts ADD COLUMN last_kot_items TEXT DEFAULT ""',
+            );
+          } catch (e) {
+            print("Database migration version 17 error: $e");
+          }
+        }
       },
     );
   }
@@ -305,7 +329,9 @@ CREATE TABLE IF NOT EXISTS receipts (
   paid_amount $textType,
   balance_amount $textType,
   items $textType,
-  order_type $textType
+  order_type $textType,
+  total_discount TEXT DEFAULT "0.00",
+  last_kot_items TEXT DEFAULT ""
 )
 ''');
 
@@ -323,7 +349,9 @@ CREATE TABLE IF NOT EXISTS archive_receipts (
   paid_amount $textType,
   balance_amount $textType,
   items $textType,
-  order_type $textType
+  order_type $textType,
+  total_discount TEXT DEFAULT "0.00",
+  last_kot_items TEXT DEFAULT ""
 )
 ''');
 

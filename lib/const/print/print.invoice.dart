@@ -6,6 +6,8 @@ import 'package:flutter_pos_printer_platform_image_3/flutter_pos_printer_platfor
 import 'package:intl/intl.dart';
 
 class PrintInvoice {
+  static CapabilityProfile? _cachedProfile;
+
   static Future<bool> printReceipt({
     required ReceiptModel receipt,
     required BusinessInfoModel? businessInfo,
@@ -14,13 +16,13 @@ class PrintInvoice {
     if (printer == null) return false;
 
     try {
-      final profile = await CapabilityProfile.load();
-      final generator = Generator(PaperSize.mm80, profile);
+      _cachedProfile ??= await CapabilityProfile.load();
+      final generator = Generator(PaperSize.mm80, _cachedProfile!);
       List<int> bytes = [];
 
-      // Financial Logic matching InvoicePage/InvoiceDisplayModel
-      final double grandTotal = double.tryParse(receipt.totalAmount) ?? 0;
-      final double totalDiscount = receipt.items.fold(
+       final double grandTotal = double.tryParse(receipt.totalAmount) ?? 0;
+      final double billDiscount = double.tryParse(receipt.totalDiscount) ?? 0;
+      final double itemDiscount = receipt.items.fold(
           0.0,
           (sum, item) =>
               sum +
@@ -32,10 +34,12 @@ class PrintInvoice {
           receipt.items.isNotEmpty && receipt.items.every((i) => i.isRetail);
       final bool shouldExcludeServiceCharge = isRetail || isTakeaway;
 
-      final double netTotal =
-          shouldExcludeServiceCharge ? grandTotal : grandTotal / 1.10;
-      final double serviceCharge = grandTotal - netTotal;
-      final double subtotal = netTotal + totalDiscount;
+      final double amountToTax = shouldExcludeServiceCharge
+          ? grandTotal
+          : grandTotal / 1.10;
+      final double serviceCharge = shouldExcludeServiceCharge ? 0 : amountToTax * 0.10;
+      final double netTotal = amountToTax + billDiscount;
+      final double subtotal = netTotal + itemDiscount;
 
       // Header
       bytes += generator.text(
@@ -149,14 +153,27 @@ class PrintInvoice {
             styles: const PosStyles(align: PosAlign.right)),
       ]);
 
-      if (totalDiscount > 0) {
+      if (itemDiscount > 0) {
         bytes += generator.row([
           PosColumn(
-              text: 'Discount',
+              text: 'Item Discount',
               width: 8,
               styles: const PosStyles(align: PosAlign.left)),
           PosColumn(
-              text: '- LKR ${totalDiscount.toStringAsFixed(2)}',
+              text: '- LKR ${itemDiscount.toStringAsFixed(2)}',
+              width: 4,
+              styles: const PosStyles(align: PosAlign.right)),
+        ]);
+      }
+
+      if (billDiscount > 0) {
+        bytes += generator.row([
+          PosColumn(
+              text: 'Bill Discount',
+              width: 8,
+              styles: const PosStyles(align: PosAlign.left)),
+          PosColumn(
+              text: '- LKR ${billDiscount.toStringAsFixed(2)}',
               width: 4,
               styles: const PosStyles(align: PosAlign.right)),
         ]);
@@ -257,8 +274,8 @@ class PrintInvoice {
     if (printer == null) return false;
 
     try {
-      final profile = await CapabilityProfile.load();
-      final generator = Generator(PaperSize.mm80, profile);
+      _cachedProfile ??= await CapabilityProfile.load();
+      final generator = Generator(PaperSize.mm80, _cachedProfile!);
       List<int> bytes = [];
 
       bytes += generator.text("KITCHEN ORDER TOKEN", styles: const PosStyles(align: PosAlign.center, bold: true, height: PosTextSize.size2));

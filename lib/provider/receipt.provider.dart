@@ -136,9 +136,16 @@ class ReceiptProvider extends ChangeNotifier {
     }
 
     bool isTakeaway = receipt.orderType == 'Takeaway';
-    bool isRetail = receipt.items.isNotEmpty && receipt.items.every((item) => item.isRetail);
-    double serviceCharge = (isRetail || isTakeaway) ? 0 : netTotal * 0.10;
-    double grandTotal = netTotal + serviceCharge;
+    bool isRetail =
+        receipt.items.isNotEmpty &&
+        receipt.items.every((item) => item.isRetail);
+    double billDiscount = double.tryParse(receipt.totalDiscount) ?? 0.0;
+    double amountToTax = netTotal - billDiscount;
+    double serviceCharge = (isRetail || isTakeaway) 
+        ? 0 
+        : (amountToTax > 0 ? amountToTax * 0.10 : 0);
+    
+    double grandTotal = (netTotal - billDiscount) + serviceCharge;
 
     final db = await DatabaseHelper.instance.database;
     await db.update(
@@ -203,5 +210,44 @@ class ReceiptProvider extends ChangeNotifier {
     }
 
     await updateTotalAmount(receiptId);
+  }
+
+  // Update total discount by receipt id
+  Future<void> updateTotalDiscount(String receiptId, String discount) async {
+    final db = await DatabaseHelper.instance.database;
+
+    await db.update(
+      'receipts',
+      {'total_discount': discount},
+      where: 'receipt_id = ?',
+      whereArgs: [receiptId],
+    );
+
+    if (_cachedReceipt?.receiptId == receiptId) {
+      _cachedReceipt = null;
+    }
+
+    await updateTotalAmount(receiptId);
+  }
+
+  // Update last KOT items
+  Future<void> updateLastKotItems(
+    String receiptId,
+    List<ReceiptItemsModel> items,
+  ) async {
+    final db = await DatabaseHelper.instance.database;
+
+    await db.update(
+      'receipts',
+      {'last_kot_items': jsonEncode(items.map((e) => e.toMap()).toList())},
+      where: 'receipt_id = ?',
+      whereArgs: [receiptId],
+    );
+
+    if (_cachedReceipt?.receiptId == receiptId) {
+      _cachedReceipt = await getReceipt(receiptId);
+    }
+
+    notifyListeners();
   }
 }

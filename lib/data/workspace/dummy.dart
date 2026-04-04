@@ -15,7 +15,9 @@ class DummyData {
       paidAmount: "0",
       balanceAmount: "0",
       orderType: "Dine-In",
+      totalDiscount: "0.00",
       items: [],
+      lastKotItems: [],
     );
   }
 

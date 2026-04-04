@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:bvibe/const/print/print.invoice.dart';
 import 'package:bvibe/provider/printer.provider.dart';
 import 'package:bvibe/components/conform.window.dart';
@@ -28,6 +29,50 @@ class CurrentOrder extends StatefulWidget {
 }
 
 class _CurrentOrderState extends State<CurrentOrder> {
+  Future<void> _handlePlaceOrder(ReceiptModel receipt) async {
+    if (receipt.items.isEmpty) {
+      AppSnack.errorSnack(
+        context,
+        'Please add items to securely place the order!',
+      );
+      return;
+    }
+
+    final printerProvider =
+        Provider.of<PrinterProvider>(context, listen: false);
+    final receiptProvider =
+        Provider.of<ReceiptProvider>(context, listen: false);
+
+    // Filter to get only kitchen items (non-retail)
+    final kitchenItems = receipt.items.where((item) => !item.isRetail).toList();
+
+    if (kitchenItems.isNotEmpty) {
+      // Comparison logic
+      final currentKitchenJson =
+          jsonEncode(kitchenItems.map((e) => e.toMap()).toList());
+      final lastKitchenJson =
+          jsonEncode(receipt.lastKotItems.map((e) => e.toMap()).toList());
+
+      if (currentKitchenJson != lastKitchenJson) {
+        final success = await PrintInvoice.printKOT(
+          receipt: receipt,
+          printer: printerProvider.secondaryPrinter,
+        );
+        if (success) {
+          await receiptProvider.updateLastKotItems(
+            receipt.receiptId,
+            kitchenItems,
+          );
+        }
+      }
+    }
+
+    // Always navigate to checkout after attempting to print KOT
+    if (mounted) {
+      context.push('/orders/checkout', extra: receipt.receiptId);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -339,34 +384,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
             SizedBox(width: 10),
             Expanded(
               child: ElevatedButton(
-                onPressed: () {
-                  if (receipt.items.isEmpty) {
-                    AppSnack.errorSnack(
-                      context,
-                      'Please add items to securely place the order!',
-                    );
-                    return;
-                  }
-                  // go to checkout page
-                  context.push('/orders/checkout', extra: widget.receiptId);
-
-                  // KOT Printing
-                  final bool isDineIn = receipt.orderType == 'Dine-In';
-                  final bool hasGrocery = receipt.items.any(
-                    (item) => item.isRetail,
-                  );
-
-                  if (!isDineIn && !hasGrocery) {
-                    final printerProvider = Provider.of<PrinterProvider>(
-                      context,
-                      listen: false,
-                    );
-                    PrintInvoice.printKOT(
-                      receipt: receipt,
-                      printer: printerProvider.secondaryPrinter,
-                    );
-                  }
-                },
+                onPressed: () => _handlePlaceOrder(receipt),
                 child: Text(
                   "Place Order ( Ctrl+Enter )",
                   style: Theme.of(context).textTheme.titleMedium!.copyWith(

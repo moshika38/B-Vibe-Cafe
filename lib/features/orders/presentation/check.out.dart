@@ -9,17 +9,96 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-class CheckoutPage extends StatelessWidget {
+class CheckoutPage extends StatefulWidget {
   final String receiptId;
   const CheckoutPage({super.key, required this.receiptId});
 
   @override
+  State<CheckoutPage> createState() => _CheckoutPageState();
+}
+
+class _CheckoutPageState extends State<CheckoutPage> {
+  Future<void> _showBillDiscountDialog(
+    BuildContext context,
+    ReceiptProvider provider,
+    String currentDiscount,
+  ) async {
+    final TextEditingController controller = TextEditingController(
+      text: double.tryParse(currentDiscount)?.toStringAsFixed(0) ?? "0",
+    );
+    controller.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: controller.text.length,
+    );
+
+    final double? newDiscount = await showDialog<double>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          "Bill Discount (LKR)",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            suffixText: 'LKR',
+            filled: true,
+            fillColor: AppColors.background,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          onSubmitted: (val) => Navigator.pop(ctx, double.tryParse(val)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel", style: TextStyle(color: AppColors.textHint)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () => Navigator.pop(ctx, double.tryParse(controller.text)),
+            child: const Text("Apply"),
+          ),
+        ],
+      ),
+    );
+
+    if (newDiscount != null && newDiscount >= 0) {
+      await provider.updateTotalDiscount(
+        widget.receiptId,
+        newDiscount.toStringAsFixed(2),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final receiptProvider = Provider.of<ReceiptProvider>(context, listen: false);
+
     return Focus(
       onKeyEvent: (node, event) {
         if (event is KeyDownEvent || event is KeyRepeatEvent) {
           if (event.logicalKey == LogicalKeyboardKey.escape) {
             context.pop(); // Go back to Order Screen
+            return KeyEventResult.handled;
+          }
+
+          if (event.logicalKey == LogicalKeyboardKey.keyD &&
+              HardwareKeyboard.instance.isControlPressed) {
+            receiptProvider.getReceipt(widget.receiptId).then((receipt) {
+              if (receipt != null && mounted) {
+                _showBillDiscountDialog(context, receiptProvider, receipt.totalDiscount);
+              }
+            });
             return KeyEventResult.handled;
           }
         }
@@ -41,7 +120,7 @@ class CheckoutPage extends StatelessWidget {
               const SizedBox(height: 20),
               Consumer<ReceiptProvider>(
                 builder: (context, value, child) => FutureBuilder(
-                  future: value.getReceipt(receiptId),
+                  future: value.getReceipt(widget.receiptId),
                   builder: (context, asyncSnapshot) {
                     if (asyncSnapshot.hasData) {
                       final receipt = asyncSnapshot.data;

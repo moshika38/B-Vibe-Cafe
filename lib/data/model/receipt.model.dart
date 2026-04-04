@@ -12,7 +12,9 @@ class ReceiptModel {
   final String paidAmount;
   final String balanceAmount;
   final String orderType;
+  final String totalDiscount;
   final List<ReceiptItemsModel> items;
+  final List<ReceiptItemsModel> lastKotItems;
 
   ReceiptModel({
     required this.receiptId,
@@ -26,7 +28,9 @@ class ReceiptModel {
     required this.paidAmount,
     required this.balanceAmount,
     required this.orderType,
+    required this.totalDiscount,
     required this.items,
+    required this.lastKotItems,
   });
 
   Map<String, dynamic> toMap() {
@@ -42,7 +46,9 @@ class ReceiptModel {
       'paid_amount': paidAmount,
       'balance_amount': balanceAmount,
       'order_type': orderType,
+      'total_discount': totalDiscount,
       'items': jsonEncode(items.map((e) => e.toMap()).toList()),
+      'last_kot_items': jsonEncode(lastKotItems.map((e) => e.toMap()).toList()),
     };
   }
 
@@ -59,9 +65,15 @@ class ReceiptModel {
       paidAmount: map['paid_amount'],
       balanceAmount: map['balance_amount'],
       orderType: map['order_type'] ?? 'Dine-In',
+      totalDiscount: map['total_discount'] ?? '0.00',
       items: (jsonDecode(map['items']) as List)
           .map((e) => ReceiptItemsModel.fromMap(e))
           .toList(),
+      lastKotItems: map['last_kot_items'] == null || map['last_kot_items'] == ""
+          ? []
+          : (jsonDecode(map['last_kot_items']) as List)
+              .map((e) => ReceiptItemsModel.fromMap(e))
+              .toList(),
     );
   }
 }

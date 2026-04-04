@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:bvibe/components/navigation.title.dart';
+import 'package:bvibe/const/print/print.invoice.dart';
+import 'package:bvibe/provider/printer.provider.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/data/workspace/dummy.dart';
 import 'package:bvibe/features/orders/widgets/build.cate.card.dart';
@@ -37,7 +40,7 @@ class _CreateOrdersState extends State<CreateOrders> {
 
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
+  late final FocusNode _searchFocusNode;
   String _searchQuery = "";
   bool _shouldFocusQty = false;
   int _currentCrossAxisCount = 4;
@@ -131,7 +134,40 @@ class _CreateOrdersState extends State<CreateOrders> {
       if (isCtrlPressed &&
           (event.logicalKey == LogicalKeyboardKey.enter ||
               event.logicalKey == LogicalKeyboardKey.numpadEnter)) {
-        context.push('/orders/checkout', extra: receiptId);
+        final provider = Provider.of<ReceiptProvider>(context, listen: false);
+        final printerProvider =
+            Provider.of<PrinterProvider>(context, listen: false);
+
+        provider.getReceipt(receiptId).then((receipt) async {
+          if (receipt != null) {
+            // Filter to get only kitchen items (non-retail)
+            final kitchenItems =
+                receipt.items.where((item) => !item.isRetail).toList();
+            if (kitchenItems.isNotEmpty) {
+              final currentKitchenJson =
+                  jsonEncode(kitchenItems.map((e) => e.toMap()).toList());
+              final lastKitchenJson = jsonEncode(
+                receipt.lastKotItems.map((e) => e.toMap()).toList(),
+              );
+
+              if (currentKitchenJson != lastKitchenJson) {
+                final success = await PrintInvoice.printKOT(
+                  receipt: receipt,
+                  printer: printerProvider.secondaryPrinter,
+                );
+                if (success) {
+                  await provider.updateLastKotItems(
+                    receipt.receiptId,
+                    kitchenItems,
+                  );
+                }
+              }
+            }
+            if (mounted) {
+              context.push('/orders/checkout', extra: receiptId);
+            }
+          }
+        });
         return true;
       }
 
@@ -224,10 +260,23 @@ class _CreateOrdersState extends State<CreateOrders> {
     return false;
   }
 
+  KeyEventResult _handleSearchKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyDownEvent || event is KeyRepeatEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.backspace) {
+        if (_searchController.text.isEmpty) {
+          context.pop();
+          return KeyEventResult.handled;
+        }
+      }
+    }
+    return KeyEventResult.ignored;
+  }
+
   @override
   void initState() {
     super.initState();
     widget.invoiceId.isEmpty ? _create() : receiptId = widget.invoiceId;
+    _searchFocusNode = FocusNode(onKeyEvent: _handleSearchKeyEvent);
     HardwareKeyboard.instance.addHandler(_handleGlobalKey);
     // Fetch all items once for global search and "All" category
     WidgetsBinding.instance.addPostFrameCallback((_) {

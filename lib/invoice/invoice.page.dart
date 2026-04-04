@@ -373,15 +373,22 @@ class _InvoiceLayout extends StatelessWidget {
   }
 
   Widget _buildSummary() {
-    final double total = double.tryParse(invoice.totalAmount.toString()) ?? 0;
-    final double discount = invoice.totalDiscount;
+    final double grandTotal = double.tryParse(invoice.totalAmount.toString()) ?? 0;
+    final double billDiscount = invoice.billDiscount;
+    final double itemDiscount = invoice.items.fold(0.0, (sum, i) => sum + i.discountAmount * (int.tryParse(i.qty) ?? 1));
 
     final bool isTakeaway = invoice.orderType == 'Takeaway';
     final bool shouldExcludeServiceCharge = invoice.isRetail || isTakeaway;
-    final double netTotal = shouldExcludeServiceCharge ? total : total / 1.10;
-    final double serviceCharge = total - netTotal;
-    final double subtotal = netTotal + discount;
-    final double grandTotal = total;
+
+    // Correct back-calculation: GrandTotal = (NetTotal - BillDiscount) + ServiceCharge
+    // If Service Charge applies: GrandTotal = (NetTotal - BillDiscount) * 1.1
+    // So NetTotal - BillDiscount = GrandTotal / 1.10
+    final double amountToTax = shouldExcludeServiceCharge ? grandTotal : grandTotal / 1.10;
+    final double serviceCharge = shouldExcludeServiceCharge ? 0 : amountToTax * 0.10;
+    final double netTotal = amountToTax + billDiscount;
+
+    // Subtotal (Original price before any discounts)
+    final double subtotal = netTotal + itemDiscount;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -389,10 +396,17 @@ class _InvoiceLayout extends StatelessWidget {
         children: [
           _sumRow('Subtotal', 'LKR ${subtotal.toStringAsFixed(2)}'),
 
-          if (discount > 0)
+          if (itemDiscount > 0)
             _sumRow(
-              'Discount',
-              '- LKR ${discount.toStringAsFixed(2)}',
+              'Item Discount',
+              '- LKR ${itemDiscount.toStringAsFixed(2)}',
+              italic: true,
+            ),
+
+          if (billDiscount > 0)
+            _sumRow(
+              'Bill Discount',
+              '- LKR ${billDiscount.toStringAsFixed(2)}',
               italic: true,
             ),
 

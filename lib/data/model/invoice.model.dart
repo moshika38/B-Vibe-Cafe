@@ -11,6 +11,7 @@ class InvoiceDisplayModel {
   final List<InvoiceDisplayItem> items;
   final String orderType;
   final bool isRetail;
+  final double billDiscount;
 
   const InvoiceDisplayModel({
     required this.invoiceId,
@@ -23,10 +24,11 @@ class InvoiceDisplayModel {
     required this.items,
     required this.orderType,
     required this.isRetail,
+    required this.billDiscount,
   });
 
   double get totalDiscount =>
-      items.fold(0, (sum, i) => sum + i.discountAmount * (int.tryParse(i.qty) ?? 1));
+      items.fold(0.0, (sum, i) => sum + i.discountAmount * (int.tryParse(i.qty) ?? 1)) + billDiscount;
 
    
   factory InvoiceDisplayModel.fromReceipt(ReceiptModel r) {
@@ -41,6 +43,7 @@ class InvoiceDisplayModel {
       items: r.items.map(InvoiceDisplayItem.fromReceiptItem).toList(),
       orderType: r.orderType,
       isRetail: r.items.isNotEmpty && r.items.every((item) => item.isRetail),
+      billDiscount: double.tryParse(r.totalDiscount) ?? 0,
     );
   }
 }

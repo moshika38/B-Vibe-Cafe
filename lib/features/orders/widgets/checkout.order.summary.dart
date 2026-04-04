@@ -24,15 +24,14 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
 
   @override
   Widget build(BuildContext context) {
+    double itemDiscounts = 0;
     double netTotal = 0;
-    
-    double totalDiscount = 0;
     for (var item in widget.receipt.items) {
       double price = double.tryParse(item.price) ?? 0;
       double discount = double.tryParse(item.discount) ?? 0;
       int qty = int.tryParse(item.qty) ?? 0;
       netTotal += (price - discount) * qty;
-      totalDiscount += discount * qty;
+      itemDiscounts += discount * qty;
     }
 
     bool isRetail = widget.receipt.items.isNotEmpty &&
@@ -40,8 +39,12 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
     bool isTakeaway = widget.receipt.orderType == 'Takeaway';
     bool shouldExcludeServiceCharge = isRetail || isTakeaway;
 
-    double serviceCharge = shouldExcludeServiceCharge ? 0 : netTotal * 0.10;
-    double grandTotal = netTotal + serviceCharge;
+    double billDiscount = double.tryParse(widget.receipt.totalDiscount) ?? 0.0;
+    double amountToTax = netTotal - billDiscount;
+    double serviceCharge = shouldExcludeServiceCharge 
+        ? 0 
+        : (amountToTax > 0 ? amountToTax * 0.10 : 0);
+    double grandTotal = (netTotal - billDiscount) + serviceCharge;
 
     return Container(
       decoration: BoxDecoration(
@@ -83,21 +86,20 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                       ),
                       const SizedBox(height: 15),
 
-                      // Editable Discount Row
+                      // Item Discounts
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Total Discount",
+                            "Item Discounts",
                             style: Theme.of(context).textTheme.bodyMedium!
                                 .copyWith(
                                   color: AppColors.textSecondary,
                                   fontSize: 16,
                                 ),
                           ),
-
                           Text(
-                            "-${AppNumberFormat.formatNumber(totalDiscount)} LKR",
+                            "-${AppNumberFormat.formatNumber(itemDiscounts)} LKR",
                             style: Theme.of(context).textTheme.bodyMedium!
                                 .copyWith(
                                   color: AppColors.primary,
@@ -107,6 +109,34 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                           ),
                         ],
                       ),
+
+                      if (billDiscount > 0) ...[
+                        const SizedBox(height: 15),
+                        // Bill Discount
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Bill Discount (Ctrl+D)",
+                              style: Theme.of(context).textTheme.bodyMedium!
+                                  .copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            Text(
+                              "-${AppNumberFormat.formatNumber(billDiscount)} LKR",
+                              style: Theme.of(context).textTheme.bodyMedium!
+                                  .copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 18,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ],
 
                       if (!shouldExcludeServiceCharge) ...[
                         const SizedBox(height: 15),
