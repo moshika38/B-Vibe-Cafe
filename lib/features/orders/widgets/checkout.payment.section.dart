@@ -45,9 +45,7 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
   @override
   void initState() {
     super.initState();
-    _amountFocusNode = FocusNode(
-      onKeyEvent: _handleKeyEvent,
-    );
+    _amountFocusNode = FocusNode(onKeyEvent: _handleKeyEvent);
     _amountFocusNode.addListener(() {
       if (_amountFocusNode.hasFocus) {
         _amountReceivedController.selection = TextSelection(
@@ -60,7 +58,8 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
 
   double get _totalAmount => double.tryParse(widget.receipt.totalAmount) ?? 0.0;
 
-  double get _receivedAmount => double.tryParse(_amountReceivedController.text) ?? 0.0;
+  double get _receivedAmount =>
+      double.tryParse(_amountReceivedController.text) ?? 0.0;
   double get balance => _receivedAmount - _totalAmount;
   bool get _isInsufficient => balance < 0;
 
@@ -73,10 +72,15 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is KeyDownEvent || event is KeyRepeatEvent) {
-      final isCtrlPressed = HardwareKeyboard.instance.isControlPressed ||
-                            HardwareKeyboard.instance.isLogicalKeyPressed(LogicalKeyboardKey.controlLeft) || 
-                            HardwareKeyboard.instance.isLogicalKeyPressed(LogicalKeyboardKey.controlRight);
-      
+      final isCtrlPressed =
+          HardwareKeyboard.instance.isControlPressed ||
+          HardwareKeyboard.instance.isLogicalKeyPressed(
+            LogicalKeyboardKey.controlLeft,
+          ) ||
+          HardwareKeyboard.instance.isLogicalKeyPressed(
+            LogicalKeyboardKey.controlRight,
+          );
+
       if (isCtrlPressed) {
         if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
           _changePaymentMethodToNext();
@@ -84,13 +88,16 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
         } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
           _changePaymentMethodToPrev();
           return KeyEventResult.handled;
-        } else if (event.logicalKey == LogicalKeyboardKey.digit1 || event.logicalKey == LogicalKeyboardKey.numpad1) {
+        } else if (event.logicalKey == LogicalKeyboardKey.digit1 ||
+            event.logicalKey == LogicalKeyboardKey.numpad1) {
           setState(() => selectedPayment = "Cash");
           return KeyEventResult.handled;
-        } else if (event.logicalKey == LogicalKeyboardKey.digit2 || event.logicalKey == LogicalKeyboardKey.numpad2) {
+        } else if (event.logicalKey == LogicalKeyboardKey.digit2 ||
+            event.logicalKey == LogicalKeyboardKey.numpad2) {
           setState(() => selectedPayment = "Card");
           return KeyEventResult.handled;
-        } else if (event.logicalKey == LogicalKeyboardKey.digit3 || event.logicalKey == LogicalKeyboardKey.numpad3) {
+        } else if (event.logicalKey == LogicalKeyboardKey.digit3 ||
+            event.logicalKey == LogicalKeyboardKey.numpad3) {
           setState(() => selectedPayment = "Transfer");
           return KeyEventResult.handled;
         }
@@ -122,7 +129,7 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
         }
         return KeyEventResult.handled;
       }
-      
+
       if (event.logicalKey == LogicalKeyboardKey.backspace) {
         if (isCtrlPressed) {
           context.go('/orders');

@@ -12,6 +12,7 @@ import 'package:bvibe/features/menu/widgets/add.items.dart';
 import 'package:bvibe/provider/item.provider.dart';
 import 'package:bvibe/data/model/item.model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class AppMenu extends StatefulWidget {
@@ -28,10 +29,67 @@ class _AppMenuState extends State<AppMenu> {
   @override
   void initState() {
     super.initState();
+    HardwareKeyboard.instance.addHandler(_handleGlobalKey);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CategoriesProvider>().fetchCategories();
       context.read<ItemProvider>().fetchItems();
     });
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleGlobalKey);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToCategory() {
+    if (_scrollController.hasClients) {
+      final target = activeIndex * 80.0; 
+      final maxExtent = _scrollController.position.maxScrollExtent;
+      double offset = target - 100.0;
+      if (offset < 0) offset = 0;
+      if (offset > maxExtent) offset = maxExtent;
+      _scrollController.animateTo(
+        offset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  bool _handleGlobalKey(KeyEvent event) {
+    if (!mounted || ModalRoute.of(context)?.isCurrent != true) return false;
+
+    if (FocusManager.instance.primaryFocus?.context?.widget is EditableText) {
+      return false; 
+    }
+
+    if (event is KeyDownEvent) {
+      final cateProv = context.read<CategoriesProvider>();
+      if (cateProv.categories.isEmpty) return false;
+
+      final maxCategories = cateProv.categories.length - 1;
+
+      if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        setState(() {
+          activeIndex = (activeIndex + 1).clamp(0, maxCategories);
+        });
+        context.read<ItemProvider>().selectItem(null);
+        _scrollToCategory();
+        return true;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        setState(() {
+          activeIndex = (activeIndex - 1).clamp(0, maxCategories);
+        });
+        context.read<ItemProvider>().selectItem(null);
+        _scrollToCategory();
+        return true;
+      }
+    }
+    return false;
   }
 
   @override
@@ -185,6 +243,7 @@ class _AppMenuState extends State<AppMenu> {
                                       context.read<ItemProvider>().selectItem(
                                         null,
                                       );
+                                      _scrollToCategory();
                                     },
                                     onEdit: () async {
                                       final updatedCategory =

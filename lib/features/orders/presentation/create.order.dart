@@ -41,9 +41,25 @@ class _CreateOrdersState extends State<CreateOrders> {
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
   late final FocusNode _searchFocusNode;
+  final ScrollController _categoryScrollController = ScrollController();
   String _searchQuery = "";
   bool _shouldFocusQty = false;
   int _currentCrossAxisCount = 4;
+
+  void _scrollToCategory() {
+    if (_categoryScrollController.hasClients) {
+      final target = activeCate * 140.0;
+      final maxExtent = _categoryScrollController.position.maxScrollExtent;
+      double offset = target - 100.0;
+      if (offset < 0) offset = 0;
+      if (offset > maxExtent) offset = maxExtent;
+      _categoryScrollController.animateTo(
+        offset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
 
   void _refocusSearch() {
     setState(() {
@@ -126,6 +142,16 @@ class _CreateOrdersState extends State<CreateOrders> {
         return true;
       }
 
+      if (isCtrlPressed && isShiftPressed && event.logicalKey == LogicalKeyboardKey.keyA) {
+        setState(() {
+          activeCate = 0;
+          selectedItem = -1;
+          _refocusSearch();
+        });
+        _scrollToCategory();
+        return true;
+      }
+
       if (isCtrlPressed && event.logicalKey == LogicalKeyboardKey.keyS) {
         _refocusSearch();
         return true;
@@ -135,17 +161,21 @@ class _CreateOrdersState extends State<CreateOrders> {
           (event.logicalKey == LogicalKeyboardKey.enter ||
               event.logicalKey == LogicalKeyboardKey.numpadEnter)) {
         final provider = Provider.of<ReceiptProvider>(context, listen: false);
-        final printerProvider =
-            Provider.of<PrinterProvider>(context, listen: false);
+        final printerProvider = Provider.of<PrinterProvider>(
+          context,
+          listen: false,
+        );
 
         provider.getReceipt(receiptId).then((receipt) async {
           if (receipt != null) {
             // Filter to get only kitchen items (non-retail)
-            final kitchenItems =
-                receipt.items.where((item) => !item.isRetail).toList();
+            final kitchenItems = receipt.items
+                .where((item) => !item.isRetail)
+                .toList();
             if (kitchenItems.isNotEmpty) {
-              final currentKitchenJson =
-                  jsonEncode(kitchenItems.map((e) => e.toMap()).toList());
+              final currentKitchenJson = jsonEncode(
+                kitchenItems.map((e) => e.toMap()).toList(),
+              );
               final lastKitchenJson = jsonEncode(
                 receipt.lastKotItems.map((e) => e.toMap()).toList(),
               );
@@ -183,6 +213,7 @@ class _CreateOrdersState extends State<CreateOrders> {
         } else if (isCtrlPressed) {
           final max = _maxCategories > 0 ? _maxCategories - 1 : 0;
           setState(() => activeCate = (activeCate + 1).clamp(0, max));
+          _scrollToCategory();
         } else {
           final max = _maxItems > 0 ? _maxItems - 1 : 0;
           setState(() {
@@ -203,6 +234,7 @@ class _CreateOrdersState extends State<CreateOrders> {
         } else if (isCtrlPressed) {
           final max = _maxCategories > 0 ? _maxCategories - 1 : 0;
           setState(() => activeCate = (activeCate - 1).clamp(0, max));
+          _scrollToCategory();
         } else {
           final max = _maxItems > 0 ? _maxItems - 1 : 0;
           setState(() {
@@ -292,6 +324,7 @@ class _CreateOrdersState extends State<CreateOrders> {
     _searchFocusNode.dispose();
     HardwareKeyboard.instance.removeHandler(_handleGlobalKey);
     _focusNode.dispose();
+    _categoryScrollController.dispose();
     super.dispose();
   }
 
@@ -307,6 +340,9 @@ class _CreateOrdersState extends State<CreateOrders> {
       focusNode: _focusNode,
       autofocus: true,
       onKeyEvent: (node, event) {
+        if (event.logicalKey == LogicalKeyboardKey.tab) {
+          return KeyEventResult.handled;
+        }
         return KeyEventResult.ignored;
       },
       child: Container(
@@ -413,6 +449,7 @@ class _CreateOrdersState extends State<CreateOrders> {
                           height: 40,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
+                            controller: _categoryScrollController,
                             itemCount: categories.length,
                             itemBuilder: (context, index) {
                               return BuildCateCard(
@@ -425,6 +462,7 @@ class _CreateOrdersState extends State<CreateOrders> {
                                     selectedItem = 0;
                                     _searchFocusNode.requestFocus();
                                   });
+                                  _scrollToCategory();
                                 },
                               );
                             },
@@ -464,18 +502,23 @@ class _CreateOrdersState extends State<CreateOrders> {
                                   List<ItemModel> filteredItems = [];
 
                                   if (_searchQuery.isNotEmpty) {
-                                    // Global Search - show items from all categories
-                                    filteredItems = itemProv.items
-                                        .where(
-                                          (item) =>
-                                              item.itemName
-                                                  .toLowerCase()
-                                                  .contains(_searchQuery) ||
-                                              item.description
-                                                  .toLowerCase()
-                                                  .contains(_searchQuery),
-                                        )
-                                        .toList();
+                                    // Global Search - show items from all categories or filtered category
+                                    filteredItems = itemProv.items.where((
+                                      item,
+                                    ) {
+                                      final isMatch =
+                                          item.itemName.toLowerCase().contains(
+                                            _searchQuery,
+                                          ) ||
+                                          item.description
+                                              .toLowerCase()
+                                              .contains(_searchQuery);
+                                      final isCategoryMatch =
+                                          activeCate == 0 ||
+                                          item.categoryId ==
+                                              categories[activeCate].id;
+                                      return isMatch && isCategoryMatch;
+                                    }).toList();
                                   } else {
                                     if (activeCate == 0) {
                                       // "All" category selected, no search query
