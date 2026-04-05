@@ -139,28 +139,12 @@ class _AddItemsState extends State<AddItems> {
                                     image: FileImage(_selectedImage!),
                                     fit: BoxFit.cover,
                                   )
-                                : null,
+                                : const DecorationImage(
+                                    image: AssetImage('assets/img/food.png'),
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
-                          child: _selectedImage == null
-                              ? Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Icon(
-                                      Icons.add_photo_alternate_outlined,
-                                      size: 40,
-                                      color: AppColors.textHint,
-                                    ),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      "Add Item Image",
-                                      style: TextStyle(
-                                        color: AppColors.textHint,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : null,
+                          child: null,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -264,31 +248,34 @@ class _AddItemsState extends State<AddItems> {
                         final desc = _descController.text.trim();
                         final price = _priceController.text.trim();
 
-                        if (name.isEmpty ||
-                            price.isEmpty ||
-                            _selectedImage == null) {
+                        if (name.isEmpty || price.isEmpty) {
                           AppSnack.errorSnack(
                             context,
-                            "Please fill all required fields and select an image",
+                            "Please fill all required fields (Name and Price)",
                           );
                           return;
                         }
 
-                        // Copy image to the project folder
-                        final currentPath = Directory.current.path;
-                        final imagesDir = Directory(
-                          '$currentPath/assets/items',
-                        );
-                        if (!await imagesDir.exists()) {
-                          await imagesDir.create(recursive: true);
-                        }
+                        String finalImagePath = 'assets/img/food.png';
 
-                        final ext = p.extension(_selectedImage!.path);
-                        final newImagePath =
-                            '${imagesDir.path}/${DateTime.now().millisecondsSinceEpoch}$ext';
-                        final savedImage = await _selectedImage!.copy(
-                          newImagePath,
-                        );
+                        if (_selectedImage != null) {
+                          // Copy image to the project folder
+                          final currentPath = Directory.current.path;
+                          final imagesDir = Directory(
+                            '$currentPath/assets/items',
+                          );
+                          if (!await imagesDir.exists()) {
+                            await imagesDir.create(recursive: true);
+                          }
+
+                          final ext = p.extension(_selectedImage!.path);
+                          final newImagePath =
+                              '${imagesDir.path}/${DateTime.now().millisecondsSinceEpoch}$ext';
+                          final savedImage = await _selectedImage!.copy(
+                            newImagePath,
+                          );
+                          finalImagePath = savedImage.path;
+                        }
 
                         // Prepare ItemModel
                         final itemModel = ItemModel(
@@ -296,7 +283,7 @@ class _AddItemsState extends State<AddItems> {
                           itemName: name,
                           description: desc,
                           price: price,
-                          imagePath: savedImage.path,
+                          imagePath: finalImagePath,
                           isRetail: isRetail,
                         );
 
