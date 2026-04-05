@@ -1,7 +1,7 @@
 import 'package:bvibe/components/app.buttons.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/symbols.dart';
+ 
 
 class AppBarTitle extends StatelessWidget {
   final String title;
@@ -50,10 +50,6 @@ class AppBarTitle extends StatelessWidget {
                     : SizedBox.fromSize(),
 
                 SizedBox(width: 10),
-
-                _iconButton(Symbols.notifications),
-                SizedBox(width: 10),
-                _iconButton(Symbols.help_sharp),
               ],
             ),
           ],
@@ -62,15 +58,5 @@ class AppBarTitle extends StatelessWidget {
     );
   }
 
-  Widget _iconButton(IconData icon) {
-    return Container(
-      height: 40,
-      width: 40,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        color: AppColors.background,
-      ),
-      child: Icon(icon, size: 18, fill: 1, color: AppColors.textSecondary),
-    );
-  }
+ 
 }
