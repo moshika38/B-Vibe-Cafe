@@ -578,13 +578,13 @@ class TopItemsChart extends StatelessWidget {
 
 class ProfitBreakdownChart extends StatelessWidget {
   final double revenue;
-  final double cost;
+  final double expenses;
   final double profit;
 
   const ProfitBreakdownChart({
     super.key,
     required this.revenue,
-    required this.cost,
+    required this.expenses,
     required this.profit,
   });
 
@@ -600,7 +600,7 @@ class ProfitBreakdownChart extends StatelessWidget {
     }
 
     final profitPct = revenue > 0 ? (profit / revenue * 100) : 0.0;
-    final costPct = revenue > 0 ? (cost / revenue * 100) : 0.0;
+    final expensesPct = revenue > 0 ? (expenses / revenue * 100) : 0.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -608,8 +608,8 @@ class ProfitBreakdownChart extends StatelessWidget {
       children: [
         _buildRow('Revenue', revenue, const Color(0xFF3B82F6), 1.0),
         const SizedBox(height: 12),
-        _buildRow('Cost of Goods', cost, const Color(0xFFEF4444),
-            costPct / 100),
+        _buildRow('Operating Expenses', expenses, const Color(0xFFEF4444),
+            expensesPct / 100),
         const SizedBox(height: 12),
         _buildRow('Gross Profit', profit,
             profit >= 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444),

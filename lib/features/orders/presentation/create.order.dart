@@ -558,7 +558,6 @@ class _CreateOrdersState extends State<CreateOrders> {
                                         itemId: filteredItems[index].id
                                             .toString(),
                                         cate: filteredItems[index].categoryId,
-                                        cost: filteredItems[index].cost,
                                         des: filteredItems[index].description,
                                         receiptId: receiptId,
                                         image: filteredItems[index].imagePath,

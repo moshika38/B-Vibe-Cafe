@@ -174,7 +174,7 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
                       height: 340,
                       child: ProfitBreakdownChart(
                         revenue: s.totalRevenue,
-                        cost: s.totalCost,
+                        expenses: s.totalExpenses,
                         profit: s.grossProfit,
                       ),
                     ),

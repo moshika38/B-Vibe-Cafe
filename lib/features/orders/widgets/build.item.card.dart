@@ -17,7 +17,6 @@ class BuildItemCard extends StatefulWidget {
   final String receiptId;
   final String itemId;
   final String cate;
-  final String cost;
   final String des;
   final bool isRetail;
   final VoidCallback? onTap;
@@ -33,7 +32,6 @@ class BuildItemCard extends StatefulWidget {
     required this.receiptId,
     required this.itemId,
     required this.cate,
-    required this.cost,
     required this.des,
     required this.isRetail,
     this.onTap,
@@ -158,7 +156,6 @@ class _BuildItemCardState extends State<BuildItemCard> {
         itemName: widget.title,
         description: widget.des,
         price: basePrice.toStringAsFixed(2),
-        cost: widget.cost,
         imagePath: widget.image,
         qty: _qty.toString(),
         discount: perItemDiscount.toStringAsFixed(2),
@@ -254,6 +251,9 @@ class _BuildItemCardState extends State<BuildItemCard> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+              ],
               onSubmitted: (_) =>
                   Navigator.pop(ctx, double.tryParse(ctrl.text)),
               decoration: InputDecoration(
@@ -527,6 +527,9 @@ class _BuildItemCardState extends State<BuildItemCard> {
                                         autofocus: widget.isSelect,
                                         textAlign: TextAlign.center,
                                         keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                        ],
                                         style: theme.textTheme.labelLarge!
                                             .copyWith(
                                               fontWeight: FontWeight.bold,

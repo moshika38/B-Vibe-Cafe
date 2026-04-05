@@ -4,7 +4,6 @@ class ItemModel {
   final String itemName;
   final String description;
   final String price;
-  final String cost;
   final String imagePath;
   final bool isRetail;
 
@@ -14,7 +13,6 @@ class ItemModel {
     required this.itemName,
     required this.description,
     required this.price,
-    required this.cost,
     required this.imagePath,
     required this.isRetail,
   });
@@ -26,7 +24,6 @@ class ItemModel {
       itemName: map['name'] as String,
       description: map['description'] as String,
       price: map['price'] as String,
-      cost: map['cost'] as String,
       imagePath: map['imagePath'] as String,
       isRetail: map['isRetail'] == 1 || map['isRetail'] == '1',
     );
@@ -39,7 +36,6 @@ class ItemModel {
       'name': itemName,
       'description': description,
       'price': price,
-      'cost': cost,
       'imagePath': imagePath,
       'isRetail': isRetail ? 1 : 0,
     };

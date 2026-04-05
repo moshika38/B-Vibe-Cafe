@@ -6,7 +6,7 @@ class AnalyticsSummary {
   final double totalRevenue;
   final int totalOrders;
   final double avgOrderValue;
-  final double totalCost;
+  final double totalExpenses;
   final double grossProfit;
   final int totalItemsSold;
   final double profitMargin;
@@ -15,7 +15,7 @@ class AnalyticsSummary {
     required this.totalRevenue,
     required this.totalOrders,
     required this.avgOrderValue,
-    required this.totalCost,
+    required this.totalExpenses,
     required this.grossProfit,
     required this.totalItemsSold,
     required this.profitMargin,
@@ -36,7 +36,7 @@ class AnalyticsProvider extends ChangeNotifier {
     totalRevenue: 0,
     totalOrders: 0,
     avgOrderValue: 0,
-    totalCost: 0,
+    totalExpenses: 0,
     grossProfit: 0,
     totalItemsSold: 0,
     profitMargin: 0,
@@ -129,7 +129,20 @@ class AnalyticsProvider extends ChangeNotifier {
       final prevReceipts =
           prevMaps.map((e) => ReceiptModel.fromMap(e)).toList();
 
-      _compute(_receipts, prevReceipts);
+      final expensesMaps = await db.query(
+        'expenses',
+        where: 'date BETWEEN ? AND ?',
+        whereArgs: [
+          range.start.toIso8601String(),
+          range.end.toIso8601String(),
+        ],
+      );
+      double totalPeriodExpenses = 0.0;
+      for (final e in expensesMaps) {
+        totalPeriodExpenses += double.tryParse(e['amount'].toString()) ?? 0.0;
+      }
+
+      _compute(_receipts, prevReceipts, totalPeriodExpenses);
     } catch (e) {
       debugPrint('Analytics load error: $e');
     } finally {
@@ -217,9 +230,8 @@ class AnalyticsProvider extends ChangeNotifier {
     }
   }
 
-  void _compute(List<ReceiptModel> receipts, List<ReceiptModel> prev) {
+  void _compute(List<ReceiptModel> receipts, List<ReceiptModel> prev, double totalExpenses) {
     double revenue = 0;
-    double cost = 0;
     int itemsSold = 0;
     _revenueByDay = {};
     _orderCountByDay = {};
@@ -266,11 +278,8 @@ class AnalyticsProvider extends ChangeNotifier {
       for (final item in r.items) {
         final qty = double.tryParse(item.qty) ?? 0;
         final price = double.tryParse(item.price) ?? 0;
-        final itemCost = double.tryParse(item.cost) ?? 0;
         final itemRevenue = qty * price;
-        final itemCostTotal = qty * itemCost;
 
-        cost += itemCostTotal;
         itemsSold += qty.toInt();
 
         // Category
@@ -303,10 +312,10 @@ class AnalyticsProvider extends ChangeNotifier {
       totalRevenue: revenue,
       totalOrders: receipts.length,
       avgOrderValue: receipts.isEmpty ? 0 : revenue / receipts.length,
-      totalCost: cost,
-      grossProfit: revenue - cost,
+      totalExpenses: totalExpenses,
+      grossProfit: revenue - totalExpenses,
       totalItemsSold: itemsSold,
-      profitMargin: revenue > 0 ? ((revenue - cost) / revenue) * 100 : 0,
+      profitMargin: revenue > 0 ? ((revenue - totalExpenses) / revenue) * 100 : 0,
     );
 
     // Prev period

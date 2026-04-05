@@ -43,6 +43,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
           controller: controller,
           autofocus: true,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+          ],
           decoration: InputDecoration(
             suffixText: 'LKR',
             filled: true,

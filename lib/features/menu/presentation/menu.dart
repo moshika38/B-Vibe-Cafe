@@ -354,7 +354,6 @@ class _AppMenuState extends State<AppMenu> {
                                     cate.categories[activeIndex].id ?? '',
                                 categoryName:
                                     cate.categories[activeIndex].itemName,
-                                cost: selectedItem.cost,
                                 image: selectedItem.imagePath,
                                 name: selectedItem.itemName,
                                 price: selectedItem.price,

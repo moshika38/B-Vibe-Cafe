@@ -36,6 +36,7 @@ class MainShell extends StatelessWidget {
       {'path': '/orders', 'isOrder': true},
       {'path': '/history', 'isOrder': false},
       {'path': '/analyze', 'isOrder': false},
+      {'path': '/expenses', 'isOrder': false},
       {'path': '/settings', 'isOrder': false},
     ];
 
@@ -138,6 +139,17 @@ class MainShell extends StatelessWidget {
                         onTap: () {
                           screenProvider.updateScreenStatus(false);
                           context.go('/analyze');
+                        },
+                      ),
+
+                      MenuItem(
+                        isActive: isActive('/expenses'),
+                        icon: Symbols.account_balance_wallet,
+                        isOrder: screenProvider.isOrder,
+                        label: "Expenses",
+                        onTap: () {
+                          screenProvider.updateScreenStatus(false);
+                          context.go('/expenses');
                         },
                       ),
 

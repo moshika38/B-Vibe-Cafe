@@ -3,6 +3,7 @@ import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/const/snack/app.snack.dart';
 import 'package:bvibe/data/model/item.model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 
@@ -56,7 +57,6 @@ class _AddItemsState extends State<AddItems> {
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
   final _priceController = TextEditingController();
-  final _costController = TextEditingController();
   File? _selectedImage;
 
   bool isRetail = false;
@@ -76,7 +76,6 @@ class _AddItemsState extends State<AddItems> {
     _nameController.dispose();
     _descController.dispose();
     _priceController.dispose();
-    _costController.dispose();
     super.dispose();
   }
 
@@ -195,17 +194,11 @@ class _AddItemsState extends State<AddItems> {
                               hint: '1000',
                               icon: Icons.attach_money,
                               keyboardType: TextInputType.number,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildTextField(
-                              context,
-                              label: 'Cost (LKR)',
-                              controller: _costController,
-                              hint: '800',
-                              icon: Icons.money_off,
-                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d+\.?\d{0,2}'),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -270,7 +263,6 @@ class _AddItemsState extends State<AddItems> {
                         final name = _nameController.text.trim();
                         final desc = _descController.text.trim();
                         final price = _priceController.text.trim();
-                        final cost = _costController.text.trim();
 
                         if (name.isEmpty ||
                             price.isEmpty ||
@@ -278,16 +270,6 @@ class _AddItemsState extends State<AddItems> {
                           AppSnack.errorSnack(
                             context,
                             "Please fill all required fields and select an image",
-                          );
-                          return;
-                        }
-
-                        final priceVal = double.tryParse(price) ?? 0;
-                        final costVal = double.tryParse(cost) ?? 0;
-                        if (costVal >= priceVal && priceVal > 0) {
-                          AppSnack.errorSnack(
-                            context,
-                            "Price must be greater than Cost",
                           );
                           return;
                         }
@@ -314,7 +296,6 @@ class _AddItemsState extends State<AddItems> {
                           itemName: name,
                           description: desc,
                           price: price,
-                          cost: cost,
                           imagePath: savedImage.path,
                           isRetail: isRetail,
                         );
@@ -356,6 +337,7 @@ class _AddItemsState extends State<AddItems> {
     required IconData icon,
     int maxLines = 1,
     TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -371,6 +353,7 @@ class _AddItemsState extends State<AddItems> {
           controller: controller,
           maxLines: maxLines,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           style: Theme.of(context).textTheme.labelMedium,
           decoration: InputDecoration(
             hintText: hint,

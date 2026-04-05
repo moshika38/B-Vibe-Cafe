@@ -14,7 +14,6 @@ class EditItemCart extends StatefulWidget {
   final String name;
   final String image;
   final String price;
-  final String cost;
   final String categoryId;
   final String categoryName;
   final String des;
@@ -25,7 +24,6 @@ class EditItemCart extends StatefulWidget {
     required this.name,
     required this.image,
     required this.price,
-    required this.cost,
     required this.categoryId,
     required this.categoryName,
     required this.id,
@@ -40,7 +38,6 @@ class EditItemCart extends StatefulWidget {
 class _EditItemCartState extends State<EditItemCart> {
   late TextEditingController _nameController;
   late TextEditingController _priceController;
-  late TextEditingController _costController;
   late TextEditingController _categoryController;
   late TextEditingController _desController;
 
@@ -64,7 +61,6 @@ class _EditItemCartState extends State<EditItemCart> {
   void _initControllers() {
     _nameController = TextEditingController(text: widget.name);
     _priceController = TextEditingController(text: widget.price);
-    _costController = TextEditingController(text: widget.cost);
     _categoryController = TextEditingController(text: widget.categoryName);
     _desController = TextEditingController(text: widget.des);
     _newImage = null;
@@ -76,7 +72,6 @@ class _EditItemCartState extends State<EditItemCart> {
     if (oldWidget.id != widget.id || oldWidget.name != widget.name) {
       _nameController.text = widget.name;
       _priceController.text = widget.price;
-      _costController.text = widget.cost;
       _categoryController.text = widget.categoryName;
       _desController.text = widget.des;
       _newImage = null;
@@ -87,7 +82,6 @@ class _EditItemCartState extends State<EditItemCart> {
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
-    _costController.dispose();
     _categoryController.dispose();
     _desController.dispose();
     super.dispose();
@@ -106,18 +100,10 @@ class _EditItemCartState extends State<EditItemCart> {
   Future<void> _saveChanges() async {
     final name = _nameController.text.trim();
     final price = _priceController.text.trim();
-    final cost = _costController.text.trim();
     final des = _desController.text.trim();
 
     if (name.isEmpty || price.isEmpty) {
       AppSnack.errorSnack(context, "Name and Price are required");
-      return;
-    }
-
-    final priceVal = double.tryParse(price) ?? 0;
-    final costVal = double.tryParse(cost) ?? 0;
-    if (costVal >= priceVal && priceVal > 0) {
-      AppSnack.errorSnack(context, "Price must be greater than Cost");
       return;
     }
 
@@ -155,7 +141,6 @@ class _EditItemCartState extends State<EditItemCart> {
       itemName: name,
       description: des,
       price: price,
-      cost: cost,
       imagePath: finalImagePath,
       isRetail: isRetail,
     );
@@ -291,12 +276,6 @@ class _EditItemCartState extends State<EditItemCart> {
                       theme,
                       "Price(LKR)",
                       _priceController,
-                      isNumber: true,
-                    ),
-                    textInput(
-                      theme,
-                      "Cost(LKR)",
-                      _costController,
                       isNumber: true,
                     ),
                     textInput(

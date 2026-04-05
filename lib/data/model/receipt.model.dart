@@ -84,7 +84,6 @@ class ReceiptItemsModel {
   final String itemName;
   final String description;
   final String price;
-  final String cost;
   final String imagePath;
   final String qty;
   final String discount;
@@ -96,12 +95,10 @@ class ReceiptItemsModel {
     required this.itemName,
     required this.description,
     required this.price,
-    required this.cost,
     required this.imagePath,
     required this.qty,
     required this.discount,
     required this.isRetail,
-    
   });
 
   Map<String, dynamic> toMap() {
@@ -111,7 +108,6 @@ class ReceiptItemsModel {
       'item_name': itemName,
       'description': description,
       'price': price,
-      'cost': cost,
       'image_path': imagePath,
       'qty': qty,
       'discount': discount,
@@ -126,7 +122,6 @@ class ReceiptItemsModel {
       itemName: map['item_name'],
       description: map['description'],
       price: map['price'],
-      cost: map['cost'],
       imagePath: map['image_path'],
       qty: map['qty'],
       discount: map['discount'] ?? '0.00',

@@ -35,7 +35,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 17,
+      version: 19,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -272,6 +272,60 @@ CREATE TABLE IF NOT EXISTS archive_receipts (
             print("Database migration version 17 error: $e");
           }
         }
+        if (oldVersion < 18) {
+          try {
+            await db.execute('''
+CREATE TABLE IF NOT EXISTS expenses (
+  id TEXT PRIMARY KEY,
+  amount TEXT NOT NULL,
+  date TEXT NOT NULL,
+  description TEXT NOT NULL
+)
+''');
+            // Safe table rebuild for dropping 'cost' column from items
+            await db.execute('CREATE TABLE items_backup AS SELECT * FROM items');
+            await db.execute('DROP TABLE items');
+            await db.execute('''
+CREATE TABLE items (
+  id TEXT PRIMARY KEY,
+  categoryId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  price TEXT NOT NULL,
+  imagePath TEXT NOT NULL,
+  isRetail TEXT NOT NULL
+)
+''');
+            await db.execute('''
+INSERT INTO items (id, categoryId, name, description, price, imagePath, isRetail)
+SELECT id, categoryId, name, description, price, imagePath, isRetail FROM items_backup
+''');
+            await db.execute('DROP TABLE items_backup');
+          } catch (e) {
+            print("Database migration version 18 error: $e");
+          }
+        }
+
+        if (oldVersion < 19) {
+          try {
+            await db.execute('''
+CREATE TABLE IF NOT EXISTS expense_items (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  unit TEXT NOT NULL
+)
+''');
+            await db.execute(
+              'ALTER TABLE expenses ADD COLUMN item_id TEXT DEFAULT NULL',
+            );
+            await db.execute(
+              'ALTER TABLE expenses ADD COLUMN qty TEXT DEFAULT "0"',
+            );
+          } catch (e) {
+            print("Database migration version 19 error: $e");
+          }
+        }
       },
     );
   }
@@ -309,7 +363,6 @@ CREATE TABLE IF NOT EXISTS items (
   name $textType,
   description $textType,
   price $textType,
-  cost $textType,
   imagePath $textType,
   isRetail $textType
 )
@@ -379,6 +432,28 @@ CREATE TABLE IF NOT EXISTS business_info (
   businessNumber $textType,
   businessLogo $textType,
   thankYouText $textType
+)
+''');
+
+    // ── Table: Expenses ──
+    await db.execute('''
+CREATE TABLE IF NOT EXISTS expenses (
+  id $idTypeText,
+  amount $textType,
+  date $textType,
+  description $textType,
+  item_id TEXT DEFAULT NULL,
+  qty TEXT DEFAULT "0"
+)
+''');
+
+    // ── Table: Expense Items ──
+    await db.execute('''
+CREATE TABLE IF NOT EXISTS expense_items (
+  id $idTypeText,
+  name $textType,
+  description TEXT,
+  unit $textType
 )
 ''');
   }

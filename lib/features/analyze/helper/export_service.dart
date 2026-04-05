@@ -33,7 +33,7 @@ class ExportService {
       overviewSheet.appendRow([TextCellValue('Total Revenue'), DoubleCellValue(s.totalRevenue)]);
       overviewSheet.appendRow([TextCellValue('Total Orders'), IntCellValue(s.totalOrders)]);
       overviewSheet.appendRow([TextCellValue('Avg. Order Value'), DoubleCellValue(s.avgOrderValue)]);
-      overviewSheet.appendRow([TextCellValue('Total Cost'), DoubleCellValue(s.totalCost)]);
+      overviewSheet.appendRow([TextCellValue('Total Expenses'), DoubleCellValue(s.totalExpenses)]);
       overviewSheet.appendRow([TextCellValue('Gross Profit'), DoubleCellValue(s.grossProfit)]);
       overviewSheet.appendRow([TextCellValue('Items Sold'), IntCellValue(s.totalItemsSold)]);
       overviewSheet.appendRow([TextCellValue('Profit Margin'), TextCellValue('${(s.totalRevenue > 0 ? (s.grossProfit / s.totalRevenue * 100) : 0).toStringAsFixed(2)}%')]);

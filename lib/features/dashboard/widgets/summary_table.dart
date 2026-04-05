@@ -21,7 +21,7 @@ class FinancialSummaryTable extends StatelessWidget {
       _MetricData('Total Revenue', 'LKR ${summary.totalRevenue.toStringAsFixed(2)}'),
       _MetricData('Total Orders', summary.totalOrders.toString()),
       _MetricData('Avg. Order Value', 'LKR ${summary.avgOrderValue.toStringAsFixed(2)}'),
-      _MetricData('Total Cost', 'LKR ${summary.totalCost.toStringAsFixed(2)}'),
+      _MetricData('Total Expenses', 'LKR ${summary.totalExpenses.toStringAsFixed(2)}'),
       _MetricData('Gross Profit', 'LKR ${summary.grossProfit.toStringAsFixed(2)}'),
       _MetricData('Items Sold', summary.totalItemsSold.toString()),
       _MetricData('Profit Margin', '${summary.profitMargin.toStringAsFixed(2)}%'),

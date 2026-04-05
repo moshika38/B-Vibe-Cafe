@@ -7,6 +7,7 @@ import 'package:bvibe/features/orders/presentation/create.order.dart';
 import 'package:bvibe/features/orders/presentation/recent.orders.dart';
 import 'package:bvibe/features/history/presentation/history.dart';
 import 'package:bvibe/features/analyze/presentation/analyze.dart';
+import 'package:bvibe/features/expenses/presentation/expenses.dart';
 import 'package:bvibe/features/orders/presentation/view.order.dart';
 import 'package:bvibe/features/settings/presentation/settings.dart';
 import 'package:bvibe/features/shell/presentation/main.shell.dart';
@@ -53,6 +54,10 @@ class AppRoutes {
           GoRoute(
             path: '/analyze',
             builder: (context, state) => AnalyzeScreen(),
+          ),
+          GoRoute(
+            path: '/expenses',
+            builder: (context, state) => ExpensesPage(),
           ),
           GoRoute(path: '/settings', builder: (context, state) => Settings()),
         ],

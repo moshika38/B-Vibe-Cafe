@@ -65,19 +65,19 @@ class NavigationTitle extends StatelessWidget {
               ),
             ),
           ),
-          Spacer(),
+          isBtn == true ? const Spacer() : const SizedBox.shrink(),
           isBtn == true
               ? SizedBox(
                   width: 200,
                   child: ElevatedButton(
                     onPressed: onTap,
                     child: Text(
-                   btnText!=null?btnText!:   "New Order (Ctrl + N)",
+                      btnText != null ? btnText! : "New Order (Ctrl + N)",
                       style: theme.labelSmall!.copyWith(color: Colors.white),
                     ),
                   ),
                 )
-              : SizedBox.shrink(),
+              : const SizedBox.shrink(),
         ],
       ),
     );
