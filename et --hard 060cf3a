@@ -1,0 +1,56 @@
+[33m060cf3a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m update order screen
+[33me1b8a1b[m update expenses screen
+[33m0a2b6fd[m update add item screen
+[33m640d8a9[m update menu screen
+[33m2151751[m add expenses screen
+[33m58aeb49[m update shortcut key
+[33m41c0c90[m update cate. icon
+[33m19726a9[m implement lock screen
+[33m96c02f4[m update shell
+[33mb374798[m update key page
+[33md396a14[m fix kot print error
+[33m7178933[m update login
+[33m767dd15[m implement kot
+[33m1036919[m add print functions
+[33m22087cd[m update shortcut k
+[33mf4a212d[m implement item search
+[33md2b45b1[m update dashbord
+[33m8bbe90c[m fix view error
+[33m378ce03[m update  keybord shortcut
+[33m4121705[m implement keybord shortcut
+[33m1a5fed4[m implement backup and restore
+[33mfc9863d[m implement archive old data
+[33mbf18754[m implement summery table
+[33m7a2789f[m update error sound play time
+[33m1d081b8[m update printer screen
+[33m4ed3476[m implement file export
+[33mac36451[m implement alaylze screen
+[33m0574126[m update category
+[33m10c77fd[m implement dashbord
+[33m1df3d63[m update menu screen category tot
+[33m4542591[m update invoice
+[33m706f389[m implement search recept
+[33me2f4f95[m implement date filter
+[33m53d27d5[m implement recept history management
+[33ma280d81[m implement pin update function
+[33m21e6bd0[m implement business info table
+[33m47e19f9[m update settings
+[33m20776e8[m fix empty order create error
+[33m493f188[m fix retail bill update error
+[33md0554fd[m implement retail items
+[33md6a73ac[m implement invoice
+[33md405862[m update shell
+[33m1dd3d5d[m update item card ui
+[33m8f18fa4[m implement delete f.
+[33m1338abb[m update formatter
+[33mbf0019b[m add number formatter
+[33m608aa5c[m implement items add function
+[33me77edc5[m update recent bill screen
+[33m9f26e1f[m implement recent bill screen
+[33m709f775[m implement checkout page
+[33ma4b424b[m implement items update functions
+[33mb68bb01[m implement cate.
+[33mbac5cff[m implement login steps
+[33maa31278[m write test code for printer test
+[33m790a743[m implement order screen
+[33m704cfb6[m setup routings.

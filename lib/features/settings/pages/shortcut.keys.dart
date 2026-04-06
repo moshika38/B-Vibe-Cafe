@@ -46,6 +46,7 @@ class _ShortcutKeysState extends State<ShortcutKeys> {
           _buildShortcutsContainer([
             _buildShortcutRow(context, "Change Category", ["Ctrl", "← / →"]),
             _buildShortcutRow(context, "Select Item", ["←", "→"]),
+            _buildShortcutRow(context, "Filter Category", ["Shift", "a-z"]),
             _buildShortcutRow(context, "Add Item Normally", ["Enter"]),
             _buildShortcutRow(context, "Display/Add Discount", ["Ctrl", "D"]),
             _buildShortcutRow(context, "Close Discount Pop-up", ["Backspace"]),

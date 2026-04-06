@@ -34,6 +34,7 @@ class _CreateOrdersState extends State<CreateOrders> {
   bool isCartFocused = false;
   int selectedCartItemIndex = 0;
 
+  List<CategoriesModel> _cachedCategories = [];
   Future? _categoriesFuture;
   int _maxCategories = 0;
   int _maxItems = 0;
@@ -98,6 +99,15 @@ class _CreateOrdersState extends State<CreateOrders> {
             LogicalKeyboardKey.controlRight,
           );
       final bool isShiftPressed = HardwareKeyboard.instance.isShiftPressed;
+
+      // SHIFT + LETTER Shortcut for Categories
+      if (isShiftPressed &&
+          !isCtrlPressed &&
+          event.logicalKey.keyLabel.length == 1 &&
+          RegExp(r'[A-Za-z]').hasMatch(event.logicalKey.keyLabel)) {
+        _selectNextCategoryByLetter(event.logicalKey.keyLabel.toUpperCase());
+        return true;
+      }
 
       if (event.logicalKey == LogicalKeyboardKey.tab) {
         setState(() {
@@ -293,6 +303,36 @@ class _CreateOrdersState extends State<CreateOrders> {
     return false;
   }
 
+  void _selectNextCategoryByLetter(String letter) {
+    if (_cachedCategories.isEmpty) return;
+
+    final matches = <int>[];
+    for (int i = 0; i < _cachedCategories.length; i++) {
+      if (_cachedCategories[i].itemName.toUpperCase().startsWith(letter)) {
+        matches.add(i);
+      }
+    }
+
+    if (matches.isEmpty) return;
+
+    // Find the next index in the matching list after current activeCate
+    int target = matches.first;
+    for (int idx in matches) {
+      if (idx > activeCate) {
+        target = idx;
+        break;
+      }
+    }
+
+    setState(() {
+      activeCate = target;
+      selectedItem = 0;
+      _shouldFocusQty = false;
+      _refocusSearch();
+    });
+    _scrollToCategory();
+  }
+
   KeyEventResult _handleSearchKeyEvent(FocusNode node, KeyEvent event) {
     if (event is KeyDownEvent || event is KeyRepeatEvent) {
       if (event.logicalKey == LogicalKeyboardKey.backspace) {
@@ -430,6 +470,12 @@ class _CreateOrdersState extends State<CreateOrders> {
                       ),
                       ...rawCategories,
                     ];
+
+                    // Cache for keyboard shortcuts
+                    if (_cachedCategories.length != categories.length) {
+                      _cachedCategories = categories;
+                    }
+
                     _maxCategories = categories.length;
 
                     if (categories.isEmpty) {
