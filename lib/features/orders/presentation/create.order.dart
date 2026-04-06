@@ -37,7 +37,6 @@ class _CreateOrdersState extends State<CreateOrders> {
   List<CategoriesModel> _cachedCategories = [];
   Future? _categoriesFuture;
   int _maxCategories = 0;
-  int _maxItems = 0;
 
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
@@ -89,7 +88,7 @@ class _CreateOrdersState extends State<CreateOrders> {
   bool _handleGlobalKey(KeyEvent event) {
     if (!mounted || ModalRoute.of(context)?.isCurrent != true) return false;
 
-    if (event is KeyDownEvent) {
+    if (event is KeyDownEvent || event is KeyRepeatEvent) {
       final bool isCtrlPressed =
           HardwareKeyboard.instance.isControlPressed ||
           HardwareKeyboard.instance.isLogicalKeyPressed(
@@ -152,7 +151,9 @@ class _CreateOrdersState extends State<CreateOrders> {
         return true;
       }
 
-      if (isCtrlPressed && isShiftPressed && event.logicalKey == LogicalKeyboardKey.keyA) {
+      if (isCtrlPressed &&
+          isShiftPressed &&
+          event.logicalKey == LogicalKeyboardKey.keyA) {
         setState(() {
           activeCate = 0;
           selectedItem = -1;
@@ -213,7 +214,7 @@ class _CreateOrdersState extends State<CreateOrders> {
 
       if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
         if (isCartFocused) {
-          return true; // Consume but do nothing in cart for now
+          return true;
         }
         if (isShiftPressed) {
           Provider.of<ReceiptProvider>(
@@ -225,11 +226,7 @@ class _CreateOrdersState extends State<CreateOrders> {
           setState(() => activeCate = (activeCate + 1).clamp(0, max));
           _scrollToCategory();
         } else {
-          final max = _maxItems > 0 ? _maxItems - 1 : 0;
-          setState(() {
-            _shouldFocusQty = true;
-            selectedItem = (selectedItem + 1).clamp(0, max);
-          });
+          _moveSelection(1, 0);
         }
         return true;
       }
@@ -246,12 +243,7 @@ class _CreateOrdersState extends State<CreateOrders> {
           setState(() => activeCate = (activeCate - 1).clamp(0, max));
           _scrollToCategory();
         } else {
-          final max = _maxItems > 0 ? _maxItems - 1 : 0;
-          setState(() {
-            _shouldFocusQty = true;
-            final current = selectedItem < 0 ? 0 : selectedItem;
-            selectedItem = (current - 1).clamp(0, max);
-          });
+          _moveSelection(-1, 0);
         }
         return true;
       }
@@ -270,14 +262,7 @@ class _CreateOrdersState extends State<CreateOrders> {
             }
           });
         } else {
-          final max = _maxItems > 0 ? _maxItems - 1 : 0;
-          setState(() {
-            _shouldFocusQty = true;
-            selectedItem = (selectedItem + _currentCrossAxisCount).clamp(
-              0,
-              max,
-            );
-          });
+          _moveSelection(0, 1);
         }
         return true;
       }
@@ -291,16 +276,151 @@ class _CreateOrdersState extends State<CreateOrders> {
             );
           });
         } else {
-          setState(() {
-            _shouldFocusQty = true;
-            final current = selectedItem < 0 ? 0 : selectedItem;
-            selectedItem = (current - _currentCrossAxisCount).clamp(0, current);
-          });
+          _moveSelection(0, -1);
         }
         return true;
       }
     }
     return false;
+  }
+
+  (List<List<int>>, List<ItemModel>) _getCurrentNavigationGrid() {
+    final itemProv = context.read<ItemProvider>();
+    final categories = _cachedCategories;
+
+    if (categories.isEmpty) return ([], []);
+
+    // 1. Determine the flat list of filtered items (same logic as in build)
+    List<ItemModel> filteredItems = [];
+    if (_searchQuery.isNotEmpty) {
+      filteredItems = itemProv.items.where((item) {
+        return item.itemName.toLowerCase().contains(_searchQuery) ||
+            item.description.toLowerCase().contains(_searchQuery);
+      }).toList();
+    } else {
+      if (activeCate == 0) {
+        filteredItems = itemProv.items;
+      } else {
+        final selectedCatId = categories[activeCate].id;
+        filteredItems = itemProv.items
+            .where((item) => item.categoryId == selectedCatId)
+            .toList();
+      }
+    }
+
+    if (filteredItems.isEmpty) return ([], []);
+
+    // 2. Group items by category for the grid visual layout
+    final Map<String, List<ItemModel>> groupedItems = {};
+    for (var item in filteredItems) {
+      groupedItems.putIfAbsent(item.categoryId, () => []).add(item);
+    }
+
+    final sortedCategoryIds = categories
+        .where((c) => groupedItems.containsKey(c.id))
+        .map((c) => c.id!)
+        .toList();
+
+    for (var catId in groupedItems.keys) {
+      if (!sortedCategoryIds.contains(catId)) sortedCategoryIds.add(catId);
+    }
+
+    // 3. Build the grid
+    final List<List<int>> grid = [];
+    for (var catId in sortedCategoryIds) {
+      final itemsInCat = groupedItems[catId]!;
+      for (int i = 0; i < itemsInCat.length; i += _currentCrossAxisCount) {
+        final List<int> row = [];
+        for (int j = 0; j < _currentCrossAxisCount; j++) {
+          if (i + j < itemsInCat.length) {
+            row.add(filteredItems.indexOf(itemsInCat[i + j]));
+          } else {
+            row.add(-1); // Empty slot
+          }
+        }
+        grid.add(row);
+      }
+    }
+
+    return (grid, filteredItems);
+  }
+
+  void _moveSelection(int colOffset, int rowOffset) {
+    final (grid, items) = _getCurrentNavigationGrid();
+    if (grid.isEmpty || items.isEmpty) return;
+
+    if (selectedItem < 0) {
+      setState(() {
+        selectedItem = 0; // Always start with the first item
+        _shouldFocusQty = true;
+      });
+      return;
+    }
+
+    int currentRow = -1;
+    int currentCol = -1;
+
+    for (int r = 0; r < grid.length; r++) {
+      for (int c = 0; c < grid[r].length; c++) {
+        if (grid[r][c] == selectedItem) {
+          currentRow = r;
+          currentCol = c;
+          break;
+        }
+      }
+      if (currentRow != -1) break;
+    }
+
+    if (currentRow == -1) {
+      setState(() {
+        selectedItem = 0;
+        _shouldFocusQty = true;
+      });
+      return;
+    }
+
+    int nextRow = currentRow + rowOffset;
+    int nextCol = currentCol + colOffset;
+
+    // Handle horizontal wrapping/navigation across rows
+    if (colOffset != 0) {
+      if (nextCol >= _currentCrossAxisCount) {
+        nextRow++;
+        nextCol = 0;
+      } else if (nextCol < 0) {
+        nextRow--;
+        nextCol = _currentCrossAxisCount - 1;
+      }
+    }
+
+    if (nextRow >= 0 && nextRow < grid.length) {
+      int targetCol = nextCol.clamp(0, _currentCrossAxisCount - 1);
+      int targetIndex = grid[nextRow][targetCol];
+
+      // If moving right and we hit an empty slot (end of Category row),
+      // jump to the next row (next Category start or next row).
+      if (colOffset > 0 && targetIndex == -1) {
+        if (nextRow + 1 < grid.length) {
+          nextRow++;
+          targetCol = 0;
+          targetIndex = grid[nextRow][targetCol];
+        }
+      }
+
+      // If slot is empty, move left in that row to find the last item
+      // This handles the end of row for Up/Left/Down movements.
+      while (targetIndex == -1 && targetCol > 0) {
+        targetCol--;
+        targetIndex = grid[nextRow][targetCol];
+      }
+
+      if (targetIndex != -1) {
+        setState(() {
+          selectedItem = targetIndex;
+          _shouldFocusQty = true;
+        });
+      }
+    }
   }
 
   void _selectNextCategoryByLetter(String letter) {
@@ -340,6 +460,12 @@ class _CreateOrdersState extends State<CreateOrders> {
           context.pop();
           return KeyEventResult.handled;
         }
+      }
+      // Consume vertical navigation keys to prevent TextField from crashing
+      // on 'isValid' assertion inside VerticalCaretMovementRun.
+      if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
+          event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        return KeyEventResult.handled;
       }
     }
     return KeyEventResult.ignored;
@@ -420,26 +546,41 @@ class _CreateOrdersState extends State<CreateOrders> {
           isBackIcon: true,
         ),
 
-        TextField(
-          controller: _searchController,
-          focusNode: _searchFocusNode,
-          onChanged: (val) {
-            setState(() {
-              _searchQuery = val.toLowerCase();
-              selectedItem = -1; // No selection when searching
-              _shouldFocusQty = false;
-            });
+        Shortcuts(
+          shortcuts: <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.arrowUp):
+                const DirectionalFocusIntent(TraversalDirection.up),
+            SingleActivator(LogicalKeyboardKey.arrowDown):
+                const DirectionalFocusIntent(TraversalDirection.down),
+            SingleActivator(LogicalKeyboardKey.arrowLeft):
+                const DirectionalFocusIntent(TraversalDirection.left),
+            SingleActivator(LogicalKeyboardKey.arrowRight):
+                const DirectionalFocusIntent(TraversalDirection.right),
           },
-          decoration: InputDecoration(
-            hintText: '( Ctrl+S ) Search...',
-            prefixIcon: const Icon(Icons.search, color: AppColors.textHint),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColors.textHint),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          child: TextField(
+            controller: _searchController,
+            focusNode: _searchFocusNode,
+            onChanged: (val) {
+              setState(() {
+                _searchQuery = val.toLowerCase();
+                selectedItem = -1; // No selection when searching
+                _shouldFocusQty = false;
+              });
+            },
+            decoration: InputDecoration(
+              hintText: '( Ctrl+S ) Search...',
+              prefixIcon: const Icon(Icons.search, color: AppColors.textHint),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.textHint),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 2,
+                ),
+              ),
             ),
           ),
         ),
@@ -548,43 +689,51 @@ class _CreateOrdersState extends State<CreateOrders> {
                                   List<ItemModel> filteredItems = [];
 
                                   if (_searchQuery.isNotEmpty) {
-                                    // Global Search - show items from all categories if in "All Items", 
-                                    // otherwise filter within the specific category.
-                                    filteredItems = itemProv.items.where((item) {
-                                      final isMatch = item.itemName.toLowerCase().contains(_searchQuery) ||
-                                          item.description.toLowerCase().contains(_searchQuery);
-                                      
-                                      final isCategoryMatch = activeCate == 0 || 
-                                          item.categoryId == categories[activeCate].id;
-                                          
-                                      return isMatch && isCategoryMatch;
+                                    // Global Search - show items from all categories regardless of activeCate.
+                                    filteredItems = itemProv.items.where((
+                                      item,
+                                    ) {
+                                      return item.itemName
+                                              .toLowerCase()
+                                              .contains(_searchQuery) ||
+                                          item.description
+                                              .toLowerCase()
+                                              .contains(_searchQuery);
                                     }).toList();
                                   } else {
                                     if (activeCate == 0) {
                                       filteredItems = itemProv.items;
                                     } else {
-                                      final selectedCatId = categories[activeCate].id;
+                                      final selectedCatId =
+                                          categories[activeCate].id;
                                       filteredItems = itemProv.items
-                                          .where((item) => item.categoryId == selectedCatId)
+                                          .where(
+                                            (item) =>
+                                                item.categoryId ==
+                                                selectedCatId,
+                                          )
                                           .toList();
                                     }
                                   }
-
-                                  _maxItems = filteredItems.length;
 
                                   if (filteredItems.isEmpty) {
                                     return const EmptyItem();
                                   }
 
                                   // 2. Group items by category for the UI layout
-                                  final Map<String, List<ItemModel>> groupedItems = {};
+                                  final Map<String, List<ItemModel>>
+                                  groupedItems = {};
                                   for (var item in filteredItems) {
-                                    groupedItems.putIfAbsent(item.categoryId, () => []).add(item);
+                                    groupedItems
+                                        .putIfAbsent(item.categoryId, () => [])
+                                        .add(item);
                                   }
 
                                   // Sort the category IDs based on their order in the 'categories' list
                                   final sortedCategoryIds = categories
-                                      .where((c) => groupedItems.containsKey(c.id))
+                                      .where(
+                                        (c) => groupedItems.containsKey(c.id),
+                                      )
                                       .map((c) => c.id!)
                                       .toList();
 
@@ -599,10 +748,14 @@ class _CreateOrdersState extends State<CreateOrders> {
                                     slivers: [
                                       for (var catId in sortedCategoryIds) ...[
                                         // Category Header
-                                        if (activeCate == 0 || _searchQuery.isNotEmpty)
+                                        if (activeCate == 0 ||
+                                            _searchQuery.isNotEmpty)
                                           SliverToBoxAdapter(
                                             child: Padding(
-                                              padding: const EdgeInsets.symmetric(vertical: 15),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 15,
+                                                  ),
                                               child: Row(
                                                 children: [
                                                   Container(
@@ -610,19 +763,31 @@ class _CreateOrdersState extends State<CreateOrders> {
                                                     height: 20,
                                                     decoration: BoxDecoration(
                                                       color: AppColors.primary,
-                                                      borderRadius: BorderRadius.circular(2),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            2,
+                                                          ),
                                                     ),
                                                   ),
                                                   const SizedBox(width: 10),
                                                   Text(
-                                                    categories.firstWhere(
-                                                      (c) => c.id == catId,
-                                                      orElse: () => CategoriesModel(itemName: 'Other', iconNumber: 0),
-                                                    ).itemName,
+                                                    categories
+                                                        .firstWhere(
+                                                          (c) => c.id == catId,
+                                                          orElse: () =>
+                                                              CategoriesModel(
+                                                                itemName:
+                                                                    'Other',
+                                                                iconNumber: 0,
+                                                              ),
+                                                        )
+                                                        .itemName,
                                                     style: const TextStyle(
                                                       fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: AppColors.textPrimary,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color:
+                                                          AppColors.textPrimary,
                                                     ),
                                                   ),
                                                   const SizedBox(width: 8),
@@ -631,7 +796,8 @@ class _CreateOrdersState extends State<CreateOrders> {
                                                     style: const TextStyle(
                                                       fontSize: 14,
                                                       color: AppColors.textHint,
-                                                      fontWeight: FontWeight.w500,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                     ),
                                                   ),
                                                 ],
@@ -641,16 +807,19 @@ class _CreateOrdersState extends State<CreateOrders> {
 
                                         // Item Grid for this category
                                         SliverGrid(
-                                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: crossAxisCount,
-                                            crossAxisSpacing: 10,
-                                            mainAxisSpacing: 10,
-                                            mainAxisExtent: 220,
-                                          ),
+                                          gridDelegate:
+                                              SliverGridDelegateWithFixedCrossAxisCount(
+                                                crossAxisCount: crossAxisCount,
+                                                crossAxisSpacing: 10,
+                                                mainAxisSpacing: 10,
+                                                mainAxisExtent: 220,
+                                              ),
                                           delegate: SliverChildBuilderDelegate(
                                             (context, index) {
-                                              final item = groupedItems[catId]![index];
-                                              final globalIndex = filteredItems.indexOf(item);
+                                              final item =
+                                                  groupedItems[catId]![index];
+                                              final globalIndex = filteredItems
+                                                  .indexOf(item);
 
                                               return BuildItemCard(
                                                 isRetail: item.isRetail,
@@ -661,10 +830,14 @@ class _CreateOrdersState extends State<CreateOrders> {
                                                 image: item.imagePath,
                                                 price: item.price.toString(),
                                                 title: item.itemName,
-                                                isSelect: selectedItem >= 0 && selectedItem == globalIndex,
-                                                shouldFocus: _shouldFocusQty &&
+                                                isSelect:
                                                     selectedItem >= 0 &&
-                                                    (selectedItem == globalIndex),
+                                                    selectedItem == globalIndex,
+                                                shouldFocus:
+                                                    _shouldFocusQty &&
+                                                    selectedItem >= 0 &&
+                                                    (selectedItem ==
+                                                        globalIndex),
                                                 onAdded: () => _refocusSearch(),
                                                 onTap: () {
                                                   setState(() {
@@ -675,11 +848,14 @@ class _CreateOrdersState extends State<CreateOrders> {
                                                 },
                                               );
                                             },
-                                            childCount: groupedItems[catId]!.length,
+                                            childCount:
+                                                groupedItems[catId]!.length,
                                           ),
                                         ),
                                       ],
-                                      const SliverToBoxAdapter(child: SizedBox(height: 50)),
+                                      const SliverToBoxAdapter(
+                                        child: SizedBox(height: 50),
+                                      ),
                                     ],
                                   );
                                 },
