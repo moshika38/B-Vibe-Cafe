@@ -96,6 +96,17 @@ class _BuildItemCardState extends State<BuildItemCard> {
     if (widget.shouldFocus && !oldWidget.shouldFocus) {
       _qtyFocusNode.requestFocus();
       _selectAllText();
+      // Ensure visible
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Scrollable.ensureVisible(
+            context,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            alignment: 0.5, // Center the item if possible
+          );
+        }
+      });
       // Force sync with cart when selected
       _syncWithProvider(Provider.of<ReceiptProvider>(context, listen: false));
     }
