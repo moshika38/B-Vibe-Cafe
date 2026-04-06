@@ -464,10 +464,12 @@ class _ExpensesPageState extends State<ExpensesPage>
   Widget _buildHistoryTab() {
     return Consumer<ExpenseProvider>(
       builder: (context, provider, _) {
-        if (provider.isLoading)
+        if (provider.isLoading) {
           return const Center(child: CircularProgressIndicator());
-        if (provider.expenses.isEmpty)
+        }
+        if (provider.expenses.isEmpty) {
           return _buildEmptyState('No entries found for this period');
+        }
 
         return ListView.builder(
           itemCount: provider.expenses.length,
