@@ -65,7 +65,6 @@ class _CreateOrdersState extends State<CreateOrders> {
     setState(() {
       _shouldFocusQty = false;
     });
-    // Use post-frame callback so the focus happens AFTER all widget rebuilds
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _searchFocusNode.requestFocus();
@@ -179,7 +178,6 @@ class _CreateOrdersState extends State<CreateOrders> {
 
         provider.getReceipt(receiptId).then((receipt) async {
           if (receipt != null) {
-            // Filter to get only kitchen items (non-retail)
             final kitchenItems = receipt.items
                 .where((item) => !item.isRetail)
                 .toList();
@@ -290,7 +288,6 @@ class _CreateOrdersState extends State<CreateOrders> {
 
     if (categories.isEmpty) return ([], []);
 
-    // 1. Determine the flat list of filtered items (same logic as in build)
     List<ItemModel> filteredItems = [];
     if (_searchQuery.isNotEmpty) {
       filteredItems = itemProv.items.where((item) {
@@ -310,7 +307,6 @@ class _CreateOrdersState extends State<CreateOrders> {
 
     if (filteredItems.isEmpty) return ([], []);
 
-    // 2. Group items by category for the grid visual layout
     final Map<String, List<ItemModel>> groupedItems = {};
     for (var item in filteredItems) {
       groupedItems.putIfAbsent(item.categoryId, () => []).add(item);
@@ -325,7 +321,6 @@ class _CreateOrdersState extends State<CreateOrders> {
       if (!sortedCategoryIds.contains(catId)) sortedCategoryIds.add(catId);
     }
 
-    // 3. Build the grid
     final List<List<int>> grid = [];
     for (var catId in sortedCategoryIds) {
       final itemsInCat = groupedItems[catId]!;
@@ -335,7 +330,7 @@ class _CreateOrdersState extends State<CreateOrders> {
           if (i + j < itemsInCat.length) {
             row.add(filteredItems.indexOf(itemsInCat[i + j]));
           } else {
-            row.add(-1); // Empty slot
+            row.add(-1);
           }
         }
         grid.add(row);
@@ -350,10 +345,23 @@ class _CreateOrdersState extends State<CreateOrders> {
     if (grid.isEmpty || items.isEmpty) return;
 
     if (selectedItem < 0) {
-      setState(() {
-        selectedItem = 0; // Always start with the first item
-        _shouldFocusQty = true;
-      });
+      // Grid scan කරලා visually top-most (first non-empty) item find කරනවා
+      int firstItem = -1;
+      outer:
+      for (final row in grid) {
+        for (final idx in row) {
+          if (idx >= 0) {
+            firstItem = idx;
+            break outer;
+          }
+        }
+      }
+      if (firstItem >= 0) {
+        setState(() {
+          selectedItem = firstItem;
+          _shouldFocusQty = true;
+        });
+      }
       return;
     }
 
@@ -382,7 +390,6 @@ class _CreateOrdersState extends State<CreateOrders> {
     int nextRow = currentRow + rowOffset;
     int nextCol = currentCol + colOffset;
 
-    // Handle horizontal wrapping/navigation across rows
     if (colOffset != 0) {
       if (nextCol >= _currentCrossAxisCount) {
         nextRow++;
@@ -397,8 +404,6 @@ class _CreateOrdersState extends State<CreateOrders> {
       int targetCol = nextCol.clamp(0, _currentCrossAxisCount - 1);
       int targetIndex = grid[nextRow][targetCol];
 
-      // If moving right and we hit an empty slot (end of Category row),
-      // jump to the next row (next Category start or next row).
       if (colOffset > 0 && targetIndex == -1) {
         if (nextRow + 1 < grid.length) {
           nextRow++;
@@ -407,8 +412,6 @@ class _CreateOrdersState extends State<CreateOrders> {
         }
       }
 
-      // If slot is empty, move left in that row to find the last item
-      // This handles the end of row for Up/Left/Down movements.
       while (targetIndex == -1 && targetCol > 0) {
         targetCol--;
         targetIndex = grid[nextRow][targetCol];
@@ -435,7 +438,6 @@ class _CreateOrdersState extends State<CreateOrders> {
 
     if (matches.isEmpty) return;
 
-    // Find the next index in the matching list after current activeCate
     int target = matches.first;
     for (int idx in matches) {
       if (idx > activeCate) {
@@ -461,8 +463,6 @@ class _CreateOrdersState extends State<CreateOrders> {
           return KeyEventResult.handled;
         }
       }
-      // Consume vertical navigation keys to prevent TextField from crashing
-      // on 'isValid' assertion inside VerticalCaretMovementRun.
       if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
           event.logicalKey == LogicalKeyboardKey.arrowDown) {
         return KeyEventResult.handled;
@@ -477,7 +477,6 @@ class _CreateOrdersState extends State<CreateOrders> {
     widget.invoiceId.isEmpty ? _create() : receiptId = widget.invoiceId;
     _searchFocusNode = FocusNode(onKeyEvent: _handleSearchKeyEvent);
     HardwareKeyboard.instance.addHandler(_handleGlobalKey);
-    // Fetch all items once for global search and "All" category
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ItemProvider>().fetchItems();
       _refocusSearch();
@@ -498,7 +497,6 @@ class _CreateOrdersState extends State<CreateOrders> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
 
-    /// responsive breakpoints
     final bool isTablet = width < 1100;
     final bool isMobile = width < 750;
 
@@ -535,7 +533,6 @@ class _CreateOrdersState extends State<CreateOrders> {
     );
   }
 
-  /// LEFT SIDE (Menu)
   Widget _menuSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -563,7 +560,7 @@ class _CreateOrdersState extends State<CreateOrders> {
             onChanged: (val) {
               setState(() {
                 _searchQuery = val.toLowerCase();
-                selectedItem = -1; // No selection when searching
+                selectedItem = -1;
                 _shouldFocusQty = false;
               });
             },
@@ -602,7 +599,6 @@ class _CreateOrdersState extends State<CreateOrders> {
                   if (asyncSnapshot.hasData) {
                     final rawCategories =
                         asyncSnapshot.data! as List<CategoriesModel>;
-                    // Add virtual "All" category
                     final categories = [
                       CategoriesModel(
                         id: 'all',
@@ -612,7 +608,6 @@ class _CreateOrdersState extends State<CreateOrders> {
                       ...rawCategories,
                     ];
 
-                    // Cache for keyboard shortcuts
                     if (_cachedCategories.length != categories.length) {
                       _cachedCategories = categories;
                     }
@@ -685,11 +680,9 @@ class _CreateOrdersState extends State<CreateOrders> {
 
                               return Consumer<ItemProvider>(
                                 builder: (context, itemProv, child) {
-                                  // 1. Determine the flat list of filtered items for keyboard navigation and global filtering
                                   List<ItemModel> filteredItems = [];
 
                                   if (_searchQuery.isNotEmpty) {
-                                    // Global Search - show items from all categories regardless of activeCate.
                                     filteredItems = itemProv.items.where((
                                       item,
                                     ) {
@@ -720,7 +713,6 @@ class _CreateOrdersState extends State<CreateOrders> {
                                     return const EmptyItem();
                                   }
 
-                                  // 2. Group items by category for the UI layout
                                   final Map<String, List<ItemModel>>
                                   groupedItems = {};
                                   for (var item in filteredItems) {
@@ -729,7 +721,6 @@ class _CreateOrdersState extends State<CreateOrders> {
                                         .add(item);
                                   }
 
-                                  // Sort the category IDs based on their order in the 'categories' list
                                   final sortedCategoryIds = categories
                                       .where(
                                         (c) => groupedItems.containsKey(c.id),
@@ -737,7 +728,6 @@ class _CreateOrdersState extends State<CreateOrders> {
                                       .map((c) => c.id!)
                                       .toList();
 
-                                  // Handle items whose category might not be in the tabs (edge case)
                                   for (var catId in groupedItems.keys) {
                                     if (!sortedCategoryIds.contains(catId)) {
                                       sortedCategoryIds.add(catId);
@@ -747,7 +737,6 @@ class _CreateOrdersState extends State<CreateOrders> {
                                   return CustomScrollView(
                                     slivers: [
                                       for (var catId in sortedCategoryIds) ...[
-                                        // Category Header
                                         if (activeCate == 0 ||
                                             _searchQuery.isNotEmpty)
                                           SliverToBoxAdapter(
@@ -805,7 +794,6 @@ class _CreateOrdersState extends State<CreateOrders> {
                                             ),
                                           ),
 
-                                        // Item Grid for this category
                                         SliverGrid(
                                           gridDelegate:
                                               SliverGridDelegateWithFixedCrossAxisCount(
@@ -876,7 +864,6 @@ class _CreateOrdersState extends State<CreateOrders> {
     );
   }
 
-  /// RIGHT SIDE (Cart)
   Widget _cartSection() {
     return CurrentOrder(
       receiptId: receiptId,
