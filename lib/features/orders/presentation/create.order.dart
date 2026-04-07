@@ -14,6 +14,7 @@ import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:bvibe/components/conform.window.dart';
 import 'package:bvibe/data/model/item.model.dart';
 import 'package:bvibe/data/model/categories.model.dart';
+import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -45,6 +46,13 @@ class _CreateOrdersState extends State<CreateOrders> {
   String _searchQuery = "";
   bool _shouldFocusQty = false;
   int _currentCrossAxisCount = 4;
+
+  // --- Navigation grid memoization ---
+  List<List<int>> _cachedNavGrid = [];
+  List<ItemModel> _cachedNavItems = [];
+  String _lastNavQuery = '';
+  int _lastNavCate = -1;
+  int _lastNavItemCount = -1;
 
   void _scrollToCategory() {
     if (_categoryScrollController.hasClients) {
@@ -118,24 +126,22 @@ class _CreateOrdersState extends State<CreateOrders> {
       if (event.logicalKey == LogicalKeyboardKey.delete) {
         if (isCartFocused) {
           final provider = Provider.of<ReceiptProvider>(context, listen: false);
-          provider.getReceipt(receiptId).then((receipt) {
-            if (receipt != null &&
-                selectedCartItemIndex < receipt.items.length) {
-              final items = [...receipt.items];
-              items.removeAt(selectedCartItemIndex);
-              provider.updateReceiptItems(receiptId, items);
-              setState(() {
-                if (items.isEmpty) {
-                  selectedCartItemIndex = 0;
-                } else {
-                  selectedCartItemIndex = selectedCartItemIndex.clamp(
-                    0,
-                    items.length - 1,
-                  );
-                }
-              });
-            }
-          });
+          final receipt = provider.getCachedReceipt(receiptId);
+          if (receipt != null && selectedCartItemIndex < receipt.items.length) {
+            final items = [...receipt.items];
+            items.removeAt(selectedCartItemIndex);
+            provider.updateReceiptItems(receiptId, items);
+            setState(() {
+              if (items.isEmpty) {
+                selectedCartItemIndex = 0;
+              } else {
+                selectedCartItemIndex = selectedCartItemIndex.clamp(
+                  0,
+                  items.length - 1,
+                );
+              }
+            });
+          }
         } else {
           showPinDialog(context).then((confirmed) {
             if (confirmed && mounted) {
@@ -175,38 +181,17 @@ class _CreateOrdersState extends State<CreateOrders> {
           context,
           listen: false,
         );
-
-        provider.getReceipt(receiptId).then((receipt) async {
-          if (receipt != null) {
-            final kitchenItems = receipt.items
-                .where((item) => !item.isRetail)
-                .toList();
-            if (kitchenItems.isNotEmpty) {
-              final currentKitchenJson = jsonEncode(
-                kitchenItems.map((e) => e.toMap()).toList(),
-              );
-              final lastKitchenJson = jsonEncode(
-                receipt.lastKotItems.map((e) => e.toMap()).toList(),
-              );
-
-              if (currentKitchenJson != lastKitchenJson) {
-                final success = await PrintInvoice.printKOT(
-                  receipt: receipt,
-                  printer: printerProvider.secondaryPrinter,
-                );
-                if (success) {
-                  await provider.updateLastKotItems(
-                    receipt.receiptId,
-                    kitchenItems,
-                  );
-                }
-              }
-            }
-            if (mounted) {
-              context.push('/orders/checkout', extra: receiptId);
-            }
-          }
-        });
+        // Navigate immediately for instant response, then fire KOT in background
+        final receipt = provider.getCachedReceipt(receiptId);
+        if (receipt != null && mounted) {
+          context.push('/orders/checkout', extra: receiptId);
+          // Background KOT print — does not block navigation
+          _sendKotInBackground(
+            provider: provider,
+            printerProvider: printerProvider,
+            receipt: receipt,
+          );
+        }
         return true;
       }
 
@@ -248,17 +233,18 @@ class _CreateOrdersState extends State<CreateOrders> {
 
       if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
         if (isCartFocused) {
-          final provider = Provider.of<ReceiptProvider>(context, listen: false);
-          provider.getReceipt(receiptId).then((receipt) {
-            if (receipt != null && receipt.items.isNotEmpty) {
-              setState(() {
-                selectedCartItemIndex = (selectedCartItemIndex + 1).clamp(
-                  0,
-                  receipt.items.length - 1,
-                );
-              });
-            }
-          });
+          final receipt = Provider.of<ReceiptProvider>(
+            context,
+            listen: false,
+          ).getCachedReceipt(receiptId);
+          if (receipt != null && receipt.items.isNotEmpty) {
+            setState(() {
+              selectedCartItemIndex = (selectedCartItemIndex + 1).clamp(
+                0,
+                receipt.items.length - 1,
+              );
+            });
+          }
         } else {
           _moveSelection(0, 1);
         }
@@ -282,9 +268,42 @@ class _CreateOrdersState extends State<CreateOrders> {
     return false;
   }
 
+  // Background KOT sender — does not block UI
+  void _sendKotInBackground({
+    required ReceiptProvider provider,
+    required PrinterProvider printerProvider,
+    required ReceiptModel receipt,
+  }) async {
+    final kitchenItems = receipt.items.where((item) => !item.isRetail).toList();
+    if (kitchenItems.isEmpty) return;
+    final currentKitchenJson = jsonEncode(
+      kitchenItems.map((e) => e.toMap()).toList(),
+    );
+    final lastKitchenJson = jsonEncode(
+      receipt.lastKotItems.map((e) => e.toMap()).toList(),
+    );
+    if (currentKitchenJson == lastKitchenJson) return;
+    final success = await PrintInvoice.printKOT(
+      receipt: receipt,
+      printer: printerProvider.secondaryPrinter,
+    );
+    if (success) {
+      await provider.updateLastKotItems(receipt.receiptId, kitchenItems);
+    }
+  }
+
   (List<List<int>>, List<ItemModel>) _getCurrentNavigationGrid() {
     final itemProv = context.read<ItemProvider>();
     final categories = _cachedCategories;
+    final itemCount = itemProv.items.length;
+
+    // Return memoized result if inputs haven't changed
+    if (_cachedNavGrid.isNotEmpty &&
+        _lastNavQuery == _searchQuery &&
+        _lastNavCate == activeCate &&
+        _lastNavItemCount == itemCount) {
+      return (_cachedNavGrid, _cachedNavItems);
+    }
 
     if (categories.isEmpty) return ([], []);
 
@@ -305,7 +324,14 @@ class _CreateOrdersState extends State<CreateOrders> {
       }
     }
 
-    if (filteredItems.isEmpty) return ([], []);
+    if (filteredItems.isEmpty) {
+      _cachedNavGrid = [];
+      _cachedNavItems = [];
+      _lastNavQuery = _searchQuery;
+      _lastNavCate = activeCate;
+      _lastNavItemCount = itemCount;
+      return ([], []);
+    }
 
     final Map<String, List<ItemModel>> groupedItems = {};
     for (var item in filteredItems) {
@@ -336,6 +362,13 @@ class _CreateOrdersState extends State<CreateOrders> {
         grid.add(row);
       }
     }
+
+    // Cache the result
+    _cachedNavGrid = grid;
+    _cachedNavItems = filteredItems;
+    _lastNavQuery = _searchQuery;
+    _lastNavCate = activeCate;
+    _lastNavItemCount = itemCount;
 
     return (grid, filteredItems);
   }
@@ -545,14 +578,14 @@ class _CreateOrdersState extends State<CreateOrders> {
 
         Shortcuts(
           shortcuts: <ShortcutActivator, Intent>{
-            SingleActivator(LogicalKeyboardKey.arrowUp):
-                const DirectionalFocusIntent(TraversalDirection.up),
-            SingleActivator(LogicalKeyboardKey.arrowDown):
-                const DirectionalFocusIntent(TraversalDirection.down),
-            SingleActivator(LogicalKeyboardKey.arrowLeft):
-                const DirectionalFocusIntent(TraversalDirection.left),
-            SingleActivator(LogicalKeyboardKey.arrowRight):
-                const DirectionalFocusIntent(TraversalDirection.right),
+            const SingleActivator(LogicalKeyboardKey.arrowUp):
+                const DoNothingAndStopPropagationTextIntent(),
+            const SingleActivator(LogicalKeyboardKey.arrowDown):
+                const DoNothingAndStopPropagationTextIntent(),
+            const SingleActivator(LogicalKeyboardKey.arrowLeft):
+                const DoNothingAndStopPropagationTextIntent(),
+            const SingleActivator(LogicalKeyboardKey.arrowRight):
+                const DoNothingAndStopPropagationTextIntent(),
           },
           child: TextField(
             controller: _searchController,
@@ -654,202 +687,215 @@ class _CreateOrdersState extends State<CreateOrders> {
                         const SizedBox(height: 20),
 
                         Expanded(
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              int crossAxisCount = 4;
+                          child: RepaintBoundary(
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                int crossAxisCount = 4;
 
-                              if (constraints.maxWidth < 800) {
-                                crossAxisCount = 3;
-                              }
-                              if (constraints.maxWidth < 600) {
-                                crossAxisCount = 2;
-                              }
+                                if (constraints.maxWidth < 800) {
+                                  crossAxisCount = 3;
+                                }
+                                if (constraints.maxWidth < 600) {
+                                  crossAxisCount = 2;
+                                }
 
-                              if (_currentCrossAxisCount != crossAxisCount) {
-                                WidgetsBinding.instance.addPostFrameCallback((
-                                  _,
-                                ) {
-                                  if (mounted) {
-                                    setState(
-                                      () => _currentCrossAxisCount =
-                                          crossAxisCount,
-                                    );
-                                  }
-                                });
-                              }
+                                if (_currentCrossAxisCount != crossAxisCount) {
+                                  WidgetsBinding.instance.addPostFrameCallback((
+                                    _,
+                                  ) {
+                                    if (mounted) {
+                                      setState(
+                                        () => _currentCrossAxisCount =
+                                            crossAxisCount,
+                                      );
+                                    }
+                                  });
+                                }
 
-                              return Consumer<ItemProvider>(
-                                builder: (context, itemProv, child) {
-                                  List<ItemModel> filteredItems = [];
+                                return Consumer<ItemProvider>(
+                                  builder: (context, itemProv, child) {
+                                    List<ItemModel> filteredItems = [];
 
-                                  if (_searchQuery.isNotEmpty) {
-                                    filteredItems = itemProv.items.where((
-                                      item,
-                                    ) {
-                                      return item.itemName
-                                              .toLowerCase()
-                                              .contains(_searchQuery) ||
-                                          item.description
-                                              .toLowerCase()
-                                              .contains(_searchQuery);
-                                    }).toList();
-                                  } else {
-                                    if (activeCate == 0) {
-                                      filteredItems = itemProv.items;
+                                    if (_searchQuery.isNotEmpty) {
+                                      filteredItems = itemProv.items.where((
+                                        item,
+                                      ) {
+                                        return item.itemName
+                                                .toLowerCase()
+                                                .contains(_searchQuery) ||
+                                            item.description
+                                                .toLowerCase()
+                                                .contains(_searchQuery);
+                                      }).toList();
                                     } else {
-                                      final selectedCatId =
-                                          categories[activeCate].id;
-                                      filteredItems = itemProv.items
-                                          .where(
-                                            (item) =>
-                                                item.categoryId ==
-                                                selectedCatId,
+                                      if (activeCate == 0) {
+                                        filteredItems = itemProv.items;
+                                      } else {
+                                        final selectedCatId =
+                                            categories[activeCate].id;
+                                        filteredItems = itemProv.items
+                                            .where(
+                                              (item) =>
+                                                  item.categoryId ==
+                                                  selectedCatId,
+                                            )
+                                            .toList();
+                                      }
+                                    }
+
+                                    if (filteredItems.isEmpty) {
+                                      return const EmptyItem();
+                                    }
+
+                                    final Map<String, List<ItemModel>>
+                                    groupedItems = {};
+                                    for (var item in filteredItems) {
+                                      groupedItems
+                                          .putIfAbsent(
+                                            item.categoryId,
+                                            () => [],
                                           )
-                                          .toList();
+                                          .add(item);
                                     }
-                                  }
 
-                                  if (filteredItems.isEmpty) {
-                                    return const EmptyItem();
-                                  }
+                                    final sortedCategoryIds = categories
+                                        .where(
+                                          (c) => groupedItems.containsKey(c.id),
+                                        )
+                                        .map((c) => c.id!)
+                                        .toList();
 
-                                  final Map<String, List<ItemModel>>
-                                  groupedItems = {};
-                                  for (var item in filteredItems) {
-                                    groupedItems
-                                        .putIfAbsent(item.categoryId, () => [])
-                                        .add(item);
-                                  }
-
-                                  final sortedCategoryIds = categories
-                                      .where(
-                                        (c) => groupedItems.containsKey(c.id),
-                                      )
-                                      .map((c) => c.id!)
-                                      .toList();
-
-                                  for (var catId in groupedItems.keys) {
-                                    if (!sortedCategoryIds.contains(catId)) {
-                                      sortedCategoryIds.add(catId);
+                                    for (var catId in groupedItems.keys) {
+                                      if (!sortedCategoryIds.contains(catId)) {
+                                        sortedCategoryIds.add(catId);
+                                      }
                                     }
-                                  }
 
-                                  return CustomScrollView(
-                                    slivers: [
-                                      for (var catId in sortedCategoryIds) ...[
-                                        if (activeCate == 0 ||
-                                            _searchQuery.isNotEmpty)
-                                          SliverToBoxAdapter(
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 15,
-                                                  ),
-                                              child: Row(
-                                                children: [
-                                                  Container(
-                                                    width: 4,
-                                                    height: 20,
-                                                    decoration: BoxDecoration(
-                                                      color: AppColors.primary,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            2,
-                                                          ),
+                                    return CustomScrollView(
+                                      slivers: [
+                                        for (var catId
+                                            in sortedCategoryIds) ...[
+                                          if (activeCate == 0 ||
+                                              _searchQuery.isNotEmpty)
+                                            SliverToBoxAdapter(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 15,
                                                     ),
-                                                  ),
-                                                  const SizedBox(width: 10),
-                                                  Text(
-                                                    categories
-                                                        .firstWhere(
-                                                          (c) => c.id == catId,
-                                                          orElse: () =>
-                                                              CategoriesModel(
-                                                                itemName:
-                                                                    'Other',
-                                                                iconNumber: 0,
-                                                              ),
-                                                        )
-                                                        .itemName,
-                                                    style: const TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color:
-                                                          AppColors.textPrimary,
+                                                child: Row(
+                                                  children: [
+                                                    Container(
+                                                      width: 4,
+                                                      height: 20,
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            AppColors.primary,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              2,
+                                                            ),
+                                                      ),
                                                     ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Text(
-                                                    '(${groupedItems[catId]!.length})',
-                                                    style: const TextStyle(
-                                                      fontSize: 14,
-                                                      color: AppColors.textHint,
-                                                      fontWeight:
-                                                          FontWeight.w500,
+                                                    const SizedBox(width: 10),
+                                                    Text(
+                                                      categories
+                                                          .firstWhere(
+                                                            (c) =>
+                                                                c.id == catId,
+                                                            orElse: () =>
+                                                                CategoriesModel(
+                                                                  itemName:
+                                                                      'Other',
+                                                                  iconNumber: 0,
+                                                                ),
+                                                          )
+                                                          .itemName,
+                                                      style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: AppColors
+                                                            .textPrimary,
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      '(${groupedItems[catId]!.length})',
+                                                      style: const TextStyle(
+                                                        fontSize: 14,
+                                                        color:
+                                                            AppColors.textHint,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
-                                          ),
 
-                                        SliverGrid(
-                                          gridDelegate:
-                                              SliverGridDelegateWithFixedCrossAxisCount(
-                                                crossAxisCount: crossAxisCount,
-                                                crossAxisSpacing: 10,
-                                                mainAxisSpacing: 10,
-                                                mainAxisExtent: 220,
-                                              ),
-                                          delegate: SliverChildBuilderDelegate(
-                                            (context, index) {
-                                              final item =
-                                                  groupedItems[catId]![index];
-                                              final globalIndex = filteredItems
-                                                  .indexOf(item);
+                                          SliverGrid(
+                                            gridDelegate:
+                                                SliverGridDelegateWithFixedCrossAxisCount(
+                                                  crossAxisCount:
+                                                      crossAxisCount,
+                                                  crossAxisSpacing: 10,
+                                                  mainAxisSpacing: 10,
+                                                  mainAxisExtent: 220,
+                                                ),
+                                            delegate: SliverChildBuilderDelegate(
+                                              (context, index) {
+                                                final item =
+                                                    groupedItems[catId]![index];
+                                                final globalIndex =
+                                                    filteredItems.indexOf(item);
 
-                                              return BuildItemCard(
-                                                isRetail: item.isRetail,
-                                                itemId: item.id.toString(),
-                                                cate: item.categoryId,
-                                                des: item.description,
-                                                receiptId: receiptId,
-                                                image: item.imagePath,
-                                                price: item.price.toString(),
-                                                title: item.itemName,
-                                                isSelect:
-                                                    selectedItem >= 0 &&
-                                                    selectedItem == globalIndex,
-                                                shouldFocus:
-                                                    _shouldFocusQty &&
-                                                    selectedItem >= 0 &&
-                                                    (selectedItem ==
-                                                        globalIndex),
-                                                onAdded: () => _refocusSearch(),
-                                                onTap: () {
-                                                  setState(() {
-                                                    selectedItem = globalIndex;
-                                                    _shouldFocusQty = true;
-                                                    _refocusSearch();
-                                                  });
-                                                },
-                                              );
-                                            },
-                                            childCount:
-                                                groupedItems[catId]!.length,
+                                                return BuildItemCard(
+                                                  isRetail: item.isRetail,
+                                                  itemId: item.id.toString(),
+                                                  cate: item.categoryId,
+                                                  des: item.description,
+                                                  receiptId: receiptId,
+                                                  image: item.imagePath,
+                                                  price: item.price.toString(),
+                                                  title: item.itemName,
+                                                  isSelect:
+                                                      selectedItem >= 0 &&
+                                                      selectedItem ==
+                                                          globalIndex,
+                                                  shouldFocus:
+                                                      _shouldFocusQty &&
+                                                      selectedItem >= 0 &&
+                                                      (selectedItem ==
+                                                          globalIndex),
+                                                  onAdded: () =>
+                                                      _refocusSearch(),
+                                                  onTap: () {
+                                                    setState(() {
+                                                      selectedItem =
+                                                          globalIndex;
+                                                      _shouldFocusQty = true;
+                                                      _refocusSearch();
+                                                    });
+                                                  },
+                                                );
+                                              },
+                                              childCount:
+                                                  groupedItems[catId]!.length,
+                                            ),
                                           ),
+                                        ],
+                                        const SliverToBoxAdapter(
+                                          child: SizedBox(height: 50),
                                         ),
                                       ],
-                                      const SliverToBoxAdapter(
-                                        child: SizedBox(height: 50),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                          ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ), // RepaintBoundary
                         ),
                       ],
                     );

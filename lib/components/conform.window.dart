@@ -89,7 +89,8 @@ class _PinConfirmDialogState extends State<PinConfirmDialog> {
             /// PIN Input
             Focus(
               onKeyEvent: (node, event) {
-                if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.backspace) {
+                if (event is KeyDownEvent &&
+                    event.logicalKey == LogicalKeyboardKey.backspace) {
                   if (_pinController.text.isEmpty) {
                     Navigator.pop(context, false);
                     return KeyEventResult.handled;
@@ -213,7 +214,8 @@ class ExitConfirmDialog extends StatelessWidget {
               Navigator.pop(context, false);
               return KeyEventResult.handled;
             }
-            if (event.logicalKey == LogicalKeyboardKey.enter || event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+            if (event.logicalKey == LogicalKeyboardKey.enter ||
+                event.logicalKey == LogicalKeyboardKey.numpadEnter) {
               Navigator.pop(context, true);
               return KeyEventResult.handled;
             }
@@ -226,7 +228,11 @@ class ExitConfirmDialog extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.warning_amber_rounded, size: 48, color: Colors.orangeAccent),
+              const Icon(
+                Icons.warning_amber_rounded,
+                size: 48,
+                color: Colors.orangeAccent,
+              ),
               const SizedBox(height: 16),
               Text(
                 "Go back?",
@@ -254,7 +260,9 @@ class ExitConfirmDialog extends StatelessWidget {
                         backgroundColor: AppColors.inputBorder,
                         foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: const Text("Cancel"),
                     ),
@@ -266,7 +274,9 @@ class ExitConfirmDialog extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: const Text("Confirm"),
                     ),
@@ -288,3 +298,149 @@ Future<bool> showExitConfirmDialog(BuildContext context) async {
   );
   return result ?? false;
 }
+
+// ─── Simple Confirm Dialog ────────────────────────────────────────────────────
+
+class SimpleConfirmDialog extends StatelessWidget {
+  final String title;
+  final String message;
+  final String confirmLabel;
+  final IconData icon;
+  final Color iconColor;
+
+  const SimpleConfirmDialog({
+    super.key,
+    required this.title,
+    required this.message,
+    this.confirmLabel = 'Delete',
+    this.icon = Icons.delete_outline_rounded,
+    this.iconColor = Colors.redAccent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: AppColors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      child: Focus(
+        autofocus: true,
+        onKeyEvent: (node, event) {
+          if (event is KeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.backspace ||
+                event.logicalKey == LogicalKeyboardKey.escape) {
+              Navigator.pop(context, false);
+              return KeyEventResult.handled;
+            }
+            if (event.logicalKey == LogicalKeyboardKey.enter ||
+                event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+              Navigator.pop(context, true);
+              return KeyEventResult.handled;
+            }
+          }
+          return KeyEventResult.ignored;
+        },
+        child: Container(
+          width: 360,
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 26),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: iconColor.withOpacity(.10),
+                ),
+                child: Icon(icon, size: 34, color: iconColor),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Enter = confirm  •  Backspace = cancel',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textHint,
+                  fontSize: 11,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.inputBorder,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: iconColor,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        confirmLabel,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Future<bool> showSimpleConfirmDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  String confirmLabel = 'Delete',
+  IconData icon = Icons.delete_outline_rounded,
+  Color iconColor = Colors.redAccent,
+}) async {
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (context) => SimpleConfirmDialog(
+      title: title,
+      message: message,
+      confirmLabel: confirmLabel,
+      icon: icon,
+      iconColor: iconColor,
+    ),
+  );
+  return result ?? false;
+}
+

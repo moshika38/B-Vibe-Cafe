@@ -1,4 +1,5 @@
 import 'package:bvibe/components/app.title.dart';
+import 'package:bvibe/components/conform.window.dart';
 import 'package:bvibe/const/snack/app.snack.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
@@ -86,6 +87,44 @@ class _AppMenuState extends State<AppMenu> {
         });
         context.read<ItemProvider>().selectItem(null);
         _scrollToCategory();
+        return true;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.delete) {
+        final category = cateProv.categories[activeIndex];
+        final categoryName = category.itemName;
+        final categoryId = category.id;
+        if (categoryId == null) return false;
+
+        showSimpleConfirmDialog(
+          context,
+          title: 'Delete Category',
+          message:
+              'Delete "$categoryName"?\n\nAll items in this category will also be removed.',
+          confirmLabel: 'Delete',
+        ).then((confirmed) async {
+          if (confirmed && mounted) {
+            final res = await context
+                .read<CategoriesProvider>()
+                .deleteCategory(categoryId);
+            if (!mounted) return;
+            if (res > 0) {
+              // Clamp activeIndex to new list length
+              final newMax =
+                  context.read<CategoriesProvider>().categories.length - 1;
+              setState(() {
+                activeIndex = newMax < 0 ? 0 : activeIndex.clamp(0, newMax);
+              });
+              context.read<ItemProvider>().selectItem(null);
+              AppSnack.successSnack(
+                context,
+                '"$categoryName" deleted successfully',
+              );
+            } else {
+              AppSnack.errorSnack(context, 'Failed to delete category');
+            }
+          }
+        });
         return true;
       }
     }
