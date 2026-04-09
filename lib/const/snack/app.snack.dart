@@ -14,7 +14,11 @@ class AppSnack {
   }
 
   static void errorSnack(BuildContext context, message) {
-    player.play(AssetSource('sound/error.mp3'));
+    try {
+      player.play(AssetSource('sound/error.mp3'));
+    } catch (e) {
+      debugPrint("Audio play error: $e");
+    }
     showTopSnackBar(
       Overlay.of(context),
       CustomSnackBar.error(message: message),

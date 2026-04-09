@@ -1,5 +1,7 @@
-import 'package:sqflite/sqflite.dart';
+ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -15,7 +17,11 @@ class DatabaseHelper {
     return _database!;
   }
 
-  Future<String> getDatabasePath() async {
+   Future<String> getDatabasePath() async {
+    if (Platform.isWindows) {
+      final appSupportDir = await getApplicationSupportDirectory();
+      return join(appSupportDir.path, 'bvibe.db');
+    }
     final dbPath = await getDatabasesPath();
     return join(dbPath, 'bvibe.db');
   }
@@ -27,9 +33,8 @@ class DatabaseHelper {
     }
   }
 
-  Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
+   Future<Database> _initDB(String filePath) async {
+    final path = await getDatabasePath();
 
     print('DATABASE LOCATION: $path');
 

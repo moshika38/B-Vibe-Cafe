@@ -22,15 +22,17 @@ class AuthHelper {
     }
   }
 
-  Future<int> insertUser(AuthModel user) async {
+   Future<int> insertUser(AuthModel user) async {
     final db = await DatabaseHelper.instance.database;
 
-    // delete all user
-    await db.delete('users');
+    return await db.transaction((txn) async {
+      // delete all user
+      await txn.delete('users');
 
-    return await db.insert('users', {
-      'username': user.userName,
-      'password': user.passCode,
+      return await txn.insert('users', {
+        'username': user.userName,
+        'password': user.passCode,
+      });
     });
   }
 
