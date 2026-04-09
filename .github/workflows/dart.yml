@@ -18,12 +18,18 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          # Leaving version blank or using 'any' gets the latest stable
-          # which is currently Flutter 3.27+ (Dart 3.6+)
           cache: true
 
       - name: Enable Windows Desktop
         run: flutter config --enable-windows-desktop
+
+      # Force create missing asset directories to prevent build crash
+      - name: Create missing asset directories
+        run: |
+          if (!(Test-Path "assets/svg/")) { New-Item -ItemType Directory -Path "assets/svg/" }
+          if (!(Test-Path "assets/img/")) { New-Item -ItemType Directory -Path "assets/img/" }
+          # Add a dummy file because Flutter hates empty asset folders
+          Set-Content -Path "assets/svg/.gitkeep" -Value ""
 
       - name: Install Dependencies
         run: flutter pub get
