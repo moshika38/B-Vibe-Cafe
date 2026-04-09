@@ -8,32 +8,37 @@ on:
 
 jobs:
   build:
-    # CRITICAL: Windows builds require a Windows runner
+    # Windows apps MUST be built on a Windows runner
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          # Using 3.24.0 ensures Dart SDK is high enough to satisfy ^3.10.4
+          flutter-version: '3.24.0'
           cache: true
-          # This ensures you get a version compatible with your ^3.10.4 requirement
-          flutter-version: '3.22.0' 
 
       - name: Enable Windows Desktop
         run: flutter config --enable-windows-desktop
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: flutter pub get
 
-      - name: Build Windows
+      # Optional: Add this if you have generated code (like Freezed or Hive)
+      # - name: Build Runner
+      #   run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Build Windows Release
         run: flutter build windows --release
 
-      - name: Upload Artifact
+      - name: Upload Windows Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-executable
-          # Path to the generated .exe and supporting files
+          name: B-Vibe-Cafe-Windows
+          # Path to the release folder containing the .exe and DLLs
           path: build/windows/x64/runner/Release/
