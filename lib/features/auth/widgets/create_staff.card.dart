@@ -1,5 +1,6 @@
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui';
 
@@ -107,6 +108,11 @@ class CreateStaffCard extends StatelessWidget {
               TextField(
                 controller: pinController,
                 obscureText: obscurePin,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(8),
+                ],
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => onCreate(),
                 decoration: InputDecoration(
@@ -147,7 +153,17 @@ class CreateStaffCard extends StatelessWidget {
                 ),
               ).animate().fadeIn(delay: 600.ms).scale(),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+
+              Center(
+                child: TextButton.icon(
+                  onPressed: onBackToLogin,
+                  icon: const Icon(Icons.arrow_back, size: 18),
+                  label: const Text('Back to Login'),
+                ),
+              ),
+
+              const SizedBox(height: 8),
             ],
           ),
         ),

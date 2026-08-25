@@ -3,6 +3,7 @@ import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/data/helper/auth.helper.dart';
 import 'package:bvibe/data/model/auth.model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 class SecurityPage extends StatefulWidget {
@@ -35,40 +36,46 @@ class _SecurityPageState extends State<SecurityPage> {
     super.dispose();
   }
 
-  void _changePin() {
+  Future<void> _changePin() async {
     setState(() {
       _pinError = null;
       _success = false;
     });
 
-    if (_currentPinCtrl.text.length < 4) {
-      setState(() => _pinError = "Current PIN must be at least 4 digits.");
+    final currentPin = _currentPinCtrl.text.trim();
+    final newPin = _newPinCtrl.text.trim();
+    final confirmPin = _confirmPinCtrl.text.trim();
+
+    if (currentPin.isEmpty) {
+      setState(() => _pinError = "Please enter current PIN.");
       return;
     }
-    if (_newPinCtrl.text.length < 4) {
-      setState(() => _pinError = "New PIN must be at least 4 digits.");
+    if (currentPin.length < 4 || currentPin.length > 8 || !RegExp(r'^\d+$').hasMatch(currentPin)) {
+      setState(() => _pinError = "Current PIN must be 4–8 digits.");
       return;
     }
-    if (_newPinCtrl.text == _currentPinCtrl.text) {
+    if (newPin.isEmpty) {
+      setState(() => _pinError = "Please enter new PIN.");
+      return;
+    }
+    if (newPin.length < 4 || newPin.length > 8 || !RegExp(r'^\d+$').hasMatch(newPin)) {
+      setState(() => _pinError = "New PIN must be 4–8 digits.");
+      return;
+    }
+    if (newPin == currentPin) {
       setState(() => _pinError = "New PIN must be different from current PIN.");
       return;
     }
-    if (_newPinCtrl.text != _confirmPinCtrl.text) {
+    if (newPin != confirmPin) {
       setState(() => _pinError = "PINs do not match.");
       return;
     }
-    if (_currentPinCtrl.text != cPin) {
+    if (currentPin != cPin) {
       setState(() => _pinError = "Current PIN is incorrect.");
       return;
     }
 
-    // update password
-    _updateNewUser();
-
-    _currentPinCtrl.clear();
-    _newPinCtrl.clear();
-    _confirmPinCtrl.clear();
-    setState(() => _success = true);
+    await _updateNewUser(newPin);
   }
 
   @override
@@ -91,28 +98,43 @@ class _SecurityPageState extends State<SecurityPage> {
     }
   }
 
-  Future<void> _updateNewUser() async {
-    final user = AuthModel(userName: cUser, passCode: _newPinCtrl.text);
+  Future<void> _updateNewUser(String newPin) async {
+    final user = AuthModel(userName: cUser, passCode: newPin);
     final result = await AuthHelper.instance.insertUser(user);
     if (result > 0) {
-      setState(() => cPin = _newPinCtrl.text);
+      setState(() {
+        cPin = newPin;
+        _success = true;
+      });
+      _currentPinCtrl.clear();
+      _newPinCtrl.clear();
+      _confirmPinCtrl.clear();
       if (mounted) {
         AppSnack.successSnack(context, "Successfully updated PIN");
       }
+    } else {
+      setState(() => _pinError = "Failed to update PIN in database.");
     }
   }
 
   Future<void> _updateUsername() async {
-    final user = AuthModel(userName: _newUsernameCtrl.text, passCode: cPin);
+    final newUsername = _newUsernameCtrl.text.trim();
+    if (newUsername.isEmpty) {
+      setState(() => _usernameError = "Username cannot be empty.");
+      return;
+    }
+    final user = AuthModel(userName: newUsername, passCode: cPin);
     final result = await AuthHelper.instance.insertUser(user);
     if (result > 0) {
       setState(() {
-        cUser = _newUsernameCtrl.text;
+        cUser = newUsername;
         _usernameSuccess = true;
       });
       if (mounted) {
         AppSnack.successSnack(context, "Successfully updated Username");
       }
+    } else {
+      setState(() => _usernameError = "Failed to update Username in database.");
     }
   }
 
@@ -141,6 +163,10 @@ class _SecurityPageState extends State<SecurityPage> {
                 controller: verifyPinCtrl,
                 obscureText: obscure,
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(8),
+                ],
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Symbols.lock, size: 18),
                   hintText: "Enter Current PIN",
@@ -162,7 +188,10 @@ class _SecurityPageState extends State<SecurityPage> {
             ),
             FilledButton(
               onPressed: () {
-                if (verifyPinCtrl.text == cPin) {
+                final inputPin = verifyPinCtrl.text.trim();
+                if (inputPin.isEmpty) {
+                  AppSnack.errorSnack(context, "Please enter your PIN");
+                } else if (inputPin == cPin) {
                   Navigator.pop(context, true);
                 } else {
                   AppSnack.errorSnack(context, "Incorrect PIN");
@@ -176,7 +205,7 @@ class _SecurityPageState extends State<SecurityPage> {
     );
 
     if (confirmed == true) {
-      _updateUsername();
+      await _updateUsername();
     }
   }
 
@@ -413,7 +442,11 @@ class _SecurityPageState extends State<SecurityPage> {
         TextField(
           controller: controller,
           obscureText: obscure,
-
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(8),
+          ],
           onChanged: (_) => setState(() {
             _pinError = null;
             _success = false;
@@ -601,7 +634,7 @@ class _SecurityPageState extends State<SecurityPage> {
             width: double.infinity,
             child: FilledButton(
               onPressed: () {
-                if (_newUsernameCtrl.text.isEmpty) {
+                if (_newUsernameCtrl.text.trim().isEmpty) {
                   setState(() => _usernameError = "Username cannot be empty.");
                   return;
                 }

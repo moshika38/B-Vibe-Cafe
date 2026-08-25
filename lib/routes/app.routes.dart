@@ -1,3 +1,4 @@
+import 'package:bvibe/data/helper/auth.helper.dart';
 import 'package:bvibe/features/auth/presentation/create.screen.dart';
 import 'package:bvibe/features/auth/presentation/login_screen.dart';
 import 'package:bvibe/features/dashboard/presentation/dashboard.dart';
@@ -16,6 +17,16 @@ import 'package:go_router/go_router.dart';
 class AppRoutes {
   static final GoRouter router = GoRouter(
     initialLocation: "/",
+    redirect: (context, state) async {
+      final hasUser = await AuthHelper.instance.hasUsers();
+      final isCreating = state.matchedLocation == '/create';
+
+      if (!hasUser) {
+        return isCreating ? null : '/create';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(path: '/', builder: (context, state) => const LoginScreen()),
       GoRoute(

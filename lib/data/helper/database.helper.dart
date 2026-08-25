@@ -464,16 +464,11 @@ CREATE TABLE IF NOT EXISTS expense_items (
   }
 
   Future<void> initializeAppDatabase() async {
-    final db = await instance.database;
+    // Ensure database instance is initialized
+    await instance.database;
     
     // Auto-archive old receipts at startup
     await archiveOldReceipts();
-
-    final result = await db.query('users');
-
-    if (result.isEmpty) {
-      await db.insert('users', {'username': 'user', 'password': '1234'});
-    }
   }
 
   Future<void> archiveOldReceipts() async {

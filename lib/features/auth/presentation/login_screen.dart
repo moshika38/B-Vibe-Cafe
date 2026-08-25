@@ -1,4 +1,3 @@
-import 'package:bvibe/components/popup.window.dart';
 import 'package:bvibe/const/snack/app.snack.dart';
 import 'package:bvibe/data/helper/auth.helper.dart';
 import 'package:bvibe/features/auth/widgets/form.panel.dart';
@@ -27,31 +26,28 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void checkAuth() async {
-    if (_staffIdController.text.isEmpty || _pinController.text.isEmpty) {
-      AppSnack.errorSnack(context, "Please enter staff ID and PIN");
-    } else {
-      final userMap = await AuthHelper.instance.getUser(
-        _staffIdController.text,
-      );
+    final staffId = _staffIdController.text.trim();
+    final pin = _pinController.text.trim();
 
-      if (userMap != null && userMap['password'] == _pinController.text) {
-        if (userMap['username'] == "user" && userMap['password'] == "1234") {
-          PopupWindow.show(
-            context: context,
-            type: PopupType.warning,
-            title: "Warning",
-            message: "You have using dummy account. Please Create account",
-            primaryButtonText: "Create Now",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              context.go('/create');
-            },
-          );
-        } else {
-          context.go('/dashboard');
-        }
-      } else {
-        AppSnack.errorSnack(context, "Invalid staff ID or PIN");
+    if (staffId.isEmpty || pin.isEmpty) {
+      AppSnack.errorSnack(context, "Please enter Staff ID and PIN");
+      return;
+    }
+
+    if (pin.length < 4 || pin.length > 8 || !RegExp(r'^\d+$').hasMatch(pin)) {
+      AppSnack.errorSnack(context, "PIN must be 4–8 digits");
+      return;
+    }
+
+    final userMap = await AuthHelper.instance.getUser(staffId);
+
+    if (userMap != null && userMap['password'] == pin) {
+      if (mounted) {
+        context.go('/dashboard');
+      }
+    } else {
+      if (mounted) {
+        AppSnack.errorSnack(context, "Invalid Staff ID or PIN");
       }
     }
   }

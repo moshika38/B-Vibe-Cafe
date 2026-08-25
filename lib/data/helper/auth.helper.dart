@@ -22,7 +22,13 @@ class AuthHelper {
     }
   }
 
-   Future<int> insertUser(AuthModel user) async {
+  Future<bool> hasUsers() async {
+    final db = await DatabaseHelper.instance.database;
+    final result = await db.query('users', limit: 1);
+    return result.isNotEmpty;
+  }
+
+  Future<int> insertUser(AuthModel user) async {
     final db = await DatabaseHelper.instance.database;
 
     return await db.transaction((txn) async {

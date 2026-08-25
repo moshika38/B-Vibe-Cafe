@@ -1,5 +1,6 @@
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 class FormPanel extends StatefulWidget {
@@ -92,6 +93,11 @@ class _FormPanelState extends State<FormPanel> {
                 autofocus: false,
                 controller: widget.pinController,
                 obscureText: widget.obscurePin,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(8),
+                ],
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => widget.onLogin(),
                 decoration: InputDecoration(

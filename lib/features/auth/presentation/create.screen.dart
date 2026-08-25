@@ -30,12 +30,12 @@ class _CreateScreenState extends State<CreateScreen> {
     final pin = _pinController.text.trim();
 
     if (staffId.isEmpty || pin.isEmpty) {
-      AppSnack.errorSnack(context, "Please enter both staff ID and PIN");
+      AppSnack.errorSnack(context, "Please enter both Staff ID and PIN");
       return;
     }
 
-    if (pin.length < 6) {
-      AppSnack.errorSnack(context, "PIN must be 6 digits");
+    if (pin.length < 4 || pin.length > 8 || !RegExp(r'^\d+$').hasMatch(pin)) {
+      AppSnack.errorSnack(context, "PIN must be 4–8 digits");
       return;
     }
 
@@ -45,11 +45,13 @@ class _CreateScreenState extends State<CreateScreen> {
       final result = await AuthHelper.instance.insertUser(user);
       if (result > 0) {
         if (mounted) {
-          AppSnack.successSnack(context, "Successfully created account");
+          AppSnack.successSnack(context, "Successfully created account. Please log in.");
         }
         _staffIdController.clear();
         _pinController.clear();
-        context.go('/');
+        if (mounted) {
+          context.go('/');
+        }
       } else {
         if (mounted) {
           AppSnack.errorSnack(context, "Failed to create account");
@@ -58,6 +60,19 @@ class _CreateScreenState extends State<CreateScreen> {
     } catch (e) {
       if (mounted) {
         AppSnack.errorSnack(context, "Database error: $e");
+      }
+    }
+  }
+
+  void _handleBackToLogin() async {
+    final hasUser = await AuthHelper.instance.hasUsers();
+    if (!hasUser) {
+      if (mounted) {
+        AppSnack.errorSnack(context, "Please create an account first to continue.");
+      }
+    } else {
+      if (mounted) {
+        context.go('/');
       }
     }
   }
@@ -85,7 +100,7 @@ class _CreateScreenState extends State<CreateScreen> {
                     _obscurePin = !_obscurePin;
                   });
                 },
-                onBackToLogin: () {},
+                onBackToLogin: _handleBackToLogin,
               ),
             ),
           ),

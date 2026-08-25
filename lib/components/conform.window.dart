@@ -103,6 +103,10 @@ class _PinConfirmDialogState extends State<PinConfirmDialog> {
                 controller: _pinController,
                 obscureText: true,
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(8),
+                ],
                 textAlign: TextAlign.center,
                 onSubmitted: (_) async {
                   await validatePin();

@@ -3,8 +3,9 @@ import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/data/helper/auth.helper.dart';
 import 'package:bvibe/features/auth/widgets/img.panel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
- import 'package:material_symbols_icons/symbols.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 
@@ -157,6 +158,10 @@ class _LockScreenState extends State<LockScreen> {
                           controller: _pinController,
                           obscureText: _obscurePin,
                           keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(8),
+                          ],
                           autofocus: true,
                           onSubmitted: (_) => _handleUnlock(),
                           decoration: InputDecoration(
