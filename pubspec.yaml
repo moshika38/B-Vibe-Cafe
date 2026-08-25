@@ -64,6 +64,6 @@ flutter:
 
   assets:
     - assets/img/
-    - assets/svg/
+    - assets/items/
     - assets/sound/
     - assets/cate/
