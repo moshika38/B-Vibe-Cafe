@@ -1,3 +1,4 @@
+import 'package:bvibe/components/shortcut.hint.dart';
 import 'package:bvibe/components/navigation.title.dart';
 import 'package:bvibe/const/print/print.invoice.dart';
 import 'package:bvibe/invoice/invoice.page.dart';
@@ -74,7 +75,19 @@ class ViewOrder extends StatelessWidget {
               onTap: () => handlePrint(),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 6),
+
+            Row(
+              children: const [
+                ShortcutHint('Backspace'),
+                SizedBox(width: 8),
+                ShortcutHint('Ctrl+N'),
+                SizedBox(width: 8),
+                ShortcutHint('Ctrl+P'),
+              ],
+            ),
+
+            const SizedBox(height: 14),
 
             Expanded(
               child: SingleChildScrollView(

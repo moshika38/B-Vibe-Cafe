@@ -1,3 +1,4 @@
+import 'package:bvibe/components/shortcut.hint.dart';
 import 'package:bvibe/components/navigation.title.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/features/orders/widgets/checkout.order.summary.dart';
@@ -120,7 +121,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 isBackIcon: true,
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
+
+              Row(
+                children: const [
+                  ShortcutHint('Esc'),
+                  SizedBox(width: 8),
+                  ShortcutHint('Ctrl+D'),
+                  SizedBox(width: 8),
+                  ShortcutHint('Ctrl+\u2190/\u2192'),
+                  SizedBox(width: 8),
+                  ShortcutHint('Ctrl+1/2/3'),
+                  SizedBox(width: 8),
+                  ShortcutHint('Enter'),
+                ],
+              ),
+
+              const SizedBox(height: 10),
               Consumer<ReceiptProvider>(
                 builder: (context, value, child) => FutureBuilder(
                   future: value.getReceipt(widget.receiptId),

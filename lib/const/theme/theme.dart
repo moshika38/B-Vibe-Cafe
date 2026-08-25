@@ -37,6 +37,26 @@ class AppColors {
   // Sidebar
   static const Color sidebarBg = Color(0xFFFCFCFC);
   static const Color sidebarActive = Color(0xFFFDF0E8);
+
+  // Luxury / Accent
+  static const Color gold = Color(0xFFD4952A);
+  static const Color goldLight = Color(0xFFE8B86A);
+  static const Color goldMuted = Color(0xFFBEA57A);
+  static const Color charcoal = Color(0xFF2C2520);
+  static const Color champagne = Color(0xFFFBF5EC);
+  static const Color ivory = Color(0xFFFEFDFB);
+
+  static const LinearGradient goldGradient = LinearGradient(
+    colors: [Color(0xFFD4952A), Color(0xFFE8B86A)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient subtleGradient = LinearGradient(
+    colors: [Color(0xFFFAF7F2), Color(0xFFF5F1EC)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }
 
 class AppTheme {

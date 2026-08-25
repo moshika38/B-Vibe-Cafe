@@ -1,3 +1,4 @@
+import 'package:bvibe/components/shortcut.hint.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/features/shell/widgets/menu.item.dart';
 import 'package:bvibe/features/shell/widgets/title.dart';
@@ -175,6 +176,27 @@ class MainShell extends StatelessWidget {
                       ),
 
                       const Spacer(),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            ShortcutBadge('Tab'),
+                            SizedBox(width: 6),
+                            Text(
+                              'Navigate',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: AppColors.textHint,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
 
                       Container(
                         height: 1,

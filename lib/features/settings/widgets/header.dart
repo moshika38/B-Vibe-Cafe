@@ -1,4 +1,5 @@
- 
+  
+import 'package:bvibe/components/shortcut.hint.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -22,10 +23,17 @@ class Header extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primarySoft,
+                      gradient: AppColors.goldGradient,
                       borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.gold.withOpacity(0.2),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    child: const Icon(Symbols.settings, color: AppColors.primary, size: 22),
+                    child: const Icon(Symbols.settings, color: Colors.white, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Column(
@@ -48,6 +56,7 @@ class Header extends StatelessWidget {
                   ),
                 ],
               ),
+              const ShortcutHint('\u2191\u2193 Navigate'),
             ],
           ),
         ),
