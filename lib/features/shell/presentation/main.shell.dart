@@ -1,3 +1,4 @@
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/features/shell/widgets/menu.item.dart';
 import 'package:bvibe/features/shell/widgets/title.dart';
 import 'package:bvibe/features/shell/widgets/user.role.card.dart';
@@ -26,7 +27,6 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
-    ThemeData theme = Theme.of(context);
 
     bool isActive(String route) => location.startsWith(route);
 
@@ -45,7 +45,6 @@ class MainShell extends StatelessWidget {
         autofocus: true,
         onKeyEvent: (node, event) {
           if (event is KeyDownEvent) {
-            // Tab key navigation
             if (event.logicalKey == LogicalKeyboardKey.tab) {
               final int currentIndex = menuRoutes.indexWhere(
                 (route) => isActive(route['path']),
@@ -57,7 +56,6 @@ class MainShell extends StatelessWidget {
               return KeyEventResult.handled;
             }
 
-            // Ctrl + L for Lock Screen
             if (event.logicalKey == LogicalKeyboardKey.keyL &&
                 HardwareKeyboard.instance.isControlPressed) {
               _showLockScreen(context);
@@ -69,23 +67,35 @@ class MainShell extends StatelessWidget {
         child: Scaffold(
           body: Row(
             children: [
-              Container(
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
+                  color: AppColors.sidebarBg,
                   border: Border(
-                    right: BorderSide(color: Colors.grey.shade300, width: 1),
+                    right: BorderSide(
+                      color: AppColors.divider,
+                      width: 1,
+                    ),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 10,
+                      offset: const Offset(2, 0),
+                    ),
+                  ],
                 ),
-                width: screenProvider.isOrder ? 70 : 250,
+                width: screenProvider.isOrder ? 72 : 248,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 24,
+                    horizontal: 12,
+                    vertical: 20,
                   ),
                   child: Column(
                     children: [
                       AppTitle(isOrder: screenProvider.isOrder),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 36),
 
                       MenuItem(
                         isOrder: screenProvider.isOrder,
@@ -166,8 +176,19 @@ class MainShell extends StatelessWidget {
 
                       const Spacer(),
 
-                      const Divider(),
-                      const SizedBox(height: 10),
+                      Container(
+                        height: 1,
+                        margin: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.transparent,
+                              AppColors.divider,
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
                       UserRoleCard(isOrder: screenProvider.isOrder),
                     ],
                   ),

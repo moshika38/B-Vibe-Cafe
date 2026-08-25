@@ -142,45 +142,70 @@ class _DashboardState extends State<Dashboard> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Dashboard Overview',
-                      style: theme.textTheme.headlineMedium,
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.primarySoft,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Symbols.dashboard, color: AppColors.primary, size: 22),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Dashboard Overview',
+                          style: theme.textTheme.headlineMedium,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Welcome back! Here is your cafe summary for today.',
-                      style: theme.textTheme.bodyMedium,
+                    const SizedBox(height: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 42),
+                      child: Text(
+                        'Welcome back! Here is your cafe summary for today.',
+                        style: theme.textTheme.bodyMedium,
+                      ),
                     ),
                   ],
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
-                    vertical: 8,
+                    vertical: 10,
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.divider),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.cardBorder),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
                       const Icon(
                         Symbols.calendar_today,
-                        size: 18,
+                        size: 16,
                         color: AppColors.textSecondary,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'Today, ${DateTime.now().day} ${_getMonth(DateTime.now().month)} ${DateTime.now().year}',
-                        style: theme.textTheme.labelLarge,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
             // Stats Row
             Row(
@@ -226,7 +251,7 @@ class _DashboardState extends State<Dashboard> {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
 
             // Analytics Row
             Consumer<AnalyticsProvider>(
@@ -263,7 +288,7 @@ class _DashboardState extends State<Dashboard> {
                 );
               },
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
 
             // Bottom Content
             Row(
@@ -276,21 +301,44 @@ class _DashboardState extends State<Dashboard> {
                     height: 480,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: AppColors.surfaceElevated,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.divider),
+                      border: Border.all(color: AppColors.cardBorder),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.shadow,
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Recent Orders',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: AppColors.textPrimary,
-                            fontSize: 18,
-                          ),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppColors.primarySoft,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Symbols.receipt_long, color: AppColors.primary, size: 18),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Recent Orders',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: AppColors.textPrimary,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
+                        Container(height: 1, color: AppColors.divider),
+                        const SizedBox(height: 12),
                         Expanded(
                           child: Consumer<ReceiptProvider>(
                             builder: (context, receiptProvider, _) {
@@ -302,11 +350,30 @@ class _DashboardState extends State<Dashboard> {
                                 builder: (context, snapshot) {
                                   final receipts = snapshot.data ?? [];
                                   if (receipts.isEmpty) {
-                                    return const Center(child: Text('No orders yet today'));
+                                    return Center(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(16),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.inputFill,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(Symbols.receipt_long, size: 32, color: AppColors.textTertiary),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            'No orders yet today',
+                                            style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+                                          ),
+                                        ],
+                                      ),
+                                    );
                                   }
                                   return ListView.separated(
                                     itemCount: receipts.length > 20 ? 20 : receipts.length,
-                                    separatorBuilder: (context, index) => const Divider(),
+                                    separatorBuilder: (context, index) => const SizedBox(height: 4),
                                     itemBuilder: (context, index) {
                                       return OrderListItem(receipt: receipts[index]);
                                     },
@@ -320,7 +387,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 20),
                 // Popular Items
                 Expanded(
                   flex: 1,
@@ -328,31 +395,73 @@ class _DashboardState extends State<Dashboard> {
                     height: 480,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: AppColors.surfaceElevated,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.divider),
+                      border: Border.all(color: AppColors.cardBorder),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.shadow,
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Popular Items',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: AppColors.textPrimary,
-                            fontSize: 18,
-                          ),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppColors.primarySoft,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Symbols.trending_up, color: AppColors.primary, size: 18),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Popular Items',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: AppColors.textPrimary,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
+                        Container(height: 1, color: AppColors.divider),
+                        const SizedBox(height: 12),
                         Expanded(
                           child: Consumer<AnalyticsProvider>(
                             builder: (context, analytics, _) {
                               final popular = analytics.topItems;
                               if (popular.isEmpty) {
-                                return const Center(child: Text('No sales yet today'));
+                                return Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.inputFill,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Symbols.shopping_bag, size: 32, color: AppColors.textTertiary),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        'No sales yet today',
+                                        style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+                                      ),
+                                    ],
+                                  ),
+                                );
                               }
                               return ListView.separated(
                                 itemCount: popular.length,
-                                separatorBuilder: (context, index) => const SizedBox(height: 12),
+                                separatorBuilder: (context, index) => const SizedBox(height: 10),
                                 itemBuilder: (context, index) {
                                   final item = popular[index];
                                   return PopularItem(
@@ -371,49 +480,60 @@ class _DashboardState extends State<Dashboard> {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
 
             // Detailed Summary Below
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.divider),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Symbols.analytics, color: AppColors.primary, size: 24),
-                            const SizedBox(width: 12),
-                            Text(
-                              'Detailed Business Intelligence',
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                color: AppColors.textPrimary,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        Consumer<AnalyticsProvider>(
-                          builder: (context, analytics, _) {
-                            return FinancialSummaryTable(
-                              summary: analytics.summary,
-                              title: "Daily Detailed Metrics",
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceElevated,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.cardBorder),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.shadow,
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
-                ),
-              ],
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primarySoft,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Symbols.analytics, color: AppColors.primary, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Detailed Business Intelligence',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: AppColors.textPrimary,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Container(height: 1, color: AppColors.divider),
+                  const SizedBox(height: 20),
+                  Consumer<AnalyticsProvider>(
+                    builder: (context, analytics, _) {
+                      return FinancialSummaryTable(
+                        summary: analytics.summary,
+                        title: "Daily Detailed Metrics",
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),

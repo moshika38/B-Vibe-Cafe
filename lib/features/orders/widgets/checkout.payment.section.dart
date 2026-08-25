@@ -282,33 +282,62 @@ class _CheckoutPaymentSectionState extends State<CheckoutPaymentSection> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 30),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.surface : AppColors.background,
+          color: isSelected ? AppColors.primarySoft : AppColors.background,
           border: Border.all(
             color: isSelected
                 ? AppColors.primary
-                : AppColors.divider.withValues(alpha: 0.4),
+                : AppColors.cardBorder,
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
-        child: Row(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
-              size: 32,
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.primary.withValues(alpha: 0.15)
+                    : AppColors.surface,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                size: 28,
+              ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(height: 12),
             Text(
               title,
               style: Theme.of(context).textTheme.titleSmall!.copyWith(
                 color: isSelected ? AppColors.primary : AppColors.textSecondary,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                fontSize: 16,
+                fontSize: 15,
               ),
             ),
+            if (isSelected) ...[
+              const SizedBox(height: 6),
+              Container(
+                width: 20,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ],
           ],
         ),
       ),

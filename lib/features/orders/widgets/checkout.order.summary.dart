@@ -48,9 +48,16 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+        border: Border.all(color: AppColors.cardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(30),
       child: SingleChildScrollView(
@@ -59,15 +66,30 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              "Order Summary",
-              style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w800,
-                fontSize: 22,
-              ),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primarySoft,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.receipt_long_rounded, color: AppColors.primary, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  "Order Summary",
+                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 22,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
+            Container(height: 1, color: AppColors.divider),
+            const SizedBox(height: 24),
 
             // Summary Bottom Area (Moved to Top)
             Row(
@@ -102,7 +124,7 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                             "-${AppNumberFormat.formatNumber(itemDiscounts)} LKR",
                             style: Theme.of(context).textTheme.bodyMedium!
                                 .copyWith(
-                                  color: AppColors.primary,
+                                  color: AppColors.error,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 16,
                                 ),
@@ -129,7 +151,7 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                               "-${AppNumberFormat.formatNumber(billDiscount)} LKR",
                               style: Theme.of(context).textTheme.bodyMedium!
                                   .copyWith(
-                                    color: AppColors.primary,
+                                    color: AppColors.error,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 18,
                                   ),
@@ -152,7 +174,21 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
               ],
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
+            Container(
+              height: 2,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.2),
+                    AppColors.primary.withValues(alpha: 0.6),
+                    AppColors.primary.withValues(alpha: 0.2),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(1),
+              ),
+            ),
+            const SizedBox(height: 20),
 
             // Grand Total (Moved to Top)
             Row(
@@ -179,8 +215,28 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
             ),
 
             const SizedBox(height: 30),
-            const Divider(height: 1, color: AppColors.divider),
-            const SizedBox(height: 25),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              decoration: BoxDecoration(
+                color: AppColors.primarySoft,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.receipt_long_rounded, size: 16, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    "ITEM DETAILS",
+                    style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
 
             // Table Headers
             Row(
@@ -215,9 +271,9 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
                 ),
               ],
             ),
-            const SizedBox(height: 15),
-            const Divider(height: 1, color: AppColors.divider),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+            Container(height: 1, color: AppColors.divider),
+            const SizedBox(height: 4),
 
             // Items List
             ListView.separated(
@@ -226,7 +282,7 @@ class _CheckoutOrderSummaryState extends State<CheckoutOrderSummary> {
               padding: EdgeInsets.zero,
               itemCount: widget.receipt.items.length,
               separatorBuilder: (context, index) =>
-                  const Divider(height: 40, color: AppColors.divider),
+                  const SizedBox(height: 4),
               itemBuilder: (context, index) {
                 return _buildSummaryItemRow(
                   context,

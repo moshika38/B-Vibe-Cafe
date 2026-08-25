@@ -39,12 +39,13 @@ class _TitleBarState extends State<TitleBar> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: AppColors.surfaceElevated,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.cardBorder),
           boxShadow: [
             BoxShadow(
-              color: AppColors.textSecondary.withValues(alpha: 0.06),
-              blurRadius: 12,
+              color: AppColors.shadow,
+              blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
@@ -66,7 +67,8 @@ class _TitleBarState extends State<TitleBar> {
                     onTap: () => widget.onTap(i),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
                           vertical: 8,
@@ -76,6 +78,15 @@ class _TitleBarState extends State<TitleBar> {
                               ? AppColors.primary
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: AppColors.primary.withValues(alpha: 0.3),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
                         ),
                         child: Text(
                           widget.tab[i],
@@ -104,6 +115,9 @@ class _TitleBarState extends State<TitleBar> {
                 onChanged: widget.onSearch,
                 decoration: InputDecoration(
                   hintText: "Search by order #, table, or customer...",
+                  hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
                   prefixIcon: Icon(
                     Symbols.search,
                     size: 18,

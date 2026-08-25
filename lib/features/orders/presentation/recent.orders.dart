@@ -227,9 +227,16 @@ class _RecentOrdersState extends State<RecentOrders> {
                     Container(
                       width: 200,
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: AppColors.surfaceElevated,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.divider),
+                        border: Border.all(color: AppColors.cardBorder),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.shadow,
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       margin: const EdgeInsets.only(right: 20),
                       child: ItemPreview(invoiceId: selectInvoiceId),
@@ -239,9 +246,16 @@ class _RecentOrdersState extends State<RecentOrders> {
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
+                          color: AppColors.surfaceElevated,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.divider),
+                          border: Border.all(color: AppColors.cardBorder),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.shadow,
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Column(
                           children: [
@@ -251,10 +265,9 @@ class _RecentOrdersState extends State<RecentOrders> {
                                 vertical: 12,
                                 horizontal: 16,
                               ),
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(color: AppColors.divider),
-                                ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primarySoft.withValues(alpha: 0.3),
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                               ),
                               child: Row(
                                 children: [

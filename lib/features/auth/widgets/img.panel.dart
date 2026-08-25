@@ -9,42 +9,55 @@ class ImgPanel extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Background image
         Image.asset('assets/img/login_page.jpg', fit: BoxFit.cover),
 
-        // Gradient overlay at bottom
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.1),
+                  Colors.black.withOpacity(0.5),
+                ],
+                stops: const [0.3, 1.0],
+              ),
+            ),
+          ),
+        ),
+
         Positioned(
           left: 0,
           right: 0,
           bottom: 0,
           child: Container(
             padding: const EdgeInsets.fromLTRB(32, 80, 32, 36),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.7),
-                  Colors.transparent,
-                ],
-              ),
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Brand name row
                 Row(
                   children: [
-                    const Icon(Icons.restaurant, color: Colors.white, size: 28),
-                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                        ),
+                      ),
+                      child: const Icon(Icons.restaurant, color: Colors.white, size: 22),
+                    ),
+                    const SizedBox(width: 12),
                     Text(
                       'Lumina POS',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 Text(
                   'Elevating the dining experience through\nseamless service.',
                   style: Theme.of(context).textTheme.bodySmall,
