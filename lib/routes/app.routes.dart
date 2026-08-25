@@ -1,6 +1,7 @@
 import 'package:bvibe/data/helper/auth.helper.dart';
 import 'package:bvibe/features/auth/presentation/create.screen.dart';
 import 'package:bvibe/features/auth/presentation/login_screen.dart';
+import 'package:bvibe/features/auth/presentation/reset_pin.screen.dart';
 import 'package:bvibe/features/dashboard/presentation/dashboard.dart';
 import 'package:bvibe/features/menu/presentation/menu.dart';
 import 'package:bvibe/features/orders/presentation/check.out.dart';
@@ -32,6 +33,10 @@ class AppRoutes {
       GoRoute(
         path: '/create',
         builder: (context, state) => const CreateScreen(),
+      ),
+      GoRoute(
+        path: '/reset-pin',
+        builder: (context, state) => const ResetPinScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) {
