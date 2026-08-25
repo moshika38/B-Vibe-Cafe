@@ -146,6 +146,23 @@ class _FormPanelState extends State<FormPanel> {
 
           Center(
             child: TextButton.icon(
+              onPressed: widget.onForgotPassword,
+              icon: const Icon(
+                Icons.lock_reset,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+              label: Text(
+                'Forgot PIN?',
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Center(
+            child: TextButton.icon(
               onPressed: widget.onChangeStation,
               icon: const Icon(
                 Icons.swap_horiz,
