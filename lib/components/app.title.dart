@@ -1,7 +1,6 @@
 import 'package:bvibe/components/app.buttons.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:flutter/material.dart';
- 
 
 class AppBarTitle extends StatelessWidget {
   final String title;
@@ -23,8 +22,15 @@ class AppBarTitle extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(
-          bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+          bottom: BorderSide(color: AppColors.divider, width: 1),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       height: 60,
       child: Padding(
@@ -35,8 +41,9 @@ class AppBarTitle extends StatelessWidget {
             Text(
               title,
               style: theme.textTheme.titleMedium!.copyWith(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.3,
               ),
             ),
 
@@ -47,9 +54,9 @@ class AppBarTitle extends StatelessWidget {
                         text: addButtonText ?? "Add New Item",
                         onTap: addBtnTap ?? () {},
                       )
-                    : SizedBox.fromSize(),
+                    : const SizedBox.shrink(),
 
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
               ],
             ),
           ],
@@ -57,6 +64,4 @@ class AppBarTitle extends StatelessWidget {
       ),
     );
   }
-
- 
 }

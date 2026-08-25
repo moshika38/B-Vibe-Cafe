@@ -25,24 +25,45 @@ class EmptyCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "Current Order",
-                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primarySoft,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.shopping_cart_checkout, size: 16, color: AppColors.primary),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Current Order",
+                        style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    "Total ${AppNumberFormat.formatNumber(50)} LKR",
-                    style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                      color: AppColors.textSecondary,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.inputFill,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      "Total ${AppNumberFormat.formatNumber(50)} LKR",
+                      style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
 
-            Divider(),
+            Container(height: 1, color: AppColors.divider),
           ],
         ),
 

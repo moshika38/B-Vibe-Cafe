@@ -43,11 +43,9 @@ class _CurrentOrderState extends State<CurrentOrder> {
     final receiptProvider =
         Provider.of<ReceiptProvider>(context, listen: false);
 
-    // Filter to get only kitchen items (non-retail)
     final kitchenItems = receipt.items.where((item) => !item.isRetail).toList();
 
     if (kitchenItems.isNotEmpty) {
-      // Comparison logic
       final currentKitchenJson =
           jsonEncode(kitchenItems.map((e) => e.toMap()).toList());
       final lastKitchenJson =
@@ -67,7 +65,6 @@ class _CurrentOrderState extends State<CurrentOrder> {
       }
     }
 
-    // Always navigate to checkout after attempting to print KOT
     if (mounted) {
       context.push('/orders/checkout', extra: receipt.receiptId);
     }
@@ -78,9 +75,17 @@ class _CurrentOrderState extends State<CurrentOrder> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.cardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       child: Consumer<ReceiptProvider>(
         builder: (context, value, child) => FutureBuilder(
           future: value.getReceipt(widget.receiptId),
@@ -98,7 +103,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
                 _buildOrderTypeToggle(receipt, value),
                 const SizedBox(height: 10),
                 CurrentOrderWidget.tableHeader(context),
-                const Divider(),
+                const Divider(color: AppColors.cardBorder, height: 16),
                 Expanded(
                   child: ListView.builder(
                     itemCount: receipt.items.length,
@@ -120,7 +125,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
                     },
                   ),
                 ),
-                const Divider(),
+                const Divider(color: AppColors.cardBorder, height: 16),
                 const SizedBox(height: 10),
                 _buildCheckOutSection(context, receipt),
               ],
@@ -136,11 +141,10 @@ class _CurrentOrderState extends State<CurrentOrder> {
 
     return Container(
       width: double.infinity,
-      height: 48,
+      height: 46,
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+        color: AppColors.inputFill,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -148,42 +152,78 @@ class _CurrentOrderState extends State<CurrentOrder> {
             child: GestureDetector(
               onTap: () =>
                   provider.updateOrderType(receipt.receiptId, 'Dine-In'),
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
-                  color: !isTakeaway ? AppColors.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
+                  gradient: !isTakeaway
+                      ? const LinearGradient(
+                          colors: [AppColors.primary, AppColors.primaryDark],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  color: isTakeaway ? null : null,
+                  borderRadius: BorderRadius.circular(11),
+                  boxShadow: !isTakeaway
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.25),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Center(
                   child: Text(
-                    "Dine-In ( Shift+left )",
+                    "Dine-In",
                     style: TextStyle(
                       color: !isTakeaway
-                          ? AppColors.surface
-                          : AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
+                          ? Colors.white
+                          : AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
                     ),
                   ),
                 ),
               ),
             ),
           ),
+          const SizedBox(width: 4),
           Expanded(
             child: GestureDetector(
               onTap: () =>
                   provider.updateOrderType(receipt.receiptId, 'Takeaway'),
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
-                  color: isTakeaway ? AppColors.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
+                  gradient: isTakeaway
+                      ? const LinearGradient(
+                          colors: [AppColors.primary, AppColors.primaryDark],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  borderRadius: BorderRadius.circular(11),
+                  boxShadow: isTakeaway
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.25),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Center(
                   child: Text(
-                    "Takeaway  ( Shift+right )",
+                    "Takeaway",
                     style: TextStyle(
                       color: isTakeaway
-                          ? AppColors.surface
-                          : AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
+                          ? Colors.white
+                          : AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
                     ),
                   ),
                 ),
@@ -207,25 +247,28 @@ class _CurrentOrderState extends State<CurrentOrder> {
     final theme = Theme.of(context).textTheme.labelSmall;
     final bool isSelected = widget.isFocused && index == widget.selectedIndex;
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
       decoration: BoxDecoration(
         color: isSelected
-            ? AppColors.primary.withOpacity(0.12)
-            : (index % 2 == 1
-                  ? AppColors.divider.withOpacity(0.3)
-                  : Colors.transparent),
+            ? AppColors.primary.withOpacity(0.08)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
         border: isSelected
-            ? const Border(left: BorderSide(color: AppColors.primary, width: 4))
+            ? Border(left: BorderSide(color: AppColors.primary, width: 3))
             : null,
       ),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+      padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
       child: Row(
         children: [
           Expanded(
             flex: 3,
             child: Text(
               item,
-              style: theme,
+              style: theme?.copyWith(
+                color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -255,7 +298,7 @@ class _CurrentOrderState extends State<CurrentOrder> {
             child: Text(
               "${AppNumberFormat.formatNumber(double.tryParse(total) ?? 0)} LKR",
               textAlign: TextAlign.right,
-              style: theme,
+              style: theme?.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -279,77 +322,52 @@ class _CurrentOrderState extends State<CurrentOrder> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              shouldExcludeServiceCharge
-                  ? "Subtotal".toUpperCase()
-                  : "Total".toUpperCase(),
-              style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-            Text(
-              "${AppNumberFormat.formatNumber(subTotal)} LKR",
-              style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-          ],
+        _buildSummaryRow(
+          context,
+          shouldExcludeServiceCharge ? "Subtotal" : "Subtotal",
+          "${AppNumberFormat.formatNumber(subTotal)} LKR",
+          AppColors.textSecondary,
         ),
         if (!shouldExcludeServiceCharge) ...[
           const SizedBox(height: 6),
-          Row(
+          _buildSummaryRow(
+            context,
+            "Service Charge (10%)",
+            "${AppNumberFormat.formatNumber(serviceCharge)} LKR",
+            AppColors.textSecondary,
+          ),
+        ],
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+          decoration: BoxDecoration(
+            color: AppColors.primarySoft,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Service Charge (10%)".toUpperCase(),
+                "Net Amount".toUpperCase(),
                 style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
                   fontSize: 13,
                 ),
               ),
               Text(
-                "${AppNumberFormat.formatNumber(serviceCharge)} LKR",
+                "${AppNumberFormat.formatNumber(grandTotal)} LKR",
                 style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
                 ),
               ),
             ],
           ),
-        ],
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Net Amount".toUpperCase(),
-              style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-            Text(
-              "${AppNumberFormat.formatNumber(grandTotal)} LKR",
-              style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-          ],
         ),
 
-        SizedBox(height: 20),
+        const SizedBox(height: 14),
 
         Row(
           children: [
@@ -357,9 +375,8 @@ class _CurrentOrderState extends State<CurrentOrder> {
               builder: (context, value, child) => Container(
                 height: 43,
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.primary, width: 1),
-                  borderRadius: BorderRadius.circular(10),
-                  color: AppColors.background,
+                  border: Border.all(color: AppColors.divider),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: TextButton(
                   onPressed: () async {
@@ -373,29 +390,58 @@ class _CurrentOrderState extends State<CurrentOrder> {
                   child: Text(
                     "Delete",
                     style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      color: AppColors.error,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
                     ),
                   ),
                 ),
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Expanded(
               child: ElevatedButton(
                 onPressed: () => _handlePlaceOrder(receipt),
                 child: Text(
-                  "Place Order ( Ctrl+Enter )",
+                  "Place Order",
                   style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                    color: AppColors.surface,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
                   ),
                 ),
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryRow(
+    BuildContext context,
+    String label,
+    String value,
+    Color color,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: Theme.of(context).textTheme.titleSmall!.copyWith(
+            color: color,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.titleSmall!.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
         ),
       ],
     );

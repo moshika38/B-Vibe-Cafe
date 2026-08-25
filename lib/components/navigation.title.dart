@@ -14,7 +14,8 @@ class NavigationTitle extends StatelessWidget {
     required this.subtitle,
     this.isBackIcon,
     this.onTap,
-    this.isBtn,   this.btnText,
+    this.isBtn,
+    this.btnText,
   });
 
   @override
@@ -28,31 +29,40 @@ class NavigationTitle extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           isBackIcon == true
-              ? IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(
-                    Icons.arrow_back,
-                    size: 20,
-                    color: AppColors.textPrimary,
+              ? Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.cardBorder),
+                  ),
+                  child: IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      size: 18,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 )
-              : SizedBox.shrink(),
+              : const SizedBox.shrink(),
           Text(
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleMedium!.copyWith(
               color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
             ),
           ),
-          SizedBox(width: 5),
+          const SizedBox(width: 6),
           Icon(
             Icons.arrow_forward_ios_rounded,
-            color: AppColors.textSecondary,
-            size: 12,
+            color: AppColors.textHint,
+            size: 11,
           ),
-          SizedBox(width: 5),
+          const SizedBox(width: 6),
           Padding(
             padding: const EdgeInsets.only(top: 1.5),
             child: Text(
@@ -61,19 +71,22 @@ class NavigationTitle extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.titleSmall!.copyWith(
                 color: AppColors.textSecondary,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
           isBtn == true ? const Spacer() : const SizedBox.shrink(),
           isBtn == true
               ? SizedBox(
-                  width: 200,
+                  width: 210,
                   child: ElevatedButton(
                     onPressed: onTap,
                     child: Text(
                       btnText != null ? btnText! : "New Order (Ctrl + N)",
-                      style: theme.labelSmall!.copyWith(color: Colors.white),
+                      style: theme.labelSmall!.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 )

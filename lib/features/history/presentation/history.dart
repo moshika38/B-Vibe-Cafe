@@ -4,6 +4,7 @@ import 'package:bvibe/features/history/widgets/title.bar.dart';
 import 'package:bvibe/features/orders/widgets/empty.item.dart';
 import 'package:bvibe/invoice/invoice.page.dart';
 import 'package:bvibe/provider/bill.history.provider.dart';
+import 'package:bvibe/components/shortcut.hint.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -125,6 +126,12 @@ class _HistoryState extends State<History> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 ItemsCards.header(context),
+                Row(
+                  children: const [
+                    ShortcutHint('\u2191\u2193'),
+                    SizedBox(width: 12),
+                  ],
+                ),
                 IconButton(
                   onPressed: () async {
                     final DateTime? picked = await showDatePicker(

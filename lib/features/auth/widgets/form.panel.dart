@@ -30,19 +30,17 @@ class _FormPanelState extends State<FormPanel> {
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.surface,
-      padding: const EdgeInsets.symmetric(horizontal: 52, vertical: 40),
+      padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 44),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Logo ──
           _buildLogo()
               .animate()
               .fadeIn(delay: 200.ms, duration: 400.ms)
               .slideY(begin: -0.1, end: 0),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 36),
 
-          // ── Heading ──
           Text(
                 'Welcome back',
                 style: Theme.of(context).textTheme.headlineMedium,
@@ -51,7 +49,7 @@ class _FormPanelState extends State<FormPanel> {
               .fadeIn(delay: 300.ms, duration: 400.ms)
               .slideY(begin: 0.15, end: 0),
 
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
 
           Text(
                 'Sign in to your station to begin your shift',
@@ -61,11 +59,10 @@ class _FormPanelState extends State<FormPanel> {
               .fadeIn(delay: 350.ms, duration: 400.ms)
               .slideY(begin: 0.15, end: 0),
 
-          const SizedBox(height: 36),
+          const SizedBox(height: 38),
 
-          // ── Staff ID ──
           _buildLabel('Staff ID'),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           TextField(
                 autofocus: true,
                 controller: widget.staffIdController,
@@ -83,12 +80,10 @@ class _FormPanelState extends State<FormPanel> {
               .fadeIn(delay: 400.ms, duration: 400.ms)
               .slideY(begin: 0.15, end: 0),
 
-          const SizedBox(height: 22),
+          const SizedBox(height: 24),
 
-          // ── PIN / Password ──
           _buildLabel('PIN / Password'),
-
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           TextField(
                 autofocus: false,
                 controller: widget.pinController,
@@ -101,12 +96,11 @@ class _FormPanelState extends State<FormPanel> {
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => widget.onLogin(),
                 decoration: InputDecoration(
-                  hintText: '••••••••',
+                  hintText: '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',
                   prefixIcon: const Icon(
                     Icons.lock_outline,
                     color: AppColors.textHint,
                   ),
-
                   suffixIcon: IconButton(
                     icon: Icon(
                       widget.obscurePin
@@ -122,9 +116,8 @@ class _FormPanelState extends State<FormPanel> {
               .fadeIn(delay: 450.ms, duration: 400.ms)
               .slideY(begin: 0.15, end: 0),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 32),
 
-          // ── Login Button ──
           ElevatedButton(
                 onPressed: widget.onLogin,
                 child: Row(
@@ -142,17 +135,21 @@ class _FormPanelState extends State<FormPanel> {
 
           const Spacer(),
 
-          // ── Divider ──
-          const Divider(color: AppColors.divider),
-          const SizedBox(height: 12),
+          Container(
+            height: 1,
+            margin: const EdgeInsets.symmetric(vertical: 12),
+            decoration: const BoxDecoration(
+              color: AppColors.divider,
+            ),
+          ),
+          const SizedBox(height: 8),
 
-          // ── Change Station ──
           Center(
             child: TextButton.icon(
               onPressed: widget.onChangeStation,
               icon: const Icon(
                 Icons.swap_horiz,
-                size: 20,
+                size: 18,
                 color: AppColors.textSecondary,
               ),
               label: Text(
@@ -162,9 +159,8 @@ class _FormPanelState extends State<FormPanel> {
             ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
-          // ── Status Footer ──
           Center(
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -175,6 +171,12 @@ class _FormPanelState extends State<FormPanel> {
                   decoration: const BoxDecoration(
                     color: AppColors.online,
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x3316A34A),
+                        blurRadius: 6,
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -202,8 +204,15 @@ class _FormPanelState extends State<FormPanel> {
   Widget _buildLogo() {
     return Row(
       children: [
-        Icon(Icons.restaurant, color: AppColors.primary, size: 26),
-        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.primarySoft,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(Icons.restaurant, color: AppColors.primary, size: 22),
+        ),
+        const SizedBox(width: 10),
         Text('Lumina', style: Theme.of(context).textTheme.headlineSmall),
       ],
     );

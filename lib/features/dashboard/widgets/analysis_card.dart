@@ -20,11 +20,18 @@ class AnalysisCard extends StatelessWidget {
     final theme = Theme.of(context);
     return Container(
       height: height ?? 300,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.cardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,15 +46,17 @@ class AnalysisCard extends StatelessWidget {
                     title,
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: AppColors.textPrimary,
-                      fontSize: 18,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   if (subTitle != null) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     Text(
                       subTitle!,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: AppColors.textHint,
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -55,7 +64,7 @@ class AnalysisCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           Expanded(child: child),
         ],
       ),

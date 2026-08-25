@@ -18,43 +18,60 @@ class PopularItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Row(
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: AppColors.primaryLight.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.background.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primary.withOpacity(0.12),
+                  AppColors.primary.withOpacity(0.06),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Center(
+              child: Icon(Symbols.local_cafe, color: AppColors.primary, size: 22),
+            ),
           ),
-          child: const Center(
-            child: Icon(Symbols.local_cafe, color: AppColors.primary, size: 24),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: theme.textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.1,
+                )),
+                const SizedBox(height: 2),
+                Text('$count orders', style: theme.textTheme.bodyMedium?.copyWith(
+                  fontSize: 12,
+                  color: AppColors.textHint,
+                )),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(name, style: theme.textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              )),
-              const SizedBox(height: 4),
-              Text('$count orders', style: theme.textTheme.bodyMedium?.copyWith(
-                fontSize: 12,
-              )),
-            ],
+          Text(
+            'LKR $price',
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+            ),
           ),
-        ),
-        Text(
-          'LKR $price',
-          style: theme.textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.textSecondary,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -34,11 +34,22 @@ class _UserRoleCardState extends State<UserRoleCard> {
         ? Row(
             children: [
               Container(
-                width: 35,
-                height: 35,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF338f8e),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF338f8e), Color(0xFF2a7473)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF338f8e).withOpacity(0.3),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Center(
                   child: Text(
@@ -48,37 +59,54 @@ class _UserRoleCardState extends State<UserRoleCard> {
                     style: theme.textTheme.bodyLarge!.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.surface,
+                      fontSize: 14,
                     ),
                   ),
                 ),
               ),
-              SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user?.userName ?? "User",
-                    style: theme.textTheme.labelSmall!.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user?.userName ?? "User",
+                      style: theme.textTheme.labelSmall!.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                        letterSpacing: 0,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  Text(
-                    "Admin",
-                    style: theme.textTheme.labelSmall!.copyWith(
-                      color: AppColors.textHint,
+                    Text(
+                      "Admin",
+                      style: theme.textTheme.labelSmall!.copyWith(
+                        color: AppColors.textHint,
+                        letterSpacing: 0,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           )
         : Container(
-            width: 35,
-            height: 35,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF338f8e),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF338f8e), Color(0xFF2a7473)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF338f8e).withOpacity(0.3),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Center(
               child: Text(
@@ -88,6 +116,7 @@ class _UserRoleCardState extends State<UserRoleCard> {
                 style: theme.textTheme.bodyLarge!.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.surface,
+                  fontSize: 14,
                 ),
               ),
             ),

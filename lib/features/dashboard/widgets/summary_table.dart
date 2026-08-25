@@ -16,39 +16,32 @@ class FinancialSummaryTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    // Define the metrics from the summary
     final metrics = [
-      _MetricData('Total Revenue', 'LKR ${summary.totalRevenue.toStringAsFixed(2)}'),
-      _MetricData('Total Orders', summary.totalOrders.toString()),
-      _MetricData('Avg. Order Value', 'LKR ${summary.avgOrderValue.toStringAsFixed(2)}'),
-      _MetricData('Total Expenses', 'LKR ${summary.totalExpenses.toStringAsFixed(2)}'),
-      _MetricData('Gross Profit', 'LKR ${summary.grossProfit.toStringAsFixed(2)}'),
-      _MetricData('Items Sold', summary.totalItemsSold.toString()),
-      _MetricData('Profit Margin', '${summary.profitMargin.toStringAsFixed(2)}%'),
+      _MetricData('Total Revenue', 'LKR ${summary.totalRevenue.toStringAsFixed(2)}', null),
+      _MetricData('Total Orders', summary.totalOrders.toString(), null),
+      _MetricData('Avg. Order Value', 'LKR ${summary.avgOrderValue.toStringAsFixed(2)}', null),
+      _MetricData('Total Expenses', 'LKR ${summary.totalExpenses.toStringAsFixed(2)}', null),
+      _MetricData('Gross Profit', 'LKR ${summary.grossProfit.toStringAsFixed(2)}',
+          summary.grossProfit >= 0 ? const Color(0xFF16A34A) : const Color(0xFFDC2626)),
+      _MetricData('Items Sold', summary.totalItemsSold.toString(), null),
+      _MetricData('Profit Margin', '${summary.profitMargin.toStringAsFixed(2)}%',
+          summary.profitMargin >= 0 ? const Color(0xFF16A34A) : const Color(0xFFDC2626)),
     ];
 
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Row
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: const BoxDecoration(
               color: AppColors.background,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
             ),
             child: Row(
               children: [
@@ -77,17 +70,16 @@ class FinancialSummaryTable extends StatelessWidget {
             ),
           ),
           
-          // Data Rows
           ...metrics.asMap().entries.map((entry) {
             final index = entry.key;
             final metric = entry.value;
             final isLast = index == metrics.length - 1;
             
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
               decoration: BoxDecoration(
-                border: isLast ? null : const Border(
-                  bottom: BorderSide(color: AppColors.divider, width: 0.5),
+                border: isLast ? null : Border(
+                  bottom: BorderSide(color: AppColors.cardBorder, width: 0.5),
                 ),
               ),
               child: Row(
@@ -108,11 +100,9 @@ class FinancialSummaryTable extends StatelessWidget {
                       metric.value,
                       textAlign: TextAlign.right,
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: metric.label.contains('Profit') && !metric.value.contains('-') 
-                            ? Colors.green.shade700 
-                            : AppColors.textPrimary,
+                        color: metric.color ?? AppColors.textPrimary,
                         fontWeight: FontWeight.w700,
-                        fontSize: 15,
+                        fontSize: 14,
                       ),
                     ),
                   ),
@@ -129,6 +119,7 @@ class FinancialSummaryTable extends StatelessWidget {
 class _MetricData {
   final String label;
   final String value;
+  final Color? color;
 
-  _MetricData(this.label, this.value);
+  _MetricData(this.label, this.value, this.color);
 }

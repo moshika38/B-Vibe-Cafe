@@ -24,22 +24,21 @@ class CheckoutWidgets {
           ),
         ),
         const SizedBox(height: 10),
-
-        // Amount Received Field
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.background,
+            color: AppColors.inputFill,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.cardBorder),
           ),
           child: Row(
             children: [
-              const Text(
+              Text(
                 "LKR",
                 style: TextStyle(
-                  fontSize: 30,
+                  fontSize: 28,
                   color: AppColors.textHint,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(width: 10),
@@ -54,7 +53,7 @@ class CheckoutWidgets {
                   ],
                   keyboardType: TextInputType.number,
                   style: const TextStyle(
-                    fontSize: 30,
+                    fontSize: 28,
                     fontWeight: FontWeight.w900,
                     color: AppColors.textPrimary,
                   ),
@@ -75,27 +74,41 @@ class CheckoutWidgets {
   }
 
   Widget buildReturnChangeCard(BuildContext context, String text, {bool isInsufficient = false}) {
-    final Color cardColor = isInsufficient ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9);
-    final Color accentColor = isInsufficient ? const Color(0xFFD32F2F) : const Color(0xFF00C853);
+    final Color cardColor = isInsufficient
+        ? const Color(0xFFFEF2F2)
+        : const Color(0xFFF0FDF4);
+    final Color accentColor = isInsufficient
+        ? const Color(0xFFDC2626)
+        : const Color(0xFF16A34A);
     final String label = isInsufficient ? "AMOUNT DUE" : "CHANGE RETURN";
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: accentColor.withOpacity(0.15),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              CircleAvatar(
-                backgroundColor: accentColor,
-                radius: 20,
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
                 child: Icon(
-                  isInsufficient ? Icons.warning_amber_rounded : Icons.change_circle,
-                  color: Colors.white,
+                  isInsufficient
+                      ? Icons.warning_amber_rounded
+                      : Icons.change_circle,
+                  color: accentColor,
                   size: 24,
                 ),
               ),
@@ -115,7 +128,7 @@ class CheckoutWidgets {
                   Text(
                     "LKR ${AppNumberFormat.formatNumber(num.parse(text).abs())}",
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: 30,
                       fontWeight: FontWeight.w900,
                       color: accentColor,
                     ),
@@ -123,20 +136,6 @@ class CheckoutWidgets {
                 ],
               ),
             ],
-          ),
-          Opacity(
-            opacity: 0.3,
-            child: CircleAvatar(
-              backgroundColor: accentColor,
-              radius: 16,
-              child: Text(
-                isInsufficient ? "!" : "\$",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
           ),
         ],
       ),
@@ -152,28 +151,28 @@ class CheckoutWidgets {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: onTap,
-
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 24),
+          padding: const EdgeInsets.symmetric(vertical: 22),
           backgroundColor: isConform
               ? AppColors.textSecondary
               : AppColors.primary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          elevation: 0,
+          elevation: isConform ? 0 : 4,
+          shadowColor: isConform ? null : AppColors.primary.withOpacity(0.3),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.check_circle, size: 24, color: Colors.white),
+            const Icon(Icons.check_circle, size: 22, color: Colors.white),
             const SizedBox(width: 10),
             Text(
               "Confirm Payment",
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
-                fontSize: 20,
+                fontSize: 18,
               ),
             ),
           ],
@@ -194,8 +193,8 @@ class CheckoutWidgets {
         style: OutlinedButton.styleFrom(
           backgroundColor: isConform
               ? AppColors.primary
-              : AppColors.inputBorder,
-          padding: const EdgeInsets.symmetric(vertical: 20),
+              : AppColors.surface,
+          padding: const EdgeInsets.symmetric(vertical: 18),
           side: BorderSide(
             color: isConform ? AppColors.primary : AppColors.inputBorder,
             width: 1.5,
@@ -209,18 +208,18 @@ class CheckoutWidgets {
           children: [
             Icon(
               Icons.receipt_long,
-              size: 24,
-              color: isConform ? AppColors.background : AppColors.textSecondary,
+              size: 22,
+              color: isConform ? Colors.white : AppColors.textSecondary,
             ),
             const SizedBox(width: 10),
             Text(
               "Print Receipt",
               style: Theme.of(context).textTheme.titleMedium!.copyWith(
                 color: isConform
-                    ? AppColors.background
+                    ? Colors.white
                     : AppColors.textSecondary,
                 fontWeight: FontWeight.w800,
-                fontSize: 18,
+                fontSize: 16,
               ),
             ),
           ],

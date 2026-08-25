@@ -1,6 +1,8 @@
+import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/data/model/receipt.model.dart';
 import 'package:bvibe/provider/receipt.provider.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
 
 class ItemPreview extends StatelessWidget {
@@ -18,21 +20,24 @@ class ItemPreview extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: Color(0xFFE0E0E0))),
+            border: Border(bottom: BorderSide(color: AppColors.divider)),
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.receipt_long_rounded,
-                size: 16,
-                color: Color(0xFF6B6B6B),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Icon(Symbols.receipt_long, size: 14, color: AppColors.primary),
               ),
               const SizedBox(width: 8),
               Text(
-                "Order Items  ",
+                "Order Items",
                 style: theme.labelMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A1A),
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -49,9 +54,15 @@ class ItemPreview extends StatelessWidget {
                 if (data == null || data.items.isEmpty) {
                   return Padding(
                     padding: const EdgeInsets.all(15),
-                    child: Text(
-                      "No items",
-                      style: Theme.of(context).textTheme.labelSmall,
+                    child: Row(
+                      children: [
+                        Icon(Symbols.shopping_bag, size: 16, color: AppColors.textTertiary),
+                        const SizedBox(width: 8),
+                        Text(
+                          "No items",
+                          style: theme.labelSmall?.copyWith(color: AppColors.textTertiary),
+                        ),
+                      ],
                     ),
                   );
                 }
@@ -69,9 +80,19 @@ class ItemPreview extends StatelessWidget {
 
               return Padding(
                 padding: const EdgeInsets.all(15),
-                child: Text(
-                  "No items",
-                  style: Theme.of(context).textTheme.labelSmall,
+                child: Row(
+                  children: [
+                    const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "Loading items...",
+                      style: theme.labelSmall?.copyWith(color: AppColors.textTertiary),
+                    ),
+                  ],
                 ),
               );
             },
@@ -87,18 +108,43 @@ class ItemPreview extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFEEEEEE)),
+        border: Border.all(color: AppColors.cardBorder),
       ),
-      child: Text(
-        "${index + 1}. $itemName",
-        style: theme.labelSmall?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: const Color(0xFF1A1A1A),
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      child: Row(
+        children: [
+          Container(
+            width: 22,
+            height: 22,
+            decoration: BoxDecoration(
+              color: AppColors.primarySoft,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Center(
+              child: Text(
+                "${index + 1}",
+                style: theme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              itemName,
+              style: theme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }

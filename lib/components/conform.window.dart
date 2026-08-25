@@ -40,42 +40,46 @@ class _PinConfirmDialogState extends State<PinConfirmDialog> {
 
     return Dialog(
       backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         width: 360,
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 26),
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            /// Lock Icon
             Container(
               width: 72,
               height: 72,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary.withOpacity(.08),
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.10),
+                    AppColors.primary.withOpacity(0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
               child: const Icon(
                 Icons.lock_outline,
-                size: 34,
+                size: 32,
                 color: AppColors.primary,
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
 
-            /// Title
             Text(
               widget.title,
               style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w800,
                 color: AppColors.textPrimary,
               ),
             ),
 
             const SizedBox(height: 6),
 
-            /// Subtitle
             Text(
               "Enter your PIN to continue",
               textAlign: TextAlign.center,
@@ -84,9 +88,8 @@ class _PinConfirmDialogState extends State<PinConfirmDialog> {
               ),
             ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 24),
 
-            /// PIN Input
             Focus(
               onKeyEvent: (node, event) {
                 if (event is KeyDownEvent &&
@@ -118,9 +121,9 @@ class _PinConfirmDialogState extends State<PinConfirmDialog> {
                 ),
                 decoration: InputDecoration(
                   counterText: "",
-                  hintText: "••••••",
+                  hintText: "\u2022\u2022\u2022\u2022\u2022\u2022",
                   filled: true,
-                  fillColor: AppColors.inputFill.withOpacity(.3),
+                  fillColor: AppColors.inputFill,
                   errorText: error,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -130,42 +133,43 @@ class _PinConfirmDialogState extends State<PinConfirmDialog> {
                     borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(
                       color: AppColors.primary,
-                      width: 1.2,
+                      width: 1.5,
                     ),
                   ),
                 ),
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 26),
 
-            /// Buttons
             Row(
               children: [
-                /// Cancel
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context, false); // cancel
+                      Navigator.pop(context, false);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.inputBorder,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.inputFill,
+                      foregroundColor: AppColors.textSecondary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      elevation: 0,
                     ),
                     child: const Text(
                       "Cancel",
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
 
                 const SizedBox(width: 14),
 
-                /// Confirm
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () async {
@@ -177,10 +181,12 @@ class _PinConfirmDialogState extends State<PinConfirmDialog> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      elevation: 2,
+                      shadowColor: AppColors.primary.withOpacity(0.3),
                     ),
                     child: const Text(
                       "Confirm",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),
@@ -209,7 +215,7 @@ class ExitConfirmDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Focus(
         autofocus: true,
         onKeyEvent: (node, event) {
@@ -228,20 +234,28 @@ class ExitConfirmDialog extends StatelessWidget {
         },
         child: Container(
           width: 360,
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 26),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.warning_amber_rounded,
-                size: 48,
-                color: Colors.orangeAccent,
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFFEF3C7),
+                ),
+                child: const Icon(
+                  Icons.warning_amber_rounded,
+                  size: 36,
+                  color: Color(0xFFF59E0B),
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               Text(
                 "Go back?",
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -253,36 +267,47 @@ class ExitConfirmDialog extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 26),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context, false), // cancel
+                      onPressed: () => Navigator.pop(context, false),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.inputBorder,
-                        foregroundColor: Colors.black,
+                        backgroundColor: AppColors.inputFill,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        elevation: 0,
                       ),
-                      child: const Text("Cancel"),
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context, true), // confirm
+                      onPressed: () => Navigator.pop(context, true),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        elevation: 2,
+                        shadowColor: AppColors.primary.withOpacity(0.3),
                       ),
-                      child: const Text("Confirm"),
+                      child: const Text(
+                        "Confirm",
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
                   ),
                 ],
@@ -303,7 +328,7 @@ Future<bool> showExitConfirmDialog(BuildContext context) async {
   return result ?? false;
 }
 
-// ─── Simple Confirm Dialog ────────────────────────────────────────────────────
+// Simple Confirm Dialog
 
 class SimpleConfirmDialog extends StatelessWidget {
   final String title;
@@ -318,14 +343,14 @@ class SimpleConfirmDialog extends StatelessWidget {
     required this.message,
     this.confirmLabel = 'Delete',
     this.icon = Icons.delete_outline_rounded,
-    this.iconColor = Colors.redAccent,
+    this.iconColor = const Color(0xFFDC2626),
   });
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Focus(
         autofocus: true,
         onKeyEvent: (node, event) {
@@ -345,7 +370,7 @@ class SimpleConfirmDialog extends StatelessWidget {
         },
         child: Container(
           width: 360,
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 26),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -354,15 +379,15 @@ class SimpleConfirmDialog extends StatelessWidget {
                 height: 72,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: iconColor.withOpacity(.10),
+                  color: iconColor.withOpacity(.08),
                 ),
                 child: Icon(icon, size: 34, color: iconColor),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               Text(
                 title,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -376,7 +401,7 @@ class SimpleConfirmDialog extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Enter = confirm  •  Backspace = cancel',
+                'Enter = confirm  \u2022  Backspace = cancel',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.textHint,
@@ -390,14 +415,20 @@ class SimpleConfirmDialog extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(context, false),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.inputBorder,
-                        foregroundColor: Colors.black,
+                        backgroundColor: AppColors.inputFill,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        elevation: 0,
                       ),
-                      child: const Text('Cancel'),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -410,10 +441,12 @@ class SimpleConfirmDialog extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        elevation: 2,
+                        shadowColor: iconColor.withOpacity(0.3),
                       ),
                       child: Text(
                         confirmLabel,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -433,7 +466,7 @@ Future<bool> showSimpleConfirmDialog(
   required String message,
   String confirmLabel = 'Delete',
   IconData icon = Icons.delete_outline_rounded,
-  Color iconColor = Colors.redAccent,
+  Color iconColor = const Color(0xFFDC2626),
 }) async {
   final result = await showDialog<bool>(
     context: context,
@@ -447,4 +480,3 @@ Future<bool> showSimpleConfirmDialog(
   );
   return result ?? false;
 }
-

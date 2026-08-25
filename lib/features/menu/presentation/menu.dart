@@ -1,3 +1,4 @@
+import 'package:bvibe/components/shortcut.hint.dart';
 import 'package:bvibe/components/app.title.dart';
 import 'package:bvibe/components/conform.window.dart';
 import 'package:bvibe/const/snack/app.snack.dart';
@@ -171,6 +172,16 @@ class _AppMenuState extends State<AppMenu> {
         ),
 
         // category section
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+          child: Row(
+            children: const [
+              ShortcutHint('\u2191\u2193'),
+              SizedBox(width: 8),
+              ShortcutHint('Del'),
+            ],
+          ),
+        ),
         Consumer2<CategoriesProvider, ItemProvider>(
           builder: (context, cate, itemProv, child) => Expanded(
             child: Row(

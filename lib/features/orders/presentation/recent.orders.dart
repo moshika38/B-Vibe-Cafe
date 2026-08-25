@@ -1,3 +1,4 @@
+import 'package:bvibe/components/shortcut.hint.dart';
 import 'package:bvibe/components/navigation.title.dart';
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/data/model/receipt.model.dart';
@@ -171,49 +172,61 @@ class _RecentOrdersState extends State<RecentOrders> {
                   const SizedBox(width: 10),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 20),
-                    child: InkWell(
-                      onTap: () async {
-                        final DateTime? picked = await showDatePicker(
-                          context: context,
-                          initialDate: _selectedDate,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime.now(),
-                        );
-                        if (picked != null && picked != _selectedDate) {
-                          setState(() {
-                            _selectedDate = picked;
-                            selectIndex = 0;
-                          });
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.divider),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.calendar_month,
-                              size: 18,
-                              color: AppColors.primary,
+                    child: Row(
+                      children: [
+                        const ShortcutHint('Ctrl+N'),
+                        const SizedBox(width: 6),
+                        const ShortcutHint('\u2191\u2193'),
+                        const SizedBox(width: 6),
+                        const ShortcutHint('Enter'),
+                        const SizedBox(width: 6),
+                        const ShortcutHint('Del'),
+                        const SizedBox(width: 16),
+                        InkWell(
+                          onTap: () async {
+                            final DateTime? picked = await showDatePicker(
+                              context: context,
+                              initialDate: _selectedDate,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime.now(),
+                            );
+                            if (picked != null && picked != _selectedDate) {
+                              setState(() {
+                                _selectedDate = picked;
+                                selectIndex = 0;
+                              });
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}",
-                              style: theme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppColors.divider),
                             ),
-                          ],
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.calendar_month,
+                                  size: 18,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}",
+                                  style: theme.bodySmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ],
@@ -227,9 +240,16 @@ class _RecentOrdersState extends State<RecentOrders> {
                     Container(
                       width: 200,
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: AppColors.surfaceElevated,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.divider),
+                        border: Border.all(color: AppColors.cardBorder),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.shadow,
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       margin: const EdgeInsets.only(right: 20),
                       child: ItemPreview(invoiceId: selectInvoiceId),
@@ -239,9 +259,16 @@ class _RecentOrdersState extends State<RecentOrders> {
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
+                          color: AppColors.surfaceElevated,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.divider),
+                          border: Border.all(color: AppColors.cardBorder),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.shadow,
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Column(
                           children: [
@@ -251,10 +278,9 @@ class _RecentOrdersState extends State<RecentOrders> {
                                 vertical: 12,
                                 horizontal: 16,
                               ),
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(color: AppColors.divider),
-                                ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primarySoft.withValues(alpha: 0.3),
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                               ),
                               child: Row(
                                 children: [

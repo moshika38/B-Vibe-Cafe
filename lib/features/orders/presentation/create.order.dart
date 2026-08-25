@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:bvibe/components/shortcut.hint.dart';
 import 'package:bvibe/components/navigation.title.dart';
 import 'package:bvibe/const/print/print.invoice.dart';
 import 'package:bvibe/provider/printer.provider.dart';
@@ -615,7 +616,23 @@ class _CreateOrdersState extends State<CreateOrders> {
           ),
         ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 10),
+
+        Wrap(
+          spacing: 12,
+          runSpacing: 6,
+          children: const [
+            ShortcutHintRow(keys: ['Tab'], description: 'Toggle Menu/Cart'),
+            ShortcutHintRow(keys: ['Enter'], description: 'Add Item'),
+            ShortcutHintRow(keys: ['Ctrl', 'Enter'], description: 'Checkout'),
+            ShortcutHintRow(keys: ['Del'], description: 'Remove'),
+            ShortcutHintRow(keys: ['Ctrl', 'D'], description: 'Discount'),
+            ShortcutHintRow(keys: ['Shift', '\u2190/\u2192'], description: 'Dine/Take'),
+            ShortcutHintRow(keys: ['\u2190/\u2192/\u2191/\u2193'], description: 'Navigate'),
+          ],
+        ),
+
+        const SizedBox(height: 10),
 
         Expanded(
           child: Consumer<CategoriesProvider>(

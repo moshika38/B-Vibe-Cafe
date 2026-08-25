@@ -63,11 +63,13 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.cardBorder),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 40,
-                offset: const Offset(0, 12),
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 48,
+                offset: const Offset(0, 16),
+                spreadRadius: -4,
               ),
             ],
           ),

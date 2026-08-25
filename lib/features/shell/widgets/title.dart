@@ -11,13 +11,23 @@ class AppTitle extends StatelessWidget {
     return !isOrder
         ? Row(
             children: [
-               
               Container(
-                width: 35,
-                height: 35,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary,
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.primaryDark],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Center(
                   child: Text(
@@ -25,12 +35,13 @@ class AppTitle extends StatelessWidget {
                     style: theme.textTheme.bodyLarge!.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.surface,
+                      fontSize: 16,
                     ),
                   ),
                 ),
               ),
 
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
 
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,15 +49,17 @@ class AppTitle extends StatelessWidget {
                   Text(
                     "B-Vibe",
                     style: theme.textTheme.titleSmall!.copyWith(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w800,
                       fontSize: 15,
                       color: AppColors.textPrimary,
+                      letterSpacing: -0.3,
                     ),
                   ),
                   Text(
                     "Cafe & Restaurant",
                     style: theme.textTheme.labelSmall!.copyWith(
                       color: AppColors.textHint,
+                      letterSpacing: 0,
                     ),
                   ),
                 ],

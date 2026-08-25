@@ -108,42 +108,49 @@ class _SettingsItemsState extends State<SettingsItems> {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(200),
-            color: isSelected ? AppColors.surface : null,
-            boxShadow: [
-              BoxShadow(
-                color: isSelected
-                    ? AppColors.textSecondary.withValues(alpha: 0.1)
-                    : Colors.transparent,
-                blurRadius: isSelected ? 10 : 0,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            borderRadius: BorderRadius.circular(12),
+            color: isSelected ? AppColors.primarySoft : Colors.transparent,
+            border: Border.all(
+              color: isSelected ? AppColors.primary.withValues(alpha: 0.3) : Colors.transparent,
+            ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Row(
               children: [
                 Icon(
                   fill: 1,
                   icon,
-                  size: 20,
+                  size: 18,
                   color: isSelected
                       ? AppColors.primary
                       : AppColors.textSecondary,
                 ),
                 const SizedBox(width: 10),
-                Text(
-                  title,
-                  style: theme.textTheme.labelSmall!.copyWith(
-                    color: isSelected
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: theme.textTheme.labelSmall!.copyWith(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    ),
                   ),
                 ),
+                if (isSelected)
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
               ],
             ),
           ),

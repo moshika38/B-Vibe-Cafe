@@ -1,7 +1,7 @@
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:flutter/material.dart';
 
-class MenuItem extends StatelessWidget {
+class MenuItem extends StatefulWidget {
   final bool isActive;
   final IconData icon;
   final String label;
@@ -17,62 +17,109 @@ class MenuItem extends StatelessWidget {
   });
 
   @override
+  State<MenuItem> createState() => _MenuItemState();
+}
+
+class _MenuItemState extends State<MenuItem> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              width: 0.1,
-              color: isActive ? AppColors.primary : Colors.transparent,
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(!widget.isOrder ? 12 : 8),
+              gradient: widget.isActive
+                  ? LinearGradient(
+                      colors: [
+                        AppColors.primary.withOpacity(0.10),
+                        AppColors.primary.withOpacity(0.05),
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    )
+                  : null,
+              color: !widget.isActive && _isHovered
+                  ? AppColors.textPrimary.withOpacity(0.03)
+                  : null,
             ),
-            borderRadius: BorderRadius.circular(!isOrder ? 15 : 5),
-            color: !isActive
-                ? AppColors.surface
-                : AppColors.primaryLight.withOpacity(0.15),
-          ),
-          child: !isOrder
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        icon,
-                        color: isActive
+            child: !widget.isOrder
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 11,
+                    ),
+                    child: Row(
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: widget.isActive
+                                ? AppColors.primary.withOpacity(0.12)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: Icon(
+                            widget.icon,
+                            color: widget.isActive
+                                ? AppColors.primary
+                                : AppColors.textSecondary,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 11),
+                        Expanded(
+                          child: Text(
+                            widget.label,
+                            style: theme.textTheme.labelSmall!.copyWith(
+                              color: widget.isActive
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                              fontWeight: widget.isActive
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              letterSpacing: 0,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                        ),
+                        if (widget.isActive)
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                      ],
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Center(
+                      child: Icon(
+                        widget.icon,
+                        color: widget.isActive
                             ? AppColors.primary
                             : AppColors.textSecondary,
-                        size: 22,
+                        size: 28,
                       ),
-                      SizedBox(width: 10),
-                      Text(
-                        label,
-                        style: theme.textTheme.labelSmall!.copyWith(
-                          color: isActive
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: Center(
-                    child: Icon(
-                      icon,
-                      color: isActive
-                          ? AppColors.primary
-                          : AppColors.textSecondary,
-                      size: 30,
                     ),
                   ),
-                ),
+          ),
         ),
       ),
     );
