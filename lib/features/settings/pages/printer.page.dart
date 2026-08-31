@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:bvibe/const/theme/theme.dart';
 import 'package:bvibe/provider/printer.provider.dart';
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pos_printer_platform_image_3/flutter_pos_printer_platform_image_3.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -67,17 +69,22 @@ class _PrinterPageState extends State<PrinterPage> {
             );
           }
         });
-      } catch (_) {}
+      } catch (e, st) {
+        // Surface the real reason discovery failed so silent permission /
+        // pairing / adapter issues no longer disappear.
+        debugPrint('Discovery failed for ${type.name} (ble=$isBle): $e');
+        debugPrintStack(stackTrace: st);
+      }
     }
 
     if (mounted) setState(() => _isLoading = false);
   }
 
   Future<void> _testPrint(_PrinterEntry entry) async {
-    try {
-      final device = entry.device;
-      final type = entry.type;
+    final device = entry.device;
+    final type = entry.type;
 
+    try {
       switch (type) {
         case PrinterType.bluetooth:
           await PrinterManager.instance.connect(
@@ -85,10 +92,11 @@ class _PrinterPageState extends State<PrinterPage> {
             model: BluetoothPrinterInput(
               name: device.name,
               address: device.address!,
-              isBle: entry.isBle,       // ← use the scanned flag, not device field
+              isBle: entry.isBle,
               autoConnect: false,
             ),
           );
+          break;
         case PrinterType.usb:
           await PrinterManager.instance.connect(
             type: type,
@@ -98,15 +106,74 @@ class _PrinterPageState extends State<PrinterPage> {
               vendorId: device.vendorId,
             ),
           );
+          break;
         case PrinterType.network:
           await PrinterManager.instance.connect(
             type: type,
             model: TcpPrinterInput(ipAddress: device.address!),
           );
+          break;
       }
 
-      await PrinterManager.instance.send(type: type, bytes: []);
-    } catch (_) {}
+      // Build a real ESC/POS test receipt instead of an empty byte buffer.
+      // Sending `bytes: []` dumps whatever raw noise is left in the
+      // printer's input buffer, which is the "test print" / garbage the
+      // customer has been seeing.
+      final profile = await CapabilityProfile.load();
+      final generator = Generator(PaperSize.mm80, profile);
+      final bytes = <int>[
+        ...generator.text(
+          '=== TEST PRINT ===',
+          styles: const PosStyles(
+            align: PosAlign.center,
+            bold: true,
+            height: PosTextSize.size2,
+            width: PosTextSize.size2,
+          ),
+        ),
+        ...generator.text(
+          'B-Vibe Cafe',
+          styles: const PosStyles(align: PosAlign.center, bold: true),
+        ),
+        ...generator.text(
+          DateTime.now().toString(),
+          styles: const PosStyles(align: PosAlign.center),
+        ),
+        ...generator.hr(),
+        ...generator.text(
+          'If you can read this,',
+          styles: const PosStyles(align: PosAlign.center),
+        ),
+        ...generator.text(
+          'the printer is connected and working.',
+          styles: const PosStyles(align: PosAlign.center),
+        ),
+        ...generator.feed(3),
+        ...generator.cut(),
+      ];
+
+      await PrinterManager.instance.send(type: type, bytes: bytes);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Test print sent to ${device.name}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e, st) {
+      debugPrint('Test print failed: $e');
+      debugPrintStack(stackTrace: st);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Test print failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   static IconData _typeIcon(PrinterType type, bool isBle) {
